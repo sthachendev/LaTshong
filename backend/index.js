@@ -148,6 +148,123 @@ function authenticateToken(req, res, next) {
   });
 }
 
+const nodemailer = require("nodemailer");
+
+// create transporter object
+const transporter = nodemailer.createTransport({
+  host: "smtp-mail.outlook.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "soyecharo@outlook.com",
+    pass: "Password@@2020",
+  },
+});
+
+// function to generate random 6-digit alphanumeric code
+function generateRandomCode() {
+  let characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return code;
+}
+
+app.post("/api/getOTP", async (req, res) => {
+  const { email } = req.body;
+
+  const otp = generateRandomCode();
+  console.log(otp);
+
+  // create email message object with the OTP
+  const mailOptions = {
+    from: "soyecharo@outlook.com",
+    to: email,
+    subject: "LaTshong One Time Password",
+    html: `<p>Use this OTP <strong>${otp}</strong> before 15 min.</p>`,
+  };
+
+  try {
+    // send email message
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent");
+
+    res.send({ success: true, otp: otp });
+  } catch (error) {
+    console.log(error);
+    res.send({ success: false });
+  }
+});
+
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = function (req, file, cb) {
+  const allowedMimes = ["image/jpeg", "image/png", "image/gif"];
+  if (allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(
+      new Error(
+        "Invalid file type. Only JPEG, PNG, and GIF files are allowed."
+      ),
+      false
+    );
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 20, // 20 MB
+  },
+  fileFilter: fileFilter,
+}).fields([{ name: "images", maxCount: 20 }]);
+
+app.post("/api/post", function (req, res) {
+  upload(req, res, async function (err) {
+    if (err) {
+      // An error occurred when uploading
+      console.log(err);
+      return res.status(400).json({ message: "Error uploading file." });
+    }
+
+    // Everything went fine
+    console.log(req.file);
+    try {
+      const { description, location, postby, posttype, status, 
+        applicants, accepted_applicants, rejected_applicants } = req.body;
+      const postdate = new Date();
+      console.log(req.body);
+
+      // const filepaths = req.files.map(file => file.path); // get the image paths
+      const filepaths = req.files["images"].map((file) => file.path);
+
+      // insert the post data into the database
+      const { rows } = await pool.query(
+        `INSERT INTO posts 
+        (description, location, postby, posttype, postdate, status, applicants, accepted_applicants, rejected_applicants, images) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+        [description, location, postby, posttype, postdate, status, applicants, accepted_applicants, rejected_applicants, filepaths]
+      );
+
+      res.status(201).json(rows[0]);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server Error" });
+    }
+  });
+});
+
 app.listen(3000, () => {
     console.log("Server listening on port 3000");
   });
