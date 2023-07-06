@@ -10,6 +10,8 @@ import Post from "../screens/post/post";
 import Chat from "../screens/chat/chat";
 import Login from "../screens/auth/login";
 
+import ProfileDrawer from "./drawer";
+
 const Tab = createBottomTabNavigator();
 
 function BottomTab({ navigation }) {
@@ -101,19 +103,20 @@ function BottomTab({ navigation }) {
       })}
     />
     <Tab.Screen
-      name="Profile"
-      component={Profile}
+      name="ProfileDrawer"
+      component={ProfileDrawer}
       options={({ navigation }) => ({
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="person" size={size} color={color} />
         ),
+        tabBarLabel:'Profile',
         // headerLeft: () => (
         //   <TouchableOpacity
         //     style={{ marginLeft: 16 }}
         //     onPress={() => navigation.toggleDrawer()}
         //   ></TouchableOpacity>
         // ),
-        headerShown:true
+        headerShown:false
       })}
     />
     </>:

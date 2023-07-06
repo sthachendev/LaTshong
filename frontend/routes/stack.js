@@ -1,7 +1,6 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import BottomTab from "./bottomtab";
-// import Login from "./screens/auth/login";
 import { createStackNavigator } from "@react-navigation/stack";
 import Setting from "../screens/setting/setting";
 
