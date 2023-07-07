@@ -231,7 +231,7 @@ const upload = multer({
   fileFilter: fileFilter,
 }).fields([{ name: "images", maxCount: 20 }]);
 
-app.post("/api/post", function (req, res) {
+app.post("/api/post", (req, res) => {
   upload(req, res, async function (err) {
     if (err) {
       // An error occurred when uploading
@@ -258,6 +258,70 @@ app.post("/api/post", function (req, res) {
       );
 
       res.status(201).json(rows[0]);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server Error" });
+    }
+  });
+});
+
+app.post("/api/job_post", authenticateToken, (req, res) => {
+    try {
+      const { job_title, job_description, job_requirements, posttype, job_salary, postby, 
+        location, status, applicants, accepted_applicants, rejected_applicants } = req.body;
+      const postdate = new Date();
+      console.log(req.body);
+
+      // insert the post data into the database
+      const { rows } = pool.query(
+        `INSERT INTO job_posts 
+        (job_title, job_description, job_requirements, job_salary, postby, postdate, location, status, applicants, accepted_applicants, rejected_applicants) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+        [job_title, job_description, job_requirements, job_salary, postby, postdate, location, status, applicants, accepted_applicants, rejected_applicants]
+      );
+
+      res.status(201);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server Error" });
+    }
+});
+
+app.get("/api/get_job_post", async (req, res) => {
+  try {
+    const { rows } = await pool.query(`SELECT job_posts.*, users.name, users.email, users.imageurl
+      FROM job_posts
+      JOIN users ON job_posts.postBy = users.id;
+    `);
+    console.log("rows", rows);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.post("/api/employer_post", (req, res) => {
+  upload(req, res, async (err) => {
+    if (err) {
+      // An error occurred when uploading
+      console.log(err);
+      return res.status(400).json({ message: "Error uploading file." });
+    }
+
+    console.log(req.file);
+    try {
+      const { description, postby } = req.body;
+      const postdate = new Date();
+
+      const filepaths = req.files["images"].map((file) => file.path);
+
+      // insert the post data into the database
+      const { rows } = await pool.query(
+        `INSERT INTO posts 
+        (description, postby, postdate, images) VALUES ($1, $2, $3, $4) RETURNING *`,
+        [description, postby, postdate, filepaths]
+      );
+
+      res.status(201).json(rows);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server Error" });
