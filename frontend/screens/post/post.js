@@ -1,209 +1,247 @@
-import { StyleSheet, Text, View, TextInput, Keyboard, TouchableOpacity, ScrollView, Image } from 'react-native';
-import React, { useState } from 'react';
-import { RefreshControl } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import Icon from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useNavigation } from '@react-navigation/native';
+import { TextInput, Switch} from 'react-native-paper';
+import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
+import * as Location from "expo-location";
+import config from '../config';
+import { useSelector } from 'react-redux';
+import jwtDecode from 'jwt-decode';
+import axios from 'axios';
 
-const wait = (timeout) => {
-  return new Promise(resolve => setTimeout(resolve, timeout));
-}
-
-const Post = ({ navigation }) => {
+const Post = () => {
  
-  const [ItemDesc, setItemDesc] = useState('');
+  const navigation = useNavigation();
 
-  const [image, setImage] = useState(null);
-  const [upload, setUpload] = useState(false);
+  const [isToggled, setToggle] = useState(false);
 
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  const [userLocation, setUserLocation] = useState(null);
+  const [customLocation, setCustomLocation] = useState(null)
 
-    const source = {uri: result.uri};
-    setImage(source);
+  const [jobTitle, setJobTitle] = useState('');
+  const [jobDesc, setJobDesc] = useState('');
+  const [jobReq, setJobReq] = useState('');
+  const [jobSalary, setJobSalary] = useState('');
+  
+  // const [refreshing, setRefreshing] = React.useState(false);
 
+  // const onRefresh = React.useCallback(() => {
+  //   setRefreshing(true);
+  //   wait(2000).then(() => setRefreshing(false));
+  // }, []);
+
+  const handleCancel = () => {
+    navigation.goBack();
   };
 
-//   const uploadImage = async () => {
-//     setUpload(true);
-//     const response = await fetch(image.uri)
-//     const blob = await response.blob();
-//     const filename = image.uri.substring(image.uri.lastIndexOf('/')+1);
-//     var ref = firebase.storage().ref('posts/'+auth.currentUser.email+'/').child(filename).put(blob);
-//     //this get the url for image to display in the home tab
-    
-//     try {
-//       await ref;
-//       var url = await firebase.storage().ref('posts/'+auth.currentUser.email+'/'+filename).getDownloadURL();
-//       addField(url);
+  const handleToggle = () => {
+    setToggle(!isToggled);
+  };
 
-//     } catch (error) {
-//       console.log(error);
-//     }
-  
-//     setUpload(false);
-//     setImage(null);
-  
-//   }
-
-  const [refreshing, setRefreshing] = React.useState(false);
-
-  const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    wait(2000).then(() => setRefreshing(false));
-  }, []);
-
-    return (
-      <ScrollView 
-      style={styles.container}
-      contentContainerStyle={
-        {
-          justifyContent: 'center',
-          alignItems:'center'
+  useEffect(() => {
+    const requestLocationPermission = async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === "granted") {
+          const location = await Location.getCurrentPositionAsync();
+          setUserLocation({
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            latitudeDelta: 0.009,
+            longitudeDelta: 0.009,
+          });
+        } else {
+          console.log("Location permission denied");
         }
+      } catch (err) {
+        console.warn(err);
       }
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />}
+    };
+
+    requestLocationPermission();
+  }, [isToggled]);
+
+  const token = useSelector((state) => state.token);
+
+const handleSubmit = async() => {
+  const userid = jwtDecode(token).userid;
+  const jobData = {
+    job_title: jobTitle,
+    job_description: jobDesc,
+    job_requirements: jobReq,
+    job_salary: jobSalary,
+    postby: userid,
+    location: isToggled ? userLocation: customLocation,
+    status: 'p',
+  };
+  
+  try {
+    const response = await axios.post(`${config.API_URL}/api/job_post`, jobData, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log(response.status);    // Access the status code
+
+  }catch (error) {
+    console.error(error);
+  }
+};
+    return (
+      <>
+        <View 
+      style={styles.container}
       >
-        <View
-        style={{
-          borderWidth:0,
-          width:'100%',
-          justifyContent:'center',
-          alignItems:'center',
-          backgroundColor:'#4942E4',
-          borderBottomLeftRadius:25,
-          borderBottomRightRadius:25,
-          height:60,
-        }}
-        >
+        {/* header */}
+        <View style={styles.buttonContainer2}>
+          <TouchableOpacity onPress={handleCancel} activeOpacity={.8}>
+          <MaterialIcons name="close" size={24} color="black" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.button} activeOpacity={1}>
+            <Text style={styles.buttonText2}>New Post</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity activeOpacity={.8} onPress={handleSubmit}>
+          <MaterialIcons name="check" size={24} color="#0079FF" />
+          </TouchableOpacity>
         </View>
-  
-        {/* this is for the item name and desc */}
-        <View
-        elevation={5}
-        style={{
-          borderWidth:0,
-          width:'100%',
-          flex:.25,
-          justifyContent:'center',
-          alignItems:'center',
-          backgroundColor:'white',
-          marginTop: -20,
-          width:'90%',
-          borderRadius:20,
-          paddingBottom:20,
-          paddingTop:20,
-  
-        }}
-        >
 
-          <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection:'row'}}>
+        <TextInput
+            mode="outlined"
+            label="Job Title"
+            value={jobTitle}
+            onChangeText={setJobTitle}
+            style={styles.input}
+           
+          />
+         <TextInput
+          mode="outlined"
+          label="Job Descriptions"
+          value={jobDesc}
+          onChangeText={setJobDesc}
+          style={styles.input2}
+          multiline={true}
+        />
+         <TextInput
+          mode="outlined"
+          label="Job requirements"
+          value={jobReq}
+          onChangeText={setJobReq}
+          style={styles.input2}
+          multiline={true}
+        />
+          <TextInput
+          mode="outlined"
+          label="Salary"
+          value={jobSalary}
+          onChangeText={setJobSalary}
+          style={styles.input}
+        />
+        {/* <TouchableOpacity style={{marginTop:20, backgroundColor:'#3a348e', borderRadius:25}}>
+          <Text style={{ color:'#fff', paddingHorizontal:20, paddingVertical:10}}>
+          Add  Current Location
+          </Text>
+        </TouchableOpacity> */}
 
-          {ItemDesc? <Icon size={20} color='orange' name='ios-reader-outline' style={{ paddingRight:220, position:'absolute'} }/>
-          : <Icon size={20} color='grey' name='ios-reader-outline' style={{ paddingRight:220, position:'absolute' }}/>}
-
-            <TextInput 
-            placeholder='Type item desc here' 
-            style={styles.inputDesc}
-            onChangeText={(itemDesc) => setItemDesc(itemDesc)}
-            value={ItemDesc}
-            multiline={true}
-            />
-          </View>
-  
-  
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
-
-            <TouchableOpacity onPress={pickImage} style={{borderColor:'grey', padding:8, borderWidth:.5,
-            marginBottom:20, borderRadius:5,marginTop:20, flexDirection:'row'}}>
-
-                {image?<Icon size={20} color='orange' name='ios-image-outline'/>:<Icon size={20} color='grey' name='ios-image-outline'/>}
-                {!image?<Text style={{color:'grey', paddingLeft:10}}>Upload Image</Text>:<Text style={{color:'grey', paddingLeft:10}}>Change Image</Text>}
-
-            </TouchableOpacity>
-            
-            {image && <Image source={{ uri: image.uri }} style={{ width: 300, height: 200, borderWidth:1, borderRadius:5, borderColor:'white',}}/>}
-            </View>
-  
-      </View>
-  
-       <View style={{marginBottom:25, justifyContent:'center', alignItems:'center', width:'100%',}}>
-
-       <TouchableOpacity 
-       onPress={() => {uploadImage();}}
-       style={styles.btn}>
-
-        <Icon size={20} color='white' name='md-cloud-upload-outline'/> 
-
-        <Text style={{color:'white', paddingLeft:10}}>Post</Text>
-
-       </TouchableOpacity>
-       </View>
+        <View  style={{ flexDirection: "row", alignItems: "center", marginTop:10,}}>
+        <Text>Add Current Location</Text>
+        <Switch value={isToggled} onValueChange={handleToggle} color='#3a348e' />
        
-      </ScrollView>
+        <Text>Select location</Text>
+        <Switch value={!isToggled} onValueChange={handleToggle} color='#3a348e' />
+        </View>
+      {!isToggled && <Text style={{color:"grey"}}>Tab on the map to set the location</Text>}
+      </View>
+      
+       <View style={styles.myMap}>
+       <MapView
+         style={{ flex: 1 }}
+         showsUserLocation
+         provider={PROVIDER_GOOGLE}
+         mapType="standard"
+         initialRegion={userLocation}
+         onPress={(e) => setCustomLocation(e.nativeEvent.coordinate)}
+       >
+         {userLocation && isToggled &&  (
+           <Marker
+             title="Current Location"
+             coordinate={{
+               latitude: userLocation.latitude,
+               longitude: userLocation.longitude,
+             }}
+           >
+              <Callout>
+               <View style={styles.calloutContainer}>
+                 <Text style={styles.calloutText}>Current Location</Text>
+               </View>
+             </Callout>
+           </Marker>
+         )}
+         {customLocation!=null && !isToggled ?
+        <Marker
+          draggable
+          coordinate={customLocation}
+        >
+          <Callout>
+               <View style={styles.calloutContainer}>
+                 <Text style={styles.calloutText}>Custom Location</Text>
+               </View>
+             </Callout>
+        </Marker>:null}
+       </MapView>
+     </View>
+      </>
     );
-
 }
 
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
+    alignItems:'center'
   },
-  input:{
-    width: '70%',
-    height: 40,
-    paddingLeft:35,
-    marginTop: 20,
-    borderColor:'darkgray',
-    borderRadius:10,
-    borderWidth:1,
-    borderBottomWidth:1,
-    justifyContent:'center',
-    alignItems:'center',
-    color:'grey'
-    
+  buttonContainer2: {
+    backgroundColor: "#fff",
+    borderBottomWidth:0.5,
+    borderBottomColor:"lightgrey",
+    padding: 10,
+    paddingHorizontal:15,
+    width: "100%",
+    display:"flex",
+    flexDirection:"row",
+    justifyContent:"space-between"
   },
-  inputDesc: {
-    borderWidth: 1, 
-    width: '70%',
-    height: 130,
-    paddingLeft:35,
-    paddingTop:0,
-    marginTop: 15,
-    marginBottom:15,
-    borderColor:'darkgray',
-    borderRadius:10,
-    justifyContent:'flex-start',
-    color:'grey'
+  buttonText2: {
+    fontSize: 16,
+    fontWeight: "bold",
   },
-  btn: {
-    borderWidth:0,
-    flexDirection:'row',
-    width: '30%',
-    padding: 7,
-    height: 40,
-    borderRadius:10,
-    borderColor:'#25D366',
-    borderWidth:.3,
-    alignItems:'center',
-    justifyContent:'center',
-    height:45,
-    backgroundColor:'black',
-    marginTop:40,
-   },
-   icon:{
-    paddingTop:20, paddingRight:220, position:'absolute'
-  }
-  
+  input: {
+    width: 270,
+    marginTop:20,
+    fontSize:13,
+    backgroundColor: "#fff",
+    width: "95%",
+    borderRadius: 10,
+  },
+  input2: {
+    width: 270,
+    marginTop:20,
+    fontSize:13,
+    backgroundColor: "#fff",
+    width: "95%",
+    height: 100,
+    textAlignVertical: "top",
+    borderRadius: 10,
+    justifyContent: "flex-start",
+  },
+  myMap: {
+    flex: 1,
+    backgroundColor: "white",
+    width: "100%",
+  },
 });
 
 export default Post;
