@@ -5,6 +5,7 @@ import {
   View,
   StyleSheet,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 import { TextInput ,Text} from "react-native-paper";
 // import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,11 +28,6 @@ export default function Login() {
 
   const dispatch = useDispatch();
 
-  // const handleSetToken = () => {
-  //   const newToken = 'YOUR_JWT_TOKEN'; // Replace with your actual token value
-  //   dispatch(setToken(newToken));
-  // };
-
   const handleLogin = async() => {
     try {
       const response = await axios.post(`${config.API_URL}/api/login`, {
@@ -42,6 +38,10 @@ export default function Login() {
       console.log(jwtDecode(response.data.token).role)
       dispatch(setToken(response.data.token));
       dispatch(setRole(jwtDecode(response.data.token).role))
+
+      await AsyncStorage.setItem("token", response.data.token);
+      await AsyncStorage.setItem("role", jwtDecode(response.data.token).role);
+
     }catch (error) {
       console.error(error);
     }
@@ -99,7 +99,7 @@ export default function Login() {
             style={styles.input}
             theme={{
               colors: {
-                primary: isFocused ? '#000' : '#8f00ff',
+                primary: isFocused ? '#000' : '#4942E4',
                 underlineColor: 'transparent',
               },
             }}
@@ -114,7 +114,7 @@ export default function Login() {
             style={styles.input}
             theme={{
               colors: {
-                primary: isFocused ? '#000' : '#8f00ff',
+                primary: isFocused ? '#000' : '#4942E4',
 
               },
 
@@ -139,7 +139,7 @@ export default function Login() {
       style={{
       }}
       >
-      <Text style={{marginLeft:5, fontWeight:"300", color:'#4E31AA'}} onPress={handleSignupBtn}>Signup</Text>
+      <Text style={{marginLeft:5, fontWeight:"300", color:'#4942E4'}} onPress={handleSignupBtn}>Signup</Text>
       </TouchableOpacity>
 
       </View>
