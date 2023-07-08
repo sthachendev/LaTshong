@@ -1,6 +1,5 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ToastAndroid } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import * as ImagePicker from 'expo-image-picker';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from '@react-navigation/native';
 import { TextInput, Switch} from 'react-native-paper';
@@ -10,6 +9,7 @@ import config from '../config';
 import { useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
 import axios from 'axios';
+import { TouchableHighlight } from 'react-native';
 
 const Post = () => {
  
@@ -24,13 +24,6 @@ const Post = () => {
   const [jobDesc, setJobDesc] = useState('');
   const [jobReq, setJobReq] = useState('');
   const [jobSalary, setJobSalary] = useState('');
-  
-  // const [refreshing, setRefreshing] = React.useState(false);
-
-  // const onRefresh = React.useCallback(() => {
-  //   setRefreshing(true);
-  //   wait(2000).then(() => setRefreshing(false));
-  // }, []);
 
   const handleCancel = () => {
     navigation.goBack();
@@ -84,118 +77,125 @@ const handleSubmit = async() => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response.status);    // Access the status code
+    if(response.status == 201)
+    console.log(response.status);
 
   }catch (error) {
     console.error(error);
   }
+  ToastAndroid.show("Posted", ToastAndroid.SHORT);
+  navigation.goBack();
 };
-    return (
-      <>
-        <View 
-      style={styles.container}
-      >
-        {/* header */}
-        <View style={styles.buttonContainer2}>
-          <TouchableOpacity onPress={handleCancel} activeOpacity={.8}>
-          <MaterialIcons name="close" size={24} color="black" />
-          </TouchableOpacity>
+  return (
+    <>
+      <View 
+    style={styles.container}
+    >
+      {/* header */}
+      <View style={styles.buttonContainer2}>
+        <TouchableHighlight onPress={handleCancel} style={{borderRadius:15}}
+          underlayColor="#CCCCCC" 
+          >
+        <MaterialIcons name="close" size={24} color="black" />
+        </TouchableHighlight>
 
-          <TouchableOpacity style={styles.button} activeOpacity={1}>
-            <Text style={styles.buttonText2}>New Post</Text>
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.button} activeOpacity={1}>
+          <Text style={styles.buttonText2}>New Post</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity activeOpacity={.8} onPress={handleSubmit}>
-          <MaterialIcons name="check" size={24} color="#0079FF" />
-          </TouchableOpacity>
-        </View>
-
-        <TextInput
-            mode="outlined"
-            label="Job Title"
-            value={jobTitle}
-            onChangeText={setJobTitle}
-            style={styles.input}
-           
-          />
-         <TextInput
-          mode="outlined"
-          label="Job Descriptions"
-          value={jobDesc}
-          onChangeText={setJobDesc}
-          style={styles.input2}
-          multiline={true}
-        />
-         <TextInput
-          mode="outlined"
-          label="Job requirements"
-          value={jobReq}
-          onChangeText={setJobReq}
-          style={styles.input2}
-          multiline={true}
-        />
-          <TextInput
-          mode="outlined"
-          label="Salary"
-          value={jobSalary}
-          onChangeText={setJobSalary}
-          style={styles.input}
-        />
-        {/* <TouchableOpacity style={{marginTop:20, backgroundColor:'#3a348e', borderRadius:25}}>
-          <Text style={{ color:'#fff', paddingHorizontal:20, paddingVertical:10}}>
-          Add  Current Location
-          </Text>
-        </TouchableOpacity> */}
-
-        <View  style={{ flexDirection: "row", alignItems: "center", marginTop:10,}}>
-        <Text>Add Current Location</Text>
-        <Switch value={isToggled} onValueChange={handleToggle} color='#3a348e' />
-       
-        <Text>Select location</Text>
-        <Switch value={!isToggled} onValueChange={handleToggle} color='#3a348e' />
-        </View>
-      {!isToggled && <Text style={{color:"grey"}}>Tab on the map to set the location</Text>}
+        <TouchableHighlight onPress={handleSubmit} style={{borderRadius:15}}
+          underlayColor="#CCCCCC" 
+          >
+        <MaterialIcons name="check" size={24} color="#0079FF" />
+        </TouchableHighlight>
       </View>
+
+      <TextInput
+          mode="outlined"
+          label="Job Title"
+          value={jobTitle}
+          onChangeText={setJobTitle}
+          style={styles.input}
+          
+        />
+        <TextInput
+        mode="outlined"
+        label="Job Descriptions"
+        value={jobDesc}
+        onChangeText={setJobDesc}
+        style={styles.input2}
+        multiline={true}
+      />
+        <TextInput
+        mode="outlined"
+        label="Job requirements"
+        value={jobReq}
+        onChangeText={setJobReq}
+        style={styles.input2}
+        multiline={true}
+      />
+        <TextInput
+        mode="outlined"
+        label="Salary"
+        value={jobSalary}
+        onChangeText={setJobSalary}
+        style={styles.input}
+      />
+      {/* <TouchableOpacity style={{marginTop:20, backgroundColor:'#3a348e', borderRadius:25}}>
+        <Text style={{ color:'#fff', paddingHorizontal:20, paddingVertical:10}}>
+        Add  Current Location
+        </Text>
+      </TouchableOpacity> */}
+
+      <View  style={{ flexDirection: "row", alignItems: "center", marginTop:10,}}>
+      <Text>Add Current Location</Text>
+      <Switch value={isToggled} onValueChange={handleToggle} color='#3a348e' />
       
-       <View style={styles.myMap}>
-       <MapView
-         style={{ flex: 1 }}
-         showsUserLocation
-         provider={PROVIDER_GOOGLE}
-         mapType="standard"
-         initialRegion={userLocation}
-         onPress={(e) => setCustomLocation(e.nativeEvent.coordinate)}
-       >
-         {userLocation && isToggled &&  (
-           <Marker
-             title="Current Location"
-             coordinate={{
-               latitude: userLocation.latitude,
-               longitude: userLocation.longitude,
-             }}
-           >
-              <Callout>
-               <View style={styles.calloutContainer}>
-                 <Text style={styles.calloutText}>Current Location</Text>
-               </View>
-             </Callout>
-           </Marker>
-         )}
-         {customLocation!=null && !isToggled ?
-        <Marker
-          draggable
-          coordinate={customLocation}
-        >
-          <Callout>
-               <View style={styles.calloutContainer}>
-                 <Text style={styles.calloutText}>Custom Location</Text>
-               </View>
-             </Callout>
-        </Marker>:null}
-       </MapView>
-     </View>
-      </>
-    );
+      <Text>Select location</Text>
+      <Switch value={!isToggled} onValueChange={handleToggle} color='#3a348e' />
+      </View>
+    {!isToggled && <Text style={{color:"grey"}}>Tab on the map to set the location</Text>}
+    </View>
+    
+      <View style={styles.myMap}>
+      <MapView
+        style={{ flex: 1 }}
+        showsUserLocation
+        provider={PROVIDER_GOOGLE}
+        mapType="standard"
+        initialRegion={userLocation}
+        onPress={(e) => setCustomLocation(e.nativeEvent.coordinate)}
+      >
+        {userLocation && isToggled &&  (
+          <Marker
+            title="Current Location"
+            coordinate={{
+              latitude: userLocation.latitude,
+              longitude: userLocation.longitude,
+            }}
+          >
+            <Callout>
+              <View style={styles.calloutContainer}>
+                <Text style={styles.calloutText}>Current Location</Text>
+              </View>
+            </Callout>
+          </Marker>
+        )}
+        {customLocation!=null && !isToggled ?
+      <Marker
+        draggable
+        coordinate={customLocation}
+      >
+        <Callout>
+              <View style={styles.calloutContainer}>
+                <Text style={styles.calloutText}>Custom Location</Text>
+              </View>
+            </Callout>
+      </Marker>:null}
+      </MapView>
+    </View>
+    </>
+  );
 }
 
 const styles = StyleSheet.create({

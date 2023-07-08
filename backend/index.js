@@ -270,7 +270,7 @@ app.post("/api/job_post", authenticateToken, (req, res) => {
       const { job_title, job_description, job_requirements, posttype, job_salary, postby, 
         location, status, applicants, accepted_applicants, rejected_applicants } = req.body;
       const postdate = new Date();
-      console.log(req.body);
+      // console.log(req.body);
 
       // insert the post data into the database
       const { rows } = pool.query(
@@ -286,18 +286,85 @@ app.post("/api/job_post", authenticateToken, (req, res) => {
     }
 });
 
+//all
 app.get("/api/get_job_post", async (req, res) => {
   try {
     const { rows } = await pool.query(`SELECT job_posts.*, users.name, users.email, users.imageurl
       FROM job_posts
       JOIN users ON job_posts.postBy = users.id;
     `);
-    console.log("rows", rows);
+    // console.log("rows", rows);
     res.status(200).json(rows);
   } catch (error) {
     console.log(error);
   }
 });
+
+//particular
+app.get("/api/get_job_post/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { rows } = await pool.query(
+      `SELECT job_posts.*, users.name, users.email, users.imageurl
+      FROM job_posts
+      JOIN users ON job_posts.postBy = users.id
+      WHERE job_posts.id = $1`,
+      [id]
+    );
+
+    // console.log("rows", rows);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while fetching the job post." });
+  }
+});
+
+//applicants {}
+app.put("/api/update_job_post", async (req, res) => {
+  try {
+  const {userid, postid} = req.body;
+
+  if (postid) {
+  await pool.query("UPDATE job_posts SET applicants = array_append(applicants, $1) WHERE id = $2", [userid, postid]);
+  } else {
+    return res.status(400).send("Invalid update request");
+  }
+    res.status(200).send("Job post updated");
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Error updating user email");
+  }
+});
+
+app.get("/api/get_user_info", async (req, res) => {
+  const { userArray } = req.query;
+
+  console.log(userArray)
+
+  try {
+    const query = `SELECT * FROM users WHERE id IN (${userArray.join(",")})`;
+    const { rows } = await pool.query(query);
+    res.json(rows);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+//user info
+app.get("/api/get_user_info/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    const { rows } = await pool.query(
+      `SELECT * FROM users WHERE id = ${id}`
+    );
+    // console.log(rows);
+    res.json(rows);
+  } catch (error) {
+    console.log(error);
+  }
+})
 
 app.post("/api/employer_post", (req, res) => {
   upload(req, res, async (err) => {

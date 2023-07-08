@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS job_posts (
     postdate TIMESTAMP, --
     location JSON, 
     status CHAR(1), ---a accept, r reject, d dispute
-    applicants TEXT[] DEFAULT '{}',
-    accepted_applicants TEXT[] DEFAULT '{}',
-    rejected_applicants TEXT[] DEFAULT '{}'
+    applicants INTEGER[] DEFAULT '{}',
+    accepted_applicants INTEGER[] DEFAULT '{}',
+    rejected_applicants INTEGER[] DEFAULT '{}'
     -- images TEXT[] DEFAULT '{}'
 );
