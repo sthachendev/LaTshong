@@ -1,10 +1,15 @@
-import { View, Text } from "react-native"
-export default Chat = () => {
-    return(
-        <View>
-            <Text>
-                Hello this is the Chat.js
-            </Text>
-        </View>
-    )
-}
+import { View, Text, Button, TextInput } from 'react-native';
+
+const Chat = ({navigation}) => {
+
+  return (
+    <View>
+      <Text>
+        Hello, this is the Chat.js
+      </Text>
+      {/* <Button title="Chatroom" onPress={() => navigation.navigate('ChatRoom')} /> */}
+    </View>
+  );
+};
+
+export default Chat;

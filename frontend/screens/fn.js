@@ -47,3 +47,39 @@ export function getTimeDifference(postDate) {
   return `${diffInDays} d ago`;
 }
 
+export function getTime(postDate) {
+  const date = new Date(postDate);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  let period = " am";
+
+  if (hours >= 12) {
+    period = " pm";
+  }
+
+  let formattedHours = hours % 12;
+  formattedHours = formattedHours === 0 ? 12 : formattedHours;
+
+  const formattedMinutes = minutes.toString().padStart(2, "0");
+  const formattedTime = `${formattedHours}:${formattedMinutes}${period}`;
+
+  return formattedTime;
+}
+
+export function isToday(date) {
+  const today = new Date();
+  return (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  );
+}
+
+export function isSameDate(date1, date2) {
+  return (
+    date1.getDate() === date2.getDate() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getFullYear() === date2.getFullYear()
+  );
+}
+

@@ -1,36 +1,45 @@
 import React, { useEffect, useState, } from "react";
-import { View, Text, TouchableHighlight, StyleSheet, FlatList, Image } from "react-native";
+import { View, Text, TouchableHighlight, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
 import axios from "axios";
 import config from "../config";
 import { capitalizeWords, getTimeDifference } from "../fn";
+import { useNavigation } from "@react-navigation/native";
 
 export default PostDetails = ({ route }) => {
   const { id } = route.params;
-  const [data, setData] = useState(null);
-  const [userData, setUserData] = useState(null);
+  const [data, setData] = useState('');
+  const [userData, setUserData] = useState('');
+
+  const navigation = useNavigation();
 
   useEffect(() => {
     console.log(id);
     getJobPost();
+
+    return () => {
+      setData('');
+      setUserData('');
+     };
+     
   }, []);
 
 const getJobPost = async () => {
-    try {
-      const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);
-      setData(res.data);
-      const applicants = res.data[0].applicants;
-      console.log(applicants)
-      const response = await axios.get(`${config.API_URL}/api/get_user_info`, {
-        params: {
-          userArray: applicants
-        }
-      });
-      console.log(response.data,'response');
-      setUserData(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  try {
+    const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);
+    setData(res.data);
+    const applicants = res.data[0].applicants;
+    // console.log(applicants)
+    const response = await axios.get(`${config.API_URL}/api/get_user_info`, {
+      params: {
+        userArray: applicants
+      }
+    });
+    // console.log(response.data,'response');
+    setUserData(response.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
   
 const [selectedOption, setSelectedOption] = useState("all");
 
@@ -49,22 +58,39 @@ const [selectedOption, setSelectedOption] = useState("all");
 
 const renderUserItem = ({ item }) => {
     return (
-      <View style={styles.userItemContainer}>
-        {/* Render user data */}
-        <Image source={{ uri: item.imageurl }} style={styles.userImage} />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{capitalizeWords(item.name)}</Text>
-          <Text style={styles.userEmail}>{item.email}</Text>
+      <TouchableOpacity style={styles.itemContainer} activeOpacity={.8} 
+      onPress={()=>navigation.navigate('Profile', { userid: item.id })}>
+        <View style={{padding:10}}>
+      <View style={{display:"flex", flexDirection:"row", flex:1}}>
+        {item.imageurl !== null ? 
+        <Image source={{ uri: `${item.imageurl}` }} style={{width:40, height:40, borderRadius:15}} />
+        :
+        <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20}}/>
+        }
+        <View>
+        <Text style={{marginLeft:5, fontWeight:"bold", fontSize:14}}>{capitalizeWords(item.name)}</Text>
+        <Text style={{color:"grey", marginLeft:5}}>{item.email}</Text>
         </View>
-        {/* Render additional user data */}
+
+        <TouchableHighlight style={[styles.btn2, {position:"absolute", top:0, right:0}]} underlayColor="#F1F2F6" 
+        onPress={() => handleOptionSelect("all")}>
+        <Text style={[styles.btnText, { color:'grey' }]}>
+        Accept
+        </Text>
+      </TouchableHighlight>
+
       </View>
+    
+      
+    </View>
+      </TouchableOpacity>
     );
   };
 
   return (
     <View>
       {/* Display the fetched data */}
-      <View style={{padding:10, backgroundColor:"#fff", marginTop:5}}>
+      <View style={{padding:10, backgroundColor:"#fff", elevation:2, margin:10, borderRadius:5}}>
       {data && (
         <>
         <View style={{display:"flex", flexDirection:"row",}}>
@@ -124,12 +150,12 @@ const renderUserItem = ({ item }) => {
       </TouchableHighlight>
      </View>
 
-     <View style={{backgroundColor:"#fff", borderTopWidth:.5, borderColor:"lightgrey"}}>
-      {/* <Text>{data[0]?.applicants[0]}</Text> */}
+     <View style={{backgroundColor:"#F1F2F6", borderTopWidth:.5, borderColor:"lightgrey"}}>
       <FlatList
         data={userData} // Pass the userData as the data for the FlatList
         renderItem={renderUserItem} // Use the renderUserItem function to render each item
         keyExtractor={(item) => item.id} // Provide a unique key for each item
+        maxToRenderPerBatch={4}
         />
       </View>
     </View>
@@ -140,12 +166,27 @@ const styles = StyleSheet.create({
     btn:{ 
     borderColor:'#000',
     borderWidth:0.25, 
-    borderRadius:25, 
+    borderRadius:5, 
     flex:1,
     marginHorizontal:5
+    },
+    btn2:{ 
+    borderColor:'#3a348e',
+    borderWidth:0.25, 
+    borderRadius:25, 
+    marginHorizontal:5,
+    paddingHorizontal:20
     },
     btnText:{
     paddingVertical:10,  
     textAlign:"center", 
-    }
+    },
+    itemContainer: {
+        backgroundColor: '#fff',
+        marginHorizontal:10,
+        marginVertical:5,
+        borderRadius: 5,
+        marginBottom:0,
+        elevation: 2, 
+      },
 })

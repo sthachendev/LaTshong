@@ -27,3 +27,26 @@ CREATE TABLE IF NOT EXISTS job_posts (
     rejected_applicants INTEGER[] DEFAULT '{}'
     -- images TEXT[] DEFAULT '{}'
 );
+
+-- chat_rooms table
+CREATE TABLE IF NOT EXISTS chat_rooms (
+    id SERIAL PRIMARY KEY,
+    room_id UUID NOT NULL,
+    user1 INTEGER NOT NULL,
+    user2 INTEGER NOT NULL
+    -- ,
+    -- FOREIGN KEY (user1) REFERENCES users (id),
+    -- FOREIGN KEY (user2) REFERENCES users (id)
+);
+
+-- message table
+CREATE TABLE IF NOT EXISTS messages (
+    id BIGSERIAL PRIMARY KEY,
+    room_id UUID NOT NULL,
+    userid INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    message_type CHAR(1) DEFAULT 't',
+    --t for text
+    --a for attachement
+    date TIMESTAMP NOT NULL
+);

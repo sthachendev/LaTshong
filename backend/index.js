@@ -13,6 +13,14 @@ dotenv.config();
 
 const app = express();
 
+const httpServer = require('http').createServer(app);
+const io = require('socket.io')(httpServer);
+
+//to generate random uid 
+const { v4: uuidv4 } = require('uuid');
+
+const PORT = 3000; // Replace with your desired port number
+
 const pool = new Pool({
     user: process.env.USER,
     host: process.env.HOST,
@@ -127,12 +135,12 @@ app.post("/api/signup", (req, res) => {
 });
 
 // Protected route
-app.get('/protected', authenticateToken, (req, res) => {
+app.get('/protected', authenticateTokenAPI, (req, res) => {
   res.json({ message: 'Protected endpoint accessed successfully' });
 });
 
 // Middleware to authenticate JWT token
-function authenticateToken(req, res, next) {
+function authenticateTokenAPI(req, res, next) {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
 
   if (!token) {
@@ -144,6 +152,26 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ message: 'Invalid token' });
     }
     req.userId = decoded.userId;
+    next();
+  });
+}
+
+// Middleware to authenticate JWT token for Socket.IO
+function authenticateTokenSocketIO(socket, next) {
+  const token = socket.handshake.auth.token;
+
+  if (!token) {
+    return next(new Error('Authentication token required'));
+  }
+
+  jwt.verify(token, secretKey, (err, decoded) => {
+    if (err) {
+      return next(new Error('Invalid token'));
+    }
+
+    // Attach the decoded token data to the socket object
+    socket.decoded_token = decoded;
+
     next();
   });
 }
@@ -265,7 +293,7 @@ app.post("/api/post", (req, res) => {
   });
 });
 
-app.post("/api/job_post", authenticateToken, (req, res) => {
+app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
     try {
       const { job_title, job_description, job_requirements, posttype, job_salary, postby, 
         location, status, applicants, accepted_applicants, rejected_applicants } = req.body;
@@ -338,6 +366,7 @@ app.put("/api/update_job_post", async (req, res) => {
   }
 });
 
+//mutiple user info
 app.get("/api/get_user_info", async (req, res) => {
   const { userArray } = req.query;
 
@@ -396,7 +425,138 @@ app.post("/api/employer_post", (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-    console.log("Server listening on port 3000");
-  });
+// Configure Socket.IO middleware for JWT authentication
+io.use(authenticateTokenSocketIO);
+
+// Define Socket.IO event handlers
+io.on('connection', (socket) => {
+  console.log('A client connected.');
   
+  socket.on('joinChat', async (data) => {
+    const { user1, user2 } = data;
+
+    let roomId;
+
+    try {
+      // Check if user already has a room ID assigned
+      const client = await pool.connect();
+      try {
+        // Start a transaction
+        await client.query('BEGIN');
+
+        const query1 = 'SELECT room_id FROM chat_rooms WHERE (user1 = $1 AND user2 = $2) OR (user1 = $2 AND user2 = $1)';
+        const values1 = [user1, user2];
+        const result1 = await client.query(query1, values1);
+
+        if (result1.rows.length > 0) {
+          roomId = result1.rows[0].room_id;
+          console.log('room exits', roomId)
+        } else {
+          roomId = uuidv4(); // Generate a random UUID as the room ID
+
+          const query2 = 'INSERT INTO chat_rooms (room_id, user1, user2) VALUES ($1, $2, $3)';
+          const values2 = [roomId, user1, user2];
+          await client.query(query2, values2);
+        }
+
+        // Commit the transaction
+        await client.query('COMMIT');
+      } catch (error) {
+        // Rollback the transaction in case of any error
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        // Release the client back to the pool
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error occurred:', error);
+      // Handle the error as required
+    }
+
+    console.log(`User ${user1} joined chat room ${roomId} with User ${user2}`);
+
+    // Fetch data from the database
+    const messages = await fetchMessage(roomId);
+    socket.emit('fetchMessages', { messages });
+
+    // Send the room ID to the frontend
+    socket.emit('roomJoined', { roomId });
+
+    // Join the chat room
+    socket.join(roomId);
+  });
+
+  // socket.on('message', (data) => {
+  //   const date = new Date();
+  //   console.log(date,'date');
+
+  //   console.log('data from frontend', data);
+  //   // Process the data and emit updates to clients if needed
+
+  // });
+
+  socket.on('addMessage', async(data) => {
+    const { userid, message, roomId } = data;
+    const date = new Date();
+    //   console.log(date,'date');
+    const query = 'INSERT INTO messages (userid, room_id, message, date) VALUES ($1, $2, $3, $4)';
+    const values = [userid, roomId, message, date ];
+
+    pool.query(query, values, (error, result) => {
+      if (error) {
+        console.error('Error adding message:', error);
+      } else {
+        console.log('Message added successfully');
+        // Emit the newly added message to all clients in the room
+        // io.to(roomId).emit('messageAdded', { userid, roomId, message });
+      }
+    });
+
+    const messages = await fetchMessage(roomId);
+    socket.emit('fetchMessages', { messages });
+  });
+
+  // Clean up on client disconnect
+  socket.on('disconnect', () => {
+    console.log('A client disconnected.');
+    // Perform any necessary clean-up tasks
+  });
+});
+
+const fetchMessage = async (roomId) => {
+  try {
+    // Perform the database query
+    const result = await pool.query('SELECT * FROM messages WHERE room_id = $1', [roomId]);
+
+    // Extract the data from the query result
+    const messages = result.rows;
+
+    console.log(messages)
+
+    return messages;
+  } catch (error) {
+    console.error('Error occurred while fetching data from the database:', error);
+    throw error;
+  }
+};
+
+// app.post('/api/add_msg', (req, res) => {
+//   // Handle the API request
+//   // Process the data and emit an event to connected clients
+//   const {message, userid, } = req.body;
+//   console.log(message);
+
+//   io.emit('dataUpdate', data);
+
+//   res.json({ message: 'Update processed' });
+// });
+
+// app.listen(3000, () => {
+//     console.log("Server listening on port 3000");
+//   });
+  
+// Start the server
+httpServer.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
