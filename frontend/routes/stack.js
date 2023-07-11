@@ -8,6 +8,8 @@ import Post from "../screens/post/post";
 import PostDetails from "../screens/post/postDetails";  
 import Profile from "../screens/profile/profile";
 import chatRoom from "../screens/chat/chatRoom";
+import ViewProfile from "../screens/profile/viewProfile";
+import ProfilePost from "../screens/post/profilePost";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -43,7 +45,7 @@ function Stack() {
         />
        <Stack.Screen
           name="Profile"
-          component={Profile}
+          component={ViewProfile}
           options={{
             headerShown: true,
             headerTitle:"Post",
@@ -67,11 +69,11 @@ function Stack() {
       />
 
       <Stack.Screen
-          name="Setting"
-          component={Setting}
+          name="ProfilePost"
+          component={ProfilePost}
           options={{
-            headerShown: true,
-            headerTitle:"Edit Profile"
+            headerShown: false,
+            // headerTitle:"Add New Post"
           }}
         />
 

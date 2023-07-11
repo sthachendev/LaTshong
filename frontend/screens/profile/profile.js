@@ -1,67 +1,90 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Button, TouchableHighlight} from "react-native";
+import {  Button, TouchableHighlight} from "react-native";
+import jwtDecode from 'jwt-decode';
+import { useSelector } from 'react-redux';
+import UserInfo from "./userInfo";
+import { useState, useEffect } from "react";
+import { FlatList, Text, View, Dimensions  } from "react-native";
 import axios from "axios";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { useIsFocused } from "@react-navigation/native";
 import config from "../config";
-import { capitalizeWords } from "../fn";
+import { Image } from "react-native";
+import ImageViewer from "../custom/ImageViewer";
+import { TouchableOpacity } from "react-native";
 
-export default Profile = ({route, navigation}) => {
-const {userid} = route.params;
-  const [userInfo, setUserInfo] = useState('');
+export default Profile = ({navigation}) => {
+  const token = useSelector((state)=> state.token);
+  const userid = jwtDecode(token).userid; 
 
-  useEffect(() => {
-    fetchUserInfo();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imageUri, setImageUri] = useState('');
 
+  const handleImageClick = () => {
+    setModalVisible(true);
+  };
+  console.log(userid);
+
+  const [data, setData] = useState([]);
+  const isFocused = useIsFocused();
+  
+  useEffect(()=>{
+    if(isFocused)
+      getJobPost();
     return () => {
-      setUserInfo('')
-    }
+     setData('');
+    };
+  },[isFocused])
 
-  }, []);
-
-  const fetchUserInfo = async () => {
+  const getJobPost = async() => {
     try {
-      const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`);
-      setUserInfo(response.data);
-    console.log(response.data,'response');
+      const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`);
+      setData(res.data)
+      // console.log(res.data);
 
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
-
+  }
+  
+// Render each item of the data array
+const renderItem = ({ item }) => {
   return (
-    <View>
-          <Text>id: {userid}</Text>
+    <>
+    <View style={{ backgroundColor:'#fff', padding:10, borderRadius:0, marginVertical:5,
+    marginHorizontal:10, borderColor:'lightgrey', borderWidth:0.5, flex:1}}>
 
-      {userInfo ? (
-        <>
-          <Text>Name: {userInfo[0].name}</Text>
-          <Text>Email: {userInfo[0].email}</Text>
-          {/* Add more fields as needed */}
-        
-      <Button title="Message" onPress={() => navigation.navigate('ChatRoom', {touserid: userid, title: capitalizeWords(userInfo[0].name) })} />
-        </>
-      ) : (
-        <Text>Loading user information...</Text>
-      )}
+      <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
+
+      <TouchableOpacity onPress={()=>{
+        setImageUri(`${config.API_URL}/${item.images}`);
+        handleImageClick();
+      }} activeOpacity={1}>
+      <Image  source={{ uri : `${config.API_URL}/${item.images}`}}  
+          style={{ flex:1, aspectRatio:4/3, borderRadius:5 }}/>
+      </TouchableOpacity>
+
+      {item._desc && <Text style={{color:"grey", padding:10}}>{item._desc}</Text>}
     </View>
+    </>
   );
 };
 
-const styles = StyleSheet.create({
-    buttonContainer2: {
-    backgroundColor: "#fff",
-    borderBottomWidth:0.5,
-    borderBottomColor:"lightgrey",
-    padding: 10,
-    paddingHorizontal:15,
-    width: "100%",
-    display:"flex",
-    flexDirection:"row",
-    justifyContent:"space-between"
-    },
-    buttonText2: {
-    fontSize: 16,
-    fontWeight: "bold",
-    },
-})
+//aviod using anynomus fn
+const keyExtractor = (item) => item.id.toString();
+
+  return(
+    <>
+    <Button title="Add Cetificates" onPress={()=>navigation.navigate('ProfilePost', {userid})}></Button>
+
+  <FlatList
+    data={data}
+    ListHeaderComponent={<UserInfo userid={userid}/>}
+    renderItem={renderItem}
+    keyExtractor={keyExtractor}
+    maxToRenderPerBatch={3} // Adjust this value based on your needs
+    getItemLayout={(data, index) => (
+      {length: 500, offset: 500 * index, index}
+    )}
+  />
+      </>
+  )
+}

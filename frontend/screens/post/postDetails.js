@@ -6,7 +6,7 @@ import { capitalizeWords, getTimeDifference } from "../fn";
 import { useNavigation } from "@react-navigation/native";
 
 export default PostDetails = ({ route }) => {
-  const { id } = route.params;
+  const { id } = route.params;//post id
   const [data, setData] = useState('');
   const [userData, setUserData] = useState('');
 
@@ -24,7 +24,7 @@ export default PostDetails = ({ route }) => {
   }, []);
 
 const getJobPost = async () => {
-  try {
+  try {//post id
     const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);
     setData(res.data);
     const applicants = res.data[0].applicants;
@@ -127,24 +127,29 @@ const renderUserItem = ({ item }) => {
       <Text style={{fontSize:18, letterSpacing:1, padding:10}}>Applicants</Text>
       </View>
 
-      <View style={{backgroundColor:"#fff", display:"flex", flexDirection:"row", paddingBottom:10}}>
-     <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'all' ? '#3a348e' : '#fff'}]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("all")}>
-        <Text style={[styles.btnText, { color: selectedOption === 'all' ? '#fff': 'grey' }]}>
+      <View style={{backgroundColor:"lightgrey", display:"flex", flexDirection:"row", padding:10}}>
+     <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'all' ? '#fff' : 'lightgrey',
+      elevation: selectedOption === 'all' ? 2: 0}]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("all")}>
+        <Text style={styles.btnText}>
         All
         </Text>
       </TouchableHighlight>
-      <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'p' ? '#3a348e' : '#fff' }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("p")}>
-        <Text style={[styles.btnText, { color: selectedOption === 'p' ? '#fff': 'grey' }]}>
+      
+      <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'p' ? '#fff' : 'lightgrey',
+       elevation: selectedOption === 'p' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("p")}>
+        <Text style={styles.btnText}>
         Pending
         </Text>
       </TouchableHighlight>
-      <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'a' ? '#3a348e' : '#fff' }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("a")}>
-        <Text style={[styles.btnText, { color: selectedOption === 'a' ? '#fff': 'grey' }]}>
+      <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'a' ? '#fff' : 'lightgrey',
+       elevation: selectedOption === 'a' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("a")}>
+        <Text style={styles.btnText}>
         Accept
         </Text>
       </TouchableHighlight>
-      <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'r' ? '#3a348e' : '#fff' }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("r")}>
-        <Text style={[styles.btnText, { color: selectedOption === 'r' ? '#fff': 'grey' }]}>
+      <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'r' ? '#fff' : 'lightgrey',
+       elevation: selectedOption === 'r' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("r")}>
+        <Text style={styles.btnText}>
         Decline
         </Text>
       </TouchableHighlight>
@@ -164,11 +169,11 @@ const renderUserItem = ({ item }) => {
 
 const styles = StyleSheet.create({
     btn:{ 
-    borderColor:'#000',
-    borderWidth:0.25, 
-    borderRadius:5, 
-    flex:1,
-    marginHorizontal:5
+    // borderColor:'#000',
+    // borderWidth:0.25, 
+    borderRadius:20, 
+    flex:.25,
+    marginHorizontal:2.5,
     },
     btn2:{ 
     borderColor:'#3a348e',
@@ -180,6 +185,7 @@ const styles = StyleSheet.create({
     btnText:{
     paddingVertical:10,  
     textAlign:"center", 
+    color: "#000"
     },
     itemContainer: {
         backgroundColor: '#fff',

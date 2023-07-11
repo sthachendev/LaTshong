@@ -9,7 +9,6 @@ import config from '../config';
 import { useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
 import axios from 'axios';
-import { TouchableHighlight } from 'react-native';
 
 const Post = () => {
  
@@ -93,21 +92,19 @@ const handleSubmit = async() => {
     >
       {/* header */}
       <View style={styles.buttonContainer2}>
-        <TouchableHighlight onPress={handleCancel} style={{borderRadius:15}}
-          underlayColor="#CCCCCC" 
+        <TouchableOpacity onPress={handleCancel} style={{borderRadius:15}}
           >
         <MaterialIcons name="close" size={24} color="black" />
-        </TouchableHighlight>
+        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} activeOpacity={1}>
+        <TouchableOpacity activeOpacity={1}>
           <Text style={styles.buttonText2}>New Post</Text>
         </TouchableOpacity>
 
-        <TouchableHighlight onPress={handleSubmit} style={{borderRadius:15}}
-          underlayColor="#CCCCCC" 
+        <TouchableOpacity onPress={handleSubmit} style={{borderRadius:15}}
           >
         <MaterialIcons name="check" size={24} color="#0079FF" />
-        </TouchableHighlight>
+        </TouchableOpacity>
       </View>
 
       <TextInput

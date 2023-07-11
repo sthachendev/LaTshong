@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(255) NOT NULL,
     --role em for employee and js for job seeker
     imageurl TEXT,
-    bio TEXT
+    bio TEXT,
+    date TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS job_posts (
@@ -49,4 +50,13 @@ CREATE TABLE IF NOT EXISTS messages (
     --t for text
     --a for attachement
     date TIMESTAMP NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+    id SERIAL PRIMARY KEY,
+    _desc TEXT,
+    images TEXT[] DEFAULT '{}',
+    media_type CHAR(1), 
+    postby INTEGER NOT NULL,
+    postdate TIMESTAMP
 );

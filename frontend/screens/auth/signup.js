@@ -1,36 +1,17 @@
 import React, { useState } from "react";
-import {
-  Image,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-} from "react-native";
-
+import { TouchableOpacity, View, StyleSheet } from "react-native";
 import { TextInput ,Text} from "react-native-paper";
-// import { SafeAreaView } from "react-native-safe-area-context";
 import { SafeAreaView } from "react-native";
-import { useNavigation } from '@react-navigation/native';
-import { useSelector, useDispatch } from 'react-redux';
-import { setToken, clearToken, setRole, clearRole } from '../../reducers'; 
 import config from '../config';
 import axios from "axios";
-import jwtDecode from 'jwt-decode';
 
-export default function Login() {
+export default function Login({navigation}) {
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [eye, setEye] = useState("eye");
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
-
-  const navigation = useNavigation();
-
-  const dispatch = useDispatch();
-
-  // const handleSetToken = () => {
-  //   const newToken = 'YOUR_JWT_TOKEN'; // Replace with your actual token value
-  //   dispatch(setToken(newToken));
-  // };
 
   const handleLogin = async() => {
     try {
@@ -39,9 +20,6 @@ export default function Login() {
         password,
       });
       console.log(response.data);
-      console.log(jwtDecode(response.data.token).role)
-      dispatch(setToken(response.data.token));
-      dispatch(setRole(jwtDecode(response.data.token).role))
     }catch (error) {
       console.error(error);
     }
@@ -164,7 +142,6 @@ const styles = StyleSheet.create({
     backgroundColor:'white'
   },
   button: {
-    // width: '90%',
     width: 270,
     backgroundColor: '#4942E4',
     paddingVertical: 13,

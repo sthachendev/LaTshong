@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useLayoutEffect} from 'react';
-import { View, Text, Button, TextInput, TouchableOpacity, FlatList} from 'react-native';
+import React, { useEffect, useState, useLayoutEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, FlatList} from 'react-native';
 import io from 'socket.io-client';
 import config from '../config';
 import { useSelector } from 'react-redux';
@@ -9,34 +9,33 @@ import { isToday, isSameDate, getTime } from '../fn';
 
 export default ChatRoom = ({route, navigation}) => {
 
-    const token = useSelector((state) => state.token);
-    const userid = jwtDecode(token).userid;
+  const token = useSelector((state) => state.token);
+  const userid = jwtDecode(token).userid;
 
-    const {touserid} = route.params;
+  const {touserid} = route.params;
 
-    useLayoutEffect(() => {
-      navigation.setOptions({ title: route.params.title });
-    }, [navigation, route.params.title]);
+  useLayoutEffect(() => {
+    navigation.setOptions({ title: route.params.title });
+  }, [navigation, route.params.title]);
 
-    // Create the Socket.IO connection
-    const socket = io(config.API_URL, {
-        auth: {
-        token: token, // Set the actual token retrieved from Redux
-        },
+  // Create the Socket.IO connection
+  const socket = io(config.API_URL, {
+    auth: {
+    token: token, // Set the actual token retrieved from Redux
+    },
     });
 
-    //user input
-    const [message, setMessage] = useState('');
-    //fetch messages
-    const [messages, setMessages] = useState('');
-    const [roomId, setRoomId] = useState(null);
+  //user input
+  const [message, setMessage] = useState('');
+  //fetch messages
+  const [messages, setMessages] = useState('');
+  const [roomId, setRoomId] = useState(null);
     
   useEffect(() => {
     // Connect to Socket.IO when the component mounts
     socket.connect();
-
+    //send uid to check for chat room id
     socket.emit('joinChat', { user1:userid, user2:touserid});
-    // console.log('join chat');
 
     // Listen for the 'roomJoined' event to receive the room ID from the backend
     socket.on('roomJoined', (data) => {
@@ -47,7 +46,26 @@ export default ChatRoom = ({route, navigation}) => {
 
       socket.on('fetchMessages', (data) => {
         const { messages} = data;
-        setMessages(messages)
+        setMessages(messages.reverse());
+        // scrollToBottom();
+      });    
+
+      socket.on('messageAdded', (data) => {
+        const { id, userid, roomId, message, date} = data;
+
+        setMessages((prevMessages) => [
+          {
+            id,
+            userid,
+            roomId,
+            message,
+            date
+          },
+          ...prevMessages
+        ]);
+        
+        console.log('data',data)
+        // scrollToBottom();
       });
 
     // Clean up the connection and event subscriptions when the component unmounts
@@ -66,109 +84,113 @@ export default ChatRoom = ({route, navigation}) => {
       socket.emit('addMessage', { message, userid, roomId });
       setMessage('');
     }
-    
   };
 
   return (
     <>
-      <View style={{flex:1, backgroundColor:'#fff'}}>
-      <Text>
-        To user id: {touserid} from {userid}
-      </Text>
-      <Text>
-        Joined chat room with room ID: {roomId}
-      </Text>
+    <View style={{flex:1, backgroundColor:'#fff'}}>
+    {/* <Text>
+      To user id: {touserid} from {userid}
+    </Text>
+    <Text>
+      Joined chat room with room ID: {roomId}
+    </Text> */}
 
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item, index}) => 
-        {
-          const msg = item;
+    <FlatList
+      // ref={flatListRef}
+      data={messages}
+      keyExtractor={(item) => item.id.toString()}
+      initialNumToRender={10}
+      inverted 
+      renderItem={({ item, index}) => 
+      {
+        const msg = item;
 
-          // Get the current message date
-          const messageDate = new Date(msg.date);
+      // Get the current message date
+      const messageDate = new Date(msg.date);
 
-          // Get the previous message date
-          const previousDate =
-            index > 0 ? new Date(messages[index - 1].date) : null;
+      // Get the previous message date
+      const previousDate =
+        index > 0 ? new Date(messages[index - 1].date) : null;
 
-          // Determine if the current message is from today
-          const isCurrentDayToday = isToday(messageDate);
+      // Determine if the current message is from today
+      const isCurrentDayToday = isToday(messageDate);
 
-          // Determine if the previous message is from today
-          const isPreviousDayToday = previousDate ? isToday(previousDate) : false;
+      // Determine if the previous message is from today
+      const isPreviousDayToday = previousDate ? isToday(previousDate) : false;
 
-          // Initialize the messageDateLabel to store the label for the current message date
-          let messageDateLabel = "";
+      // Initialize the messageDateLabel to store the label for the current message date
+      let messageDateLabel = "";
 
-          // Determine the messageDateLabel based on the message date and the previous message date
-          if (isCurrentDayToday && !isPreviousDayToday) {
-            messageDateLabel = "Today";
-          } else if (!isCurrentDayToday) {
-            messageDateLabel = messageDate.toDateString();
-          }
+      // Determine the messageDateLabel based on the message date and the previous message date
+      if (isCurrentDayToday && !isPreviousDayToday) {
+        messageDateLabel = "Today";
+      } else if (!isCurrentDayToday) {
+        messageDateLabel = messageDate.toDateString();
+      }
 
-          // Determine if it's the first message of the date
-          const isFirstMessageOfDate = index === 0 || !isSameDate(messageDate, previousDate);
+      // Determine if it's the last message of the date
+      const isLastMessageOfDate =
+        index === messages.length - 1 ||
+        !isSameDate(messageDate, new Date(messages[index + 1].date));
 
-          return(
-            <View key={index}>
+      return(
+        <View key={index}>
 
-            {isFirstMessageOfDate && (
-              <Text
-                style={{
-                  textAlign: "center",
-                  backgroundColor:'#F8F8F8'
-                }}
-              >
-                {messageDateLabel}
-              </Text>
-            )}
-
-          {/* message box */}
-          <View 
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            alignSelf: msg.userid === userid ? "flex-end" : "flex-start",
-            margin: 10,
-            marginTop:10,
-            marginBottom: 5,
-          }}
-          >
-            <TouchableOpacity
+        {isLastMessageOfDate && (
+          <Text
             style={{
-              backgroundColor: msg.userid === userid ? '#E0E0E0' : '#F0F0F0',
-              borderRadius: 20,
-              borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
-              borderBottomRightRadius: msg.userid === userid ? 0 : 20,
-              padding:10,
-              alignSelf:"flex-start",
-              maxWidth: "85%",
+              textAlign: "center",
+              backgroundColor:'#F8F8F8'
             }}
-            activeOpacity={0.7}
           >
-            <Text>{msg.message}</Text>
-              
-          </TouchableOpacity>
-        
-          </View>
-
-          {/* date */}
-          <Text style={{ color: "grey", 
-          textAlign: msg.userid === userid ? "right" : "left", fontSize:11,
-          paddingLeft: msg.userid === userid ? 0 : 10,
-          paddingRight: msg.userid === userid ? 10 : 0,
-          }}>
-            {getTime(msg.date)}
+            {messageDateLabel ? messageDateLabel : 'Today'}
           </Text>
+        )}
 
-          </View>
-          )
-              
-            }}/>
-      </View>
+        {/* message box */}
+        <View 
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          alignSelf: msg.userid === userid ? "flex-end" : "flex-start",
+          margin: 10,
+          marginTop:10,
+          marginBottom: 5,
+        }}
+        >
+          <TouchableOpacity
+          style={{
+            backgroundColor: msg.userid === userid ? '#E0E0E0' : '#F0F0F0',
+            borderRadius: 20,
+            borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
+            borderBottomRightRadius: msg.userid === userid ? 0 : 20,
+            padding:10,
+            alignSelf:"flex-start",
+            maxWidth: "85%",
+          }}
+          activeOpacity={0.7}
+        >
+          <Text>{msg.message}</Text>
+            
+        </TouchableOpacity>
+      
+        </View>
+
+        {/* date */}
+        <Text style={{ color: "grey", 
+        textAlign: msg.userid === userid ? "right" : "left", fontSize:11,
+        paddingLeft: msg.userid === userid ? 0 : 10,
+        paddingRight: msg.userid === userid ? 10 : 0,
+        }}>
+          {getTime(msg.date)}
+        </Text>
+
+        </View>
+        )
+            
+          }}/>
+    </View>
 
     <View
     style={{

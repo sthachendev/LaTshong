@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import jwtDecode from 'jwt-decode';
 import axios from 'axios';
 import config from '../config';
-import Posts from './posts';
+import Posts from '../post/posts';
 
 export default Home = () => {
 
@@ -25,6 +25,11 @@ export default Home = () => {
   useEffect(()=>{
     if(isFocused)
       getJobPost();
+
+    return () => {
+     setData('');
+    };
+    
   },[isFocused])
 
   const getJobPost = async() => {

@@ -86,11 +86,13 @@ function BottomTab({ navigation }) {
         headerStyle: {},
         tabBarIcon: ({ color, size }) => (
             <MaterialIcons
-              name="chat"
+              name="mail"
               size={size}
               color={color}
             />
         ),
+        tabBarLabel:"Message",
+        headerTitle:"Messages"
       })}
     />
     <Tab.Screen
@@ -101,12 +103,6 @@ function BottomTab({ navigation }) {
           <MaterialIcons name="person" size={size} color={color} />
         ),
         tabBarLabel:'Profile',
-        // headerLeft: () => (
-        //   <TouchableOpacity
-        //     style={{ marginLeft: 16 }}
-        //     onPress={() => navigation.toggleDrawer()}
-        //   ></TouchableOpacity>
-        // ),
         headerShown:false
       })}
     />

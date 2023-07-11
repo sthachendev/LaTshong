@@ -64,6 +64,10 @@ app.use((req, res, next) => {
 app.use(express.json()); // add this line to use express.json() middleware
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files from the "uploads" directory
+//this ll make user accesss the uploaded files, 1.3 hr finding this
+app.use("/uploads", express.static("uploads"));
+
 // Read the table schema file
 const tableSchema = fs.readFileSync('./tables.sql', 'utf8');
 
@@ -238,7 +242,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = function (req, file, cb) {
-  const allowedMimes = ["image/jpeg", "image/png", "image/gif"];
+  const allowedMimes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -257,41 +261,46 @@ const upload = multer({
     fileSize: 1024 * 1024 * 20, // 20 MB
   },
   fileFilter: fileFilter,
-}).fields([{ name: "images", maxCount: 20 }]);
+}).fields([{ name: "image", maxCount: 20 }]);
 
-app.post("/api/post", (req, res) => {
-  upload(req, res, async function (err) {
-    if (err) {
-      // An error occurred when uploading
-      console.log(err);
-      return res.status(400).json({ message: "Error uploading file." });
-    }
+//upload post
+app.patch('/api/post', upload, async (req, res) => {
+  try {
+    const { description, postby } = req.body;
 
-    // Everything went fine
-    console.log(req.file);
-    try {
-      const { description, location, postby, posttype, status, 
-        applicants, accepted_applicants, rejected_applicants } = req.body;
-      const postdate = new Date();
-      console.log(req.body);
+    const media_type = 'p';
+    const postdate = new Date();
+    console.log(req.body);
 
-      // const filepaths = req.files.map(file => file.path); // get the image paths
-      const filepaths = req.files["images"].map((file) => file.path);
+    const files = req.files.image;
+    console.log(files)
+    const filepaths = files.map(file => file.path);
 
-      // insert the post data into the database
-      const { rows } = await pool.query(
-        `INSERT INTO posts 
-        (description, location, postby, posttype, postdate, status, applicants, accepted_applicants, rejected_applicants, images) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-        [description, location, postby, posttype, postdate, status, applicants, accepted_applicants, rejected_applicants, filepaths]
-      );
+    // insert the post data into the database
+    const { rows } = await pool.query(
+      `INSERT INTO posts 
+      (_desc, postby, media_type, images, postdate) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [description, postby, media_type, filepaths, postdate]
+    );
 
-      res.status(201).json(rows[0]);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server Error" });
-    }
-  });
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
 });
+
+//all posts, userid
+app.get("/api/get_post/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query("SELECT * FROM posts WHERE postby = $1", [id]);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 
 app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
     try {
@@ -434,6 +443,7 @@ io.on('connection', (socket) => {
   
   socket.on('joinChat', async (data) => {
     const { user1, user2 } = data;
+    console.log('joinChat');
 
     let roomId;
 
@@ -487,34 +497,31 @@ io.on('connection', (socket) => {
     socket.join(roomId);
   });
 
-  // socket.on('message', (data) => {
-  //   const date = new Date();
-  //   console.log(date,'date');
-
-  //   console.log('data from frontend', data);
-  //   // Process the data and emit updates to clients if needed
-
-  // });
-
   socket.on('addMessage', async(data) => {
+    console.log('addMessage');
+
     const { userid, message, roomId } = data;
+    // include message_type
+
     const date = new Date();
     //   console.log(date,'date');
-    const query = 'INSERT INTO messages (userid, room_id, message, date) VALUES ($1, $2, $3, $4)';
+    const query = 'INSERT INTO messages (userid, room_id, message, date) VALUES ($1, $2, $3, $4) RETURNING id';
     const values = [userid, roomId, message, date ];
 
     pool.query(query, values, (error, result) => {
       if (error) {
         console.error('Error adding message:', error);
       } else {
+        const id = result.rows[0].id; // Get the ID of the newly added message
+
         console.log('Message added successfully');
         // Emit the newly added message to all clients in the room
-        // io.to(roomId).emit('messageAdded', { userid, roomId, message });
+        io.to(roomId).emit('messageAdded', { id, userid, roomId, message, date });
+
       }
     });
 
-    const messages = await fetchMessage(roomId);
-    socket.emit('fetchMessages', { messages });
+   
   });
 
   // Clean up on client disconnect
@@ -525,6 +532,7 @@ io.on('connection', (socket) => {
 });
 
 const fetchMessage = async (roomId) => {
+  console.log('fetchMessage');
   try {
     // Perform the database query
     const result = await pool.query('SELECT * FROM messages WHERE room_id = $1', [roomId]);
@@ -541,16 +549,42 @@ const fetchMessage = async (roomId) => {
   }
 };
 
-// app.post('/api/add_msg', (req, res) => {
-//   // Handle the API request
-//   // Process the data and emit an event to connected clients
-//   const {message, userid, } = req.body;
-//   console.log(message);
+// //user info
+// app.get("/api/chat_rooms/:id", async (req, res) => {
+//   const id = req.params.id;
+//   try {
 
-//   io.emit('dataUpdate', data);
+//     const query = 'SELECT * FROM chat_rooms WHERE user1 = $1 OR user2 = $1';
+//     const value = [id];
+//     const { rows } = await pool.query(query, value);
 
-//   res.json({ message: 'Update processed' });
-// });
+//     res.json(rows);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// })
+
+//user info
+app.get("/api/chat_rooms/:id", async (req, res) => {
+  const id = req.params.id;//userid
+  try {
+    const query = `
+      SELECT chat_rooms.*, 
+             u1.name AS user1_name,
+             u2.name AS user2_name
+      FROM chat_rooms
+      INNER JOIN users AS u1 ON chat_rooms.user1 = u1.id
+      INNER JOIN users AS u2 ON chat_rooms.user2 = u2.id
+      WHERE chat_rooms.user1 = $1 OR chat_rooms.user2 = $1
+    `;
+    const values = [id];
+    const { rows } = await pool.query(query, values);
+    
+    res.json(rows);
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 // app.listen(3000, () => {
 //     console.log("Server listening on port 3000");
