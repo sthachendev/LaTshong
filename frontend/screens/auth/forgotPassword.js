@@ -16,7 +16,8 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { TouchableHighlight } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { ScrollView } from "react-native";
-export default function Login({navigation}) {
+
+export default function ForgotPassword({navigation}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [hide, setHide] = useState(true);
@@ -81,60 +82,42 @@ export default function Login({navigation}) {
 
        {/* header */}
         <TouchableHighlight onPress={()=>navigation.goBack()} underlayColor='#fff'
-        style={{marginTop:10, padding:10, }}
+        style={{marginTop:15, padding:10, }}
           >
         <MaterialIcons name="arrow-back" size={24} color="#152370" />
         </TouchableHighlight>
 
- {/* login components */}
-  <View style={styles.container}>
-    
-    <View style={{alignItems:'center'}}>
-    <Image style={{ width: 108, height: 105, }} source={require("../../assets/images/gov_logo.jpg")} />
-    {/* <View style={{backgroundColor:"lightgrey", width: 70, height: 70, borderRadius:45}}/> */}
-
-    <Text style={{
-      textAlign: 'center',
-      fontWeight:'200',
-      fontSize: 25,
-      marginTop:10
-      }}>བཟོ་གྲྭ་ཚོང་ལས་དང་ལཱ་གཡོག་ལྷནཁག།</Text>
-
-
-      <Text style={{
-      textAlign: 'center',
-      fontWeight:'200',
-      fontSize: 20,
-      marginTop:10
-      }}>Department of Labour</Text>
-
-    </View>
-
-    {/* kuzuzangpo */}
+ {/* kuzuzangpo */}
     <Text style={{
         textAlign: 'center',
         fontWeight: 'bold',
         color:"#152370",
         letterSpacing: 4,
         fontSize: 25,
-        // paddingVertical:10,
-        marginTop:20
-      }}>LaTshong</Text>
+        paddingVertical:10,
+        marginBottom:30
+      }}>Forgotpassowrwd</Text>
 
+ {/* login components */}
+  <View style={styles.container}>
+    
+    <View style={{alignItems:'center', marginTop:30}}>
+    {/* <Image style={{ width: 100, height: 50 }} source={require("../../assets/icon.png")} /> */}
+    <View style={{backgroundColor:"lightgrey", width: 70, height: 70, borderRadius:45}}/>
+    </View>
 
-    <View style={{marginTop:30, marginBottom:20}}>
+    <View style={{marginTop:40, marginBottom:30}}>
       <Text style={{
-        // textAlign: 'center',
-        // fontWeight:'100',
-        // fontSize: 20,
-        color:'grey'
+        textAlign: 'center',
+        fontWeight:'200',
+        fontSize: 20,
         }}>Login to your account</Text>
       </View>  
 
         {message !== "" && message && 
         <>
         <View style={{backgroundColor:'rgba(255, 0, 0, 0.1)', 
-          borderRadius:2, padding:10, marginBottom:10}}>
+          borderRadius:2, padding:10, marginBottom:20}}>
         <Text style={{color:'rgba(255, 0, 0, 0.6)', fontWeight:"300", textAlign:"center"}}>{message}</Text>
         </View>
         </>}
@@ -195,7 +178,7 @@ const styles = StyleSheet.create({
     paddingHorizontal:40,
     backgroundColor:'#fff',
     borderTopEndRadius:50,borderTopStartRadius:50,
-    // elevation:5
+    elevation:5
   },
   button: {
     width: '100%',

@@ -3,6 +3,7 @@
 -- users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
+    cid VARCHAR(11),
     email VARCHAR(255) NOT NULL,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -10,19 +11,23 @@ CREATE TABLE IF NOT EXISTS users (
     --role em for employee and js for job seeker
     imageurl TEXT,
     bio TEXT,
-    date TIMESTAMP
+    created_on TIMESTAMP NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS job_posts (
     id SERIAL PRIMARY KEY,
     job_title VARCHAR(100),
     job_description TEXT,
+    nature VARCHAR(100),
+    vacancy_no VARCHAR(100),
     job_requirements TEXT,
     job_salary VARCHAR(100),
+    location_ VARCHAR(100),
+    remark TEXT,
     postby INTEGER NOT NULL,
     postdate TIMESTAMP, --
     location JSON, 
-    status CHAR(1), ---a accept, r reject, d dispute
+    status CHAR(1), ---o open, c close
     applicants INTEGER[] DEFAULT '{}',
     accepted_applicants INTEGER[] DEFAULT '{}',
     rejected_applicants INTEGER[] DEFAULT '{}'

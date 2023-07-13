@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Image } from "react-native";
 import axios from "axios";
 import config from "../config";
 import { capitalizeWords } from "../fn";
+import { TouchableOpacity } from "react-native";
+import ImageViewer from "../custom/ImageViewer";
 
 export default UserInfo = ({userid, navigation}) => {
 
     const [userInfo, setUserInfo] = useState('');
 
+  const [modalVisible, setModalVisible] = useState(false);
+    const [imageUri, setImageUri] = useState('');
+
+    const handleImageClick = () => {
+      setModalVisible(true);
+    };
     useEffect(() => {
       fetchUserInfo();
   
@@ -33,14 +41,23 @@ export default UserInfo = ({userid, navigation}) => {
       {userInfo ? (
         <View style={{ backgroundColor:'#fff', padding:10, borderTopLeftRadius:15,borderTopRightRadius:15, borderBottomLeftRadius:0,
         borderBottomRightRadius:0, borderColor:'lightgrey', borderWidth:0.5}}>
+          <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
             <View style={{display:'flex', flexDirection:"row", justifyContent:"center",}} >
           {/* profile image */}
-          <View style={{width:"100%", height:120, backgroundColor:"lightblue", position:"absolute",
-           borderTopLeftRadius:15, borderTopRightRadius:15}}/>
-
-          <View style={{width:120, height:120, backgroundColor:"blue", borderRadius:60, borderColor:"#fff", borderWidth:2, marginTop:60}}/>
-
+      
+          <View 
+           style={{width:"100%", height:120, backgroundColor:"lightblue", position:"absolute",
+           borderTopLeftRadius:15, borderTopRightRadius:15}} onpress
+          />
+          
+          <TouchableOpacity onPress={()=>{ setImageUri(`${config.API_URL}/uploads/123.png`); handleImageClick();}} activeOpacity={1}
+          >
+          <Image  source={{ uri : `${config.API_URL}/uploads/123.png`}}  
+          style={{width:120, height:120, backgroundColor:"blue", borderRadius:60, borderColor:"#fff", borderWidth:2, marginTop:60}}
+         />
+          </TouchableOpacity>
+      
       {/* <Button title="Message" onPress={() => navigation.navigate('ChatRoom', {touserid: userid, title: capitalizeWords(userInfo[0].name) })} /> */}
         </View>
         <View style={{flexDirection:"column",}}>

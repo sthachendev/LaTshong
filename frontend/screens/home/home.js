@@ -7,6 +7,7 @@ import jwtDecode from 'jwt-decode';
 import axios from 'axios';
 import config from '../config';
 import Posts from '../post/posts';
+import Spinner from '../custom/Spinner';
 
 export default Home = () => {
 
@@ -42,30 +43,33 @@ export default Home = () => {
     }
   }
 
-  const handleApply = async(postid) => {
-    try {
-      const res = await axios.put(`${config.API_URL}/api/update_job_post`, {
-        userid: jwtDecode(token).userid, 
-        postid:postid
-      });
-      // console.log(res.data);
-      console.log('update_job_post');
-      console.log(res.data);
-    } catch (error) {
-      console.error(error)
-    }
+
+  if (!data) {
+    return <Spinner/>;
   }
 
  // Render each item of the data array
-const renderItem = ({ item }) => <Posts item={item} role={role} navigation={navigation} handleApply={handleApply}/>;
+  const renderItem = ({ item }) => <Posts item={item} role={role} navigation={navigation}/>;
 
-//aviod using anynomus fn
-const keyExtractor = (item) => item.id.toString();
+  //aviod using anynomus fn
+  const keyExtractor = (item) => item.id.toString();
 
   return (
     <View style={styles.container}>
+     
+     {role === null && <>
+        <View style={{paddingVertical:20, backgroundColor:'#fff'}}>
+          <TouchableHighlight  style={{backgroundColor:"#1E319D", marginHorizontal:20, 
+          paddingVertical:10, paddingHorizontal:15, borderRadius:20, elevation:2}} underlayColor='#1E319D'
+          onPress={()=>navigation.navigate('Login')}>
+          <Text style={{color:"#fff", fontWeight:"500", textAlign:"center"}}>Log In</Text>
+          </TouchableHighlight>
+        </View>
+      </>}
+      
       <FlatList
       data={data}
+      // ListFooterComponent={()=>{return(<Text style={{textAlign:'center', color:'grey'}}>{'<>'}</Text>)}}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       maxToRenderPerBatch={3} // Adjust this value based on your needs
@@ -81,7 +85,7 @@ const keyExtractor = (item) => item.id.toString();
       onPress={handlePostClick}
       activeOpacity={.8}
     >
-      <MaterialIcons name="add" size={20} color="white" />
+      <MaterialIcons name="add" size={25} color="white" />
     </TouchableOpacity>}
     </View>
   );
@@ -98,8 +102,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     right: 20,
-    backgroundColor: '#3a348e',
-    borderRadius: 15,
+    backgroundColor: '#1E319D',
+    borderRadius: 25,
     padding: 12,
     elevation: 4, // Add elevation for shadow effect
     shadowColor: 'black', // Shadow color

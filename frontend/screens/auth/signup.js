@@ -1,154 +1,277 @@
-import React, { useState } from "react";
-import { TouchableOpacity, View, StyleSheet } from "react-native";
-import { TextInput ,Text} from "react-native-paper";
-import { SafeAreaView } from "react-native";
-import config from '../config';
+import React, { useEffect, useState } from "react";
+import {
+  ToastAndroid,  TouchableOpacity,
+  View,
+  StyleSheet,
+} from "react-native";
+import { TextInput ,Text, Switch, Checkbox } from "react-native-paper";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { TouchableHighlight } from "react-native";
+import { ScrollView } from "react-native";
+import { validateInput, validateInputContainNumOnly } from "../fn";
 import axios from "axios";
+import config from "../config";
 
-export default function Login({navigation}) {
+export default function Signup({navigation}) {
+
+  const [cid, setCid] = useState("");
+
+  const [firsName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [eye, setEye] = useState("eye");
-  const [isPasswordSecure, setIsPasswordSecure] = useState(true);
-  const [isFocused, setIsFocused] = useState(false);
 
-  const handleLogin = async() => {
-    try {
-      const response = await axios.post(`${config.API_URL}/api/login`, {
-        email,
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [role, setRole] = useState("js");
+
+  const [hide, setHide] = useState(false);
+  const [isPasswordSecure, setIsPasswordSecure] = useState(true);
+
+  const [message, setMessage] = useState("");
+  
+  const [isToggled, setToggle] = useState(true);
+  const [checked, setChecked] = useState(false);
+
+  const [validOtp, setValidOtp] = useState("");
+  
+  const handleToggle = () => {
+    setToggle(!isToggled);
+
+    if(!isToggled){
+      setRole('js');
+      console.log('js')
+    }else{
+      setRole('em');
+    }
+  };
+
+  const handleNext = () => {
+
+    setMessage("");
+    
+    const name = firsName + lastName;
+
+   if (email.trim() !== "" && validateInput(name.trim()) &&
+    password.trim() !== "" && confirmPassword.trim() && checked === true 
+    && validateInputContainNumOnly(cid)){
+      console.log('ok')
+
+      const data =  {
+        cid,
+        email : email.trim(),
+        name: firsName+' '+lastName,
         password,
+        role
+      }
+      axios.post(`${config.API_URL}/api/getOTP`, { email })
+
+      .then(response => {
+        if (response.data.success){
+          navigation.navigate('SignupStep2', {email, validOtp:response.data.otp, data});
+        }
+        console.log('otp',response.data.otp)
+      })
+      .catch(error => {
+        console.log(error)
       });
-      console.log(response.data);
-    }catch (error) {
-      console.error(error);
+      
+    }else if((email.trim() === "" || name.trim() === "" ||
+    password.trim() === "" || confirmPassword.trim() === "")){
+      setMessage("Fill up all the fields!")
+    }else if (!validateInputContainNumOnly(cid)){
+      setMessage("Invalid citizen ID")
+    }else if (firsName === ""){
+      setMessage("Enter your name!")
+    }else if (!validateInput(name.trim())){
+      setMessage("Invalid characters in name, specials characters are not allowed!")
+    }else if (password !== "" && password !== confirmPassword){
+      setMessage("Password doesn't match, check the password!")
+    }else if ( checked !== true){
+      setMessage("Uncheck checkbox!")
     }
   };
  
-  const passwordVisibility = () => {
-    if (isPasswordSecure) {
-      setIsPasswordSecure(false);
-      setEye("eye-off");
-    } else {
-      setIsPasswordSecure(true);
-      setEye("eye");
+  const handleShowPassword = () =>{
+    if(isPasswordSecure){
+      setHide(true);
+      setIsPasswordSecure(false)
+    }else{
+      setHide(false);
+      setIsPasswordSecure(true)
     }
   }
 
-  const handleSignupBtn = () => {
-    navigation.navigate("Signup")
-  }
-
-  const handleForgotPasswordBtn = () => {
-    navigation.navigate("ForgotPassword");
-  }
-
   return (
-    <SafeAreaView style={{backgroundColor:'#3a348e', flex:1}}>
-    <View style={{ height:150}}>
+    <ScrollView style={{backgroundColor:'#fff', flex:1}}>
+      {/* <Image source={require('../../assets/wave.png')} style={{position:"absolute", width:'90%', height:180}}/> */}
+
+       {/* header */}
+        <TouchableHighlight onPress={()=>navigation.goBack()} underlayColor='#fff'
+        style={{marginTop:10, padding:10, }}
+          >
+        <MaterialIcons name="arrow-back" size={24} color="#152370" />
+        </TouchableHighlight>
+
+ {/* kuzuzangpo */}
     <Text style={{
         textAlign: 'center',
         fontWeight: 'bold',
-        color:"#fff",
+        color:"#152370",
         letterSpacing: 4,
         fontSize: 25,
-        paddingTop:60
-      }}>KUZUZANGPO LA!</Text>
-    </View>
-      <View style={styles.container}>
+        paddingBottom:10,
+      }}>LaTshong</Text>
+
+ {/* login components */}
+  <View style={styles.container}>
     
-    <View>
-  
-    <View style={{alignItems:'center', marginTop:50}}>
-    {/* <Image style={{ width: 100, height: 50 }} source={require("../../assets/icon.png")} /> */}
-    </View>
-    <TouchableOpacity style={{marginTop:40, marginBottom:30}}>
+      <View style={{marginHorizontal:10, marginBottom:10}}>
       <Text style={{
-        textAlign: 'center',
-        fontWeight:'200',
-        fontSize: 20,
-        }}>Login to your account</Text>
-      </TouchableOpacity>  
+        // textAlign: 'center',
+        // fontWeight:'100',
+        // fontSize: 20,
+        color:'grey'
+        }}>Sign up to create an account</Text>
+      </View>  
+
+        {message !== "" && message && 
+        <>
+        <View style={{backgroundColor:'rgba(255, 0, 0, 0.1)', 
+          borderRadius:2, padding:10,}}>
+        <Text style={{color:'rgba(255, 0, 0, 0.5)', fontWeight:"300", textAlign:"center"}}>{message}</Text>
+        </View>
+        </>}
+
+        <TextInput
+          mode="outlined"
+          label="Citizen ID"
+          value={cid}
+          onChangeText={setCid}
+          onFocus={()=>setMessage("")}
+          style={{fontSize:14, marginTop:10,}}
+          theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
+        />
+
+        <TextInput
+          mode="outlined"
+          label="First name"
+          value={firsName}
+          onChangeText={setFirstName}
+          onFocus={()=>setMessage("")}
+          style={{fontSize:14, marginTop:10,}}
+          theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
+        />
+         <TextInput
+          mode="outlined"
+          label="Last name"
+          value={lastName}
+          onChangeText={setLastName}
+          onFocus={()=>setMessage("")}
+          style={{fontSize:14, marginTop:10}}
+          theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
+        />
+
        <TextInput
-            mode="outlined"
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            style={styles.input}
-            theme={{
-              colors: {
-                primary: isFocused ? '#000' : '#8f00ff',
-                underlineColor: 'transparent',
-              },
-            }}
-          />
-          <TextInput
-            mode="outlined"
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={isPasswordSecure}
-            right={<TextInput.Icon icon={eye} onPress={passwordVisibility}/>}
-            style={styles.input}
-            theme={{
-              colors: {
-                primary: isFocused ? '#000' : '#8f00ff',
+          mode="outlined"
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          onFocus={()=>setMessage("")}
+          style={{fontSize:14, marginTop:10}}
+          theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
+        />
 
-              },
+        <View  style={{ flexDirection: "row", alignItems: "center", marginTop:10, justifyContent:'space-between'}}>
+        <Text>Job Seeker</Text>
+        <Switch value={isToggled} onValueChange={handleToggle} color='#3a348e' />
 
-            }}
-          />
-          <View style={{alignSelf:'flex-end',marginTop:10}}>
-            <TouchableOpacity onPress={handleForgotPasswordBtn}>
-            <Text style={{color:'#2F58CD',fontSize:13,fontWeight:'300'}}>Forgot Password?</Text>
-            </TouchableOpacity>
+        <Text>Employer</Text>
+        <Switch value={!isToggled} onValueChange={handleToggle} color='#3a348e' />
+        </View>
+
+        <TextInput
+          mode="outlined"
+          label="Password"
+          value={password}
+          onFocus={()=>setMessage("")}
+          onChangeText={setPassword}
+          secureTextEntry={isPasswordSecure}
+          right={<TextInput.Icon icon={hide ? 'eye' : 'eye-off'}
+          onPress={handleShowPassword}/>}
+          style={{fontSize:14, marginTop:10}}
+          theme={{ colors: { placeholder: '#000', text: '#000',
+          primary: '#4942E4',underlineColor:'transparent', background:'#fff',
+          outline:"lightgrey"}}}
+        />
+        <TextInput
+          mode="outlined"
+          label=" Confirm Password"
+          value={confirmPassword}
+          onFocus={()=>setMessage("")}
+          onChangeText={setConfirmPassword}
+          secureTextEntry={isPasswordSecure}
+          right={<TextInput.Icon icon={hide ? 'eye' : 'eye-off'}
+          onPress={handleShowPassword}/>}
+          style={{fontSize:14, marginTop:10}}
+          theme={{ colors: { placeholder: '#000', text: '#000',
+          primary: '#4942E4',underlineColor:'transparent', background:'#fff',
+          outline:"lightgrey"}}}
+        />
+
+        <View style={{display:"flex", flexDirection:'row', marginTop:20, paddingRight:20}}>
+        <Checkbox 
+          status={checked?'checked':'unchecked'}
+          color="#4942E4"
+          onPress={()=>setChecked(!checked)}/>
+          <Text>Yes, I understand and to the LaTshong Terms & policy.</Text>
+          <Text></Text>
+        </View>
+
+          <View style={{ marginVertical:20, display:'flex', justifyContent:"center"}}>
+          <TouchableHighlight style={styles.button} onPress={handleNext} underlayColor='#1E319D'>
+            <Text style={styles.buttonText}>Next</Text>
+          </TouchableHighlight>
           </View>
 
-          <View style={{ marginTop:20, display:'flex', justifyContent:"center"}}>
-          <TouchableOpacity style={styles.button} onPress={handleLogin} activeOpacity={.7}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-          </View>
-
-    <View style={{flexDirection:'row', marginTop:60, justifyContent:'center'}}>
-      <Text style={{fontWeight:'300'}}>Don't have a account?</Text>
+          <View style={{flexDirection:'row', marginVertical:20, justifyContent:'center'}}>
+      <Text style={{fontWeight:'300'}}>Already have a account?</Text>
       <TouchableOpacity 
       onPress={() => { navigation.navigate('Signup');}}
       style={{
       }}
       >
-      <Text style={{marginLeft:5, fontWeight:"300", color:'#4E31AA'}} onPress={handleSignupBtn}>Signup</Text>
+      <Text style={{marginLeft:5, fontWeight:"700", color:'#1E319D'}} onPress={()=> navigation.goBack()}>Log In</Text>
       </TouchableOpacity>
 
       </View>
 
-    </View>
   </View>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
+    paddingHorizontal:40,
     backgroundColor:'#fff',
-    borderTopEndRadius:50,borderTopStartRadius:50,
-  },
-  input: {
-    width: 270,
-    marginTop:20,
-    fontSize:13,
-    backgroundColor:'white'
+    borderTopEndRadius:50,
+    borderTopStartRadius:50,
+    // elevation:5,
+    // marginHorizontal:5
   },
   button: {
-    width: 270,
-    backgroundColor: '#4942E4',
+    width: '100%',
+    // width: 270,
+    backgroundColor: '#1E319D',
     paddingVertical: 13,
     paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 50,
     marginTop:20,
-    alignItems:'center'
+    alignItems:'center',
+    elevation:2
 
   },
   buttonText: {

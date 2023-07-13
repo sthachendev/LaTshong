@@ -54,10 +54,7 @@ const renderItem = ({ item }) => {
 
       <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
-      <TouchableOpacity onPress={()=>{
-        setImageUri(`${config.API_URL}/${item.images}`);
-        handleImageClick();
-      }} activeOpacity={1}>
+      <TouchableOpacity onPress={()=>{ setImageUri(`${config.API_URL}/${item.images}`); handleImageClick();}} activeOpacity={1}>
       <Image  source={{ uri : `${config.API_URL}/${item.images}`}}  
           style={{ flex:1, aspectRatio:4/3, borderRadius:5 }}/>
       </TouchableOpacity>

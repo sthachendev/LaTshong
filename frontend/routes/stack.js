@@ -10,6 +10,9 @@ import Profile from "../screens/profile/profile";
 import chatRoom from "../screens/chat/chatRoom";
 import ViewProfile from "../screens/profile/viewProfile";
 import ProfilePost from "../screens/post/profilePost";
+import Login from "../screens/auth/login";
+import Signup from "../screens/auth/signup";
+import SignupStep2 from "../screens/auth/signupStep2";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -76,6 +79,33 @@ function Stack() {
             // headerTitle:"Add New Post"
           }}
         />
+
+      <Stack.Screen
+        name="Login"
+        component={Login}
+        options={{
+          headerShown: false,
+          // headerTitle:"Add New Post"
+        }}
+      />
+
+      <Stack.Screen
+        name="Signup"
+        component={Signup}
+        options={{
+          headerShown: false,
+          // headerTitle:"Add New Post"
+        }}
+      />
+
+      <Stack.Screen
+        name="SignupStep2"
+        component={SignupStep2}
+        options={{
+          headerShown: false,
+          // headerTitle:"Add New Post"
+        }}
+      />
 
       </Stack.Navigator>
     </NavigationContainer>

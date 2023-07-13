@@ -24,6 +24,14 @@ export function capitalizeWords(str) {
   return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 }
 
+//get in time in ago format, like in 12h ago, 1 sec ago
+// example
+// If the time difference is less than a minute: "30 s ago"
+// If the time difference is 2 minutes: "2 min ago"
+// If the time difference is 5 hours: "5 h ago"
+// If the time difference is 1 day: "Yesterday at 10:30 AM"
+// If the time difference is 4 days: "Monday at 5:45 PM"
+// If the time difference is 10 days: "July 4, 2023 at 8:15 AM"
 export function getTimeDifference(postDate) {
   const date = new Date(postDate);
   const now = new Date();
@@ -44,9 +52,21 @@ export function getTimeDifference(postDate) {
   }
 
   const diffInDays = Math.floor(diffInHours / 24);
-  return `${diffInDays} d ago`;
+  if (diffInDays === 1) {
+    return `Yesterday at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  } else if (diffInDays < 7) {
+    const weekday = date.toLocaleDateString([], { weekday: 'long' });
+    return `${weekday} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  }
+
+  const month = date.toLocaleDateString([], { month: 'long' });
+  const day = date.getDate();
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
 
+
+//get in 12h format
 export function getTime(postDate) {
   const date = new Date(postDate);
   const hours = date.getHours();
@@ -83,3 +103,47 @@ export function isSameDate(date1, date2) {
   );
 }
 
+//validate user input contains not special characters //editProfile.js //signup.js
+export function validateInput(input) {
+  if (input === null || input === undefined) {
+    // input is null or undefined
+    return false;
+  }
+
+  var pattern = /^[a-zA-Z]+(?: [a-zA-Z]+)?$/;
+  if (pattern.test(input)) {
+    // input is valid
+    console.log('valid');
+    return true;
+  } else {
+    // input contains special characters
+    console.log('invalid');
+    return false;
+  }
+}
+
+export function validateInputContainNumOnly(input) {
+  if (input === null || input === undefined) {
+    // input is null or undefined
+    return false;
+  }
+
+  var pattern = /^\d+$/;
+  if (pattern.test(input)) {
+    // input is valid
+    console.log('valid');
+    return true;
+  } else {
+    // input contains non-numeric characters
+    console.log('invalid');
+    return false;
+  }
+}
+
+export function validateEmail(email) {
+  if (!email) {
+    return false; // email is null or empty
+  }
+  const pattern = /^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
+  return pattern.test(email);
+}

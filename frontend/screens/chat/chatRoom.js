@@ -88,7 +88,9 @@ export default ChatRoom = ({route, navigation}) => {
 
   return (
     <>
-    <View style={{flex:1, backgroundColor:'#fff'}}>
+    <View style={{flex:1, 
+    // backgroundColor:'#fff'
+    }}>
     {/* <Text>
       To user id: {touserid} from {userid}
     </Text>

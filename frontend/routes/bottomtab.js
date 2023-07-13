@@ -41,8 +41,8 @@ function BottomTab({ navigation }) {
     <Tab.Navigator
       screenOptions={{
         tabBarHideOnKeyboard: true,
-        tabBarActiveTintColor: "#3a348e", // Change the color to your desired color
-        tabBarInactiveTintColor:'#c0c0c0'
+        tabBarActiveTintColor: "#1E319D", // Change the color to your desired color
+        tabBarInactiveTintColor:'#A0A0A0'
       }}
     >
     <Tab.Screen
@@ -52,7 +52,7 @@ function BottomTab({ navigation }) {
         tabBarIcon: ({ color, size }) => (
           <MaterialIcons name="home" size={size} color={color} />
         ),
-        title:"LaTshong",
+        title:"Home",
         headerStyle: {
           // backgroundColor: '#3a348e',
           // borderBottomRightRadius: 20,
@@ -77,7 +77,7 @@ function BottomTab({ navigation }) {
     }}
   />
 
-    {token ? 
+    {token &&
     <>
     <Tab.Screen
       name="Chat"
@@ -106,23 +106,7 @@ function BottomTab({ navigation }) {
         headerShown:false
       })}
     />
-    </>:
-      <Tab.Screen
-      name="Profile"
-      component={Login}
-      options={({ navigation }) => ({
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="person" size={size} color={color} />
-        ),
-        // headerLeft: () => (
-        //   <TouchableOpacity
-        //     style={{ marginLeft: 16 }}
-        //     onPress={() => navigation.toggleDrawer()}
-        //   ></TouchableOpacity>
-        // ),
-        headerShown:false
-      })}
-    />
+    </>
     }
           
           

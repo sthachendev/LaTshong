@@ -96,13 +96,13 @@ app.post("/api/login", async (req, res) => {
   const user = result.rows[0];
 
   if (!user) {
-    return res.status(401).json({ message: "Invalid email or password" });
+    return res.status(401).json({ message: "User doesn't exists" });
   }
   // Check if the provided password matches the hashed password stored in the database
   const passwordMatches = await bcrypt.compare(password, user.password);
 
   if (!passwordMatches) {
-    return res.status(401).json({ message: "Invalid email or password" });
+    return res.status(401).json({ message: "Invalid password, try again!" });
   }
 
   // Generate JWT
@@ -113,7 +113,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 app.post("/api/signup", (req, res) => {
-  const { email, name, password, role } = req.body;
+  const { email, name, password, role, cid } = req.body;
 
   // Hash the password //10 is salt value
   bcrypt.hash(password, 10, (err, hash) => {
@@ -121,9 +121,12 @@ app.post("/api/signup", (req, res) => {
       console.error(err);
       res.status(500).json({ message: "Internal server error" });
     } else {
+
+      const date = new Date();
+
       pool.query(
-        "INSERT INTO users (email, name, password, role) VALUES ($1, $2, $3, $4)",
-        [email, name, hash, role],
+        "INSERT INTO users (email, name, password, role, cid, created_on) VALUES ($1, $2, $3, $4, $5, $6)",
+        [email, name, hash, role, cid, date],
         (err, result) => {
           if (err) {
             console.error(err);
@@ -214,7 +217,7 @@ app.post("/api/getOTP", async (req, res) => {
   const mailOptions = {
     from: "soyecharo@outlook.com",
     to: email,
-    subject: "LaTshong One Time Password",
+    subject: "LaTshong One-Time Password",
     html: `<p>Use this OTP <strong>${otp}</strong> before 15 min.</p>`,
   };
 
@@ -304,19 +307,20 @@ app.get("/api/get_post/:id", async (req, res) => {
 
 app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
     try {
-      const { job_title, job_description, job_requirements, posttype, job_salary, postby, 
-        location, status, applicants, accepted_applicants, rejected_applicants } = req.body;
+      const { job_title, job_description, job_requirements, job_salary, postby, 
+        location, nature, vacancy_no, location_, remark} = req.body;
       const postdate = new Date();
       // console.log(req.body);
+      const status = 'o';
 
       // insert the post data into the database
       const { rows } = pool.query(
         `INSERT INTO job_posts 
-        (job_title, job_description, job_requirements, job_salary, postby, postdate, location, status, applicants, accepted_applicants, rejected_applicants) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-        [job_title, job_description, job_requirements, job_salary, postby, postdate, location, status, applicants, accepted_applicants, rejected_applicants]
+        (job_title, job_description, job_requirements, job_salary, postby, postdate, location, status, nature, vacancy_no, location_, remark) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+        [job_title, job_description, job_requirements, job_salary, postby, postdate, location, status, nature, vacancy_no, location_, remark]
       );
 
-      res.status(201);
+      res.status(201).json(rows);
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Server Error" });
