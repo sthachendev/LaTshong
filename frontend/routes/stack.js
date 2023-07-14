@@ -6,13 +6,14 @@ import BottomTab from "./bottomtab";
 import Setting from "../screens/setting/setting";
 import Post from "../screens/post/post";
 import PostDetails from "../screens/post/postDetails";  
-import Profile from "../screens/profile/profile";
 import chatRoom from "../screens/chat/chatRoom";
 import ViewProfile from "../screens/profile/viewProfile";
 import ProfilePost from "../screens/post/profilePost";
 import Login from "../screens/auth/login";
 import Signup from "../screens/auth/signup";
 import SignupStep2 from "../screens/auth/signupStep2";
+import DrawerNav from "./drawerNav";
+import Support from "../screens/support/support";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -21,11 +22,21 @@ function Stack() {
       <Stack.Navigator
         screenOptions={{
           animationEnabled: false,
+          headerStyle: {
+            shadowColor: "black",
+            shadowOpacity: 0.25,
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowRadius: 4,
+            elevation: 5,
+          },
         }}
       >
         <Stack.Screen
-          name="BottomTab"
-          component={BottomTab}
+          name="DrawerNav"
+          component={DrawerNav}
           options={{
             headerShown: false,
           }}
@@ -42,12 +53,12 @@ function Stack() {
           component={PostDetails}
           options={{
             headerShown: true,
-            headerTitle:"Post",
-            headerTitleAlign:"center"
+            headerTitle: "Job Details",
+            headerTitleAlign: "center",
           }}
         />
        <Stack.Screen
-          name="Profile"
+          name="ViewProfile"
           component={ViewProfile}
           options={{
             headerShown: true,
@@ -103,6 +114,24 @@ function Stack() {
         component={SignupStep2}
         options={{
           headerShown: false,
+          // headerTitle:"Add New Post"
+        }}
+      />
+
+      <Stack.Screen
+        name="Setting"
+        component={Setting}
+        options={{
+          headerShown: true,
+          // headerTitle:"Add New Post"
+        }}
+      />
+
+      <Stack.Screen
+        name="Support"
+        component={Support}
+        options={{
+          headerShown: true,
           // headerTitle:"Add New Post"
         }}
       />

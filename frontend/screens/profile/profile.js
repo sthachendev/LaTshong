@@ -10,8 +10,10 @@ import config from "../config";
 import { Image } from "react-native";
 import ImageViewer from "../custom/ImageViewer";
 import { TouchableOpacity } from "react-native";
+import Spinner from "../custom/Spinner";
 
-export default Profile = ({navigation}) => {
+export default Profile = () => {
+  
   const token = useSelector((state)=> state.token);
   const userid = jwtDecode(token).userid; 
 
@@ -45,6 +47,8 @@ export default Profile = ({navigation}) => {
     }
   }
   
+  if (!data) return <Spinner/>
+
 // Render each item of the data array
 const renderItem = ({ item }) => {
   return (
@@ -70,11 +74,13 @@ const keyExtractor = (item) => item.id.toString();
 
   return(
     <>
-    <Button title="Add Cetificates" onPress={()=>navigation.navigate('ProfilePost', {userid})}></Button>
 
   <FlatList
     data={data}
     ListHeaderComponent={<UserInfo userid={userid}/>}
+    ListFooterComponent={
+    <Button title="Add Cetificates" onPress={()=>navigation.navigate('ProfilePost', {userid})}></Button>
+    }
     renderItem={renderItem}
     keyExtractor={keyExtractor}
     maxToRenderPerBatch={3} // Adjust this value based on your needs

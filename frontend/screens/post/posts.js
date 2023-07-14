@@ -1,11 +1,12 @@
 import { View, Text, Image, TouchableHighlight, StyleSheet, FlatList } from 'react-native';
 import { capitalizeWords, getTimeDifference } from '../fn';
 import config from '../config';
+import { memo } from 'react';
 
-export default Posts = (({item, role, navigation}) => {
+const Posts = (({item, role, navigation}) => {
 
   return(
-  <TouchableHighlight style={styles.itemContainer} underlayColor="#F1F2F6" 
+  <TouchableHighlight style={styles.itemContainer} underlayColor="#fff" 
   onPress={() => navigation.navigate('PostDetails', { id: item.id, role })}>
     
   <View style={{padding:15}}>
@@ -22,7 +23,7 @@ export default Posts = (({item, role, navigation}) => {
       <Text style={{color:"grey", marginLeft:5, fontSize:12}}>{item.email}</Text>
       </View>
 
-    <Text style={{color:"grey",position:"absolute", top:0, right:0, fontSize:14}}>{getTimeDifference(item.postdate)}</Text>
+    <Text style={{color:"grey",position:"absolute", top:0, right:0, fontSize:13}}>{getTimeDifference(item.postdate)}</Text>
     </View>
   
     <Text style={{marginTop:10, fontWeight:'500', color:"#404040" }}>{capitalizeWords(item.job_title)} 
@@ -48,8 +49,10 @@ const styles = StyleSheet.create({
       margin:10,
       borderRadius: 5,
       marginBottom:0,
-      borderColor:'lightgrey',
+      borderColor:'grey',
       borderWidth:0.5
       // elevation: 2, // Add elevation for shadow effect (Android)
     },
   });
+
+export default memo(Posts);

@@ -73,6 +73,11 @@ export default Home = () => {
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       maxToRenderPerBatch={3} // Adjust this value based on your needs
+      ListEmptyComponent={()=>{
+        return(
+          <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No posts</Text>
+        )
+      }}
       getItemLayout={(data, index) => (
         {length: 500, offset: 500 * index, index}
       )}
@@ -94,7 +99,7 @@ export default Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor:'#fff'
+    backgroundColor:'#fff'
     // justifyContent: 'center',
     // alignItems: 'center',
   },

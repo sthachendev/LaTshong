@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { setToken, clearToken, setRole, clearRole } from '../reducers'; 
@@ -8,9 +8,9 @@ import { setToken, clearToken, setRole, clearRole } from '../reducers';
 import Home from '../screens/home/home';
 import Explore from "../screens/explore/explore";
 import Chat from "../screens/chat/chat";
-import Login from "../screens/auth/login";
+import Profile from "../screens/profile/profile";
 
-import ProfileDrawer from "./drawer";
+import { DrawerToggleButton } from "@react-navigation/drawer";
 
 const Tab = createBottomTabNavigator();
 
@@ -39,78 +39,98 @@ function BottomTab({ navigation }) {
 
   return (
     <Tab.Navigator
-      screenOptions={{
-        tabBarHideOnKeyboard: true,
-        tabBarActiveTintColor: "#1E319D", // Change the color to your desired color
-        tabBarInactiveTintColor:'#A0A0A0'
-      }}
-    >
-    <Tab.Screen
-      name="Home"
-      component={Home}
-      options={{
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="home" size={size} color={color} />
-        ),
-        title:"Home",
-        headerStyle: {
-          // backgroundColor: '#3a348e',
-          // borderBottomRightRadius: 20,
-          // borderBottomLeftRadius: 20,
-        },
-        // headerTintColor: '#4942E4',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        tabBarLabel:"Home",
-      }}
-    />
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+          let outlineIconName;
 
-    <Tab.Screen
-    name="Explore"
-    component={Explore}
-    options={{
-      tabBarIcon: ({ color, size }) => (
-        <MaterialIcons name="explore" size={size} color={color} />
-      ),
-      headerShown: false,
-    }}
-  />
+          if (route.name === "Home") {
+            iconName = focused ? "home-sharp" : "home-outline";
+          } else if (route.name === "Explore") {
+            iconName = focused ? "search" : "search-outline";
+          } else if (route.name === "Chat") {
+            iconName = focused ? "chatbubbles" : "chatbubbles-outline";
+          } else if (route.name === "Profile") {
+            iconName = focused ? "person" : "person-outline";
+          }
 
-    {token &&
-    <>
-    <Tab.Screen
-      name="Chat"
-      component={Chat}
-      options={({ navigation }) => ({
-        headerStyle: {},
-        tabBarIcon: ({ color, size }) => (
-            <MaterialIcons
-              name="mail"
+          return (
+            <Ionicons
+              name={iconName}
               size={size}
               color={color}
+              style={{ outline: !focused ? "auto" : "none" }}
             />
-        ),
-        tabBarLabel:"Message",
-        headerTitle:"Messages"
+          );
+        },
+        tabBarActiveTintColor: "#1E319D",
+        tabBarInactiveTintColor: "#A0A0A0",
+        headerLeft: () => <DrawerToggleButton />,
       })}
-    />
-    <Tab.Screen
-      name="ProfileDrawer"
-      component={ProfileDrawer}
-      options={({ navigation }) => ({
-        tabBarIcon: ({ color, size }) => (
-          <MaterialIcons name="person" size={size} color={color} />
-        ),
-        tabBarLabel:'Profile',
-        headerShown:false
-      })}
-    />
-    </>
-    }
-          
-          
-    
+    >
+      <Tab.Screen
+        name="Home"
+        component={Home}
+        options={{
+          // title: role === "em" ? "Dashboard" : "Home",
+          title: "Home",
+          headerTitleStyle: {
+            // fontWeight: 'bold',
+          },
+          // tabBarLabel: role === "em" ? "Dashboard" : "Home",
+          title: "Home",
+          headerStyle: {
+            shadowColor: "black",
+            shadowOpacity: 0.25,
+            shadowOffset: {
+              width: 0,
+              height: 2,
+            },
+            shadowRadius: 4,
+            elevation: 5,
+          },
+        }}
+      />
+
+      <Tab.Screen
+        name="Explore"
+        component={Explore}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      {token && (
+        <>
+          <Tab.Screen
+            name="Chat"
+            component={Chat}
+            options={({ navigation }) => ({
+              headerStyle: {},
+              tabBarLabel: "Messages",
+              headerTitle: "Messages",
+              headerStyle: {
+                shadowColor: "black",
+                shadowOpacity: 0.25,
+                shadowOffset: {
+                  width: 0,
+                  height: 2,
+                },
+                shadowRadius: 4,
+                elevation: 5,
+              },
+            })}
+          />
+          <Tab.Screen
+            name="Profile"
+            component={Profile}
+            options={({ navigation }) => ({
+              tabBarLabel: "Profile",
+              headerShown: true,
+            })}
+          />
+        </>
+      )}
     </Tab.Navigator>
   );
 }

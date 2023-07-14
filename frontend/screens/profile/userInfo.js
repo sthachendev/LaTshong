@@ -8,7 +8,7 @@ import ImageViewer from "../custom/ImageViewer";
 
 export default UserInfo = ({userid, navigation}) => {
 
-    const [userInfo, setUserInfo] = useState('');
+  const [userInfo, setUserInfo] = useState('');
 
   const [modalVisible, setModalVisible] = useState(false);
     const [imageUri, setImageUri] = useState('');
