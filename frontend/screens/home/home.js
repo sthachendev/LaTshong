@@ -1,9 +1,8 @@
 import { View, Text, TouchableOpacity, TouchableHighlight, StyleSheet, FlatList } from 'react-native';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import jwtDecode from 'jwt-decode';
 import axios from 'axios';
 import config from '../config';
 import Posts from '../post/posts';
@@ -18,7 +17,7 @@ export default Home = () => {
     navigation.navigate('Post');
   };
 
-  const token = useSelector((state) => state.token);
+  // const token = useSelector((state) => state.token);
   const role = useSelector((state) => state.role);
 
   const [data, setData] = useState('');
@@ -100,8 +99,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor:'#fff'
-    // justifyContent: 'center',
-    // alignItems: 'center',
   },
   floatingPost: {
     position: 'absolute',

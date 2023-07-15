@@ -15,12 +15,14 @@ export default PostDetails = ({ route }) => {
 
   const [data, setData] = useState('');
   const [usersData, setUserData] = useState('');
-  const [postby_userid, setPostbyuserid] = useState('');
-  const [postby_username, setPostbyusername] = useState('');
+  // const [postby_userid, setPostbyuserid] = useState('');
+  // const [postby_username, setPostbyusername] = useState('');
+  const [isApply, setIsApply] = useState(false);
 
   const [loading, setLoading] = useState(false);
 
   const token = useSelector((state)=>state.token);
+  const userid = jwtDecode(token).userid;
 
   const navigation = useNavigation();
 
@@ -41,11 +43,13 @@ const getJobPost = async () => {
     setLoading(true);
     const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);
     setData(res.data);
-    setPostbyuserid(res.data[0].postby);
+    // setPostbyuserid(res.data[0].postby);
     // console.log(res.data[0].postby);
-    setPostbyusername(res.data[0].name);
+    // setPostbyusername(res.data[0].name);
     const applicants = res.data[0].applicants;
-    console.log('applicants',applicants.length)
+    // console.log('userid',userid);
+    if(applicants.includes(userid)) setIsApply(true)
+    // console.log('applicants',applicants.length)
 
     setLoading(false);
 
@@ -66,29 +70,43 @@ const getJobPost = async () => {
   }
 };
 
-const handleApply = async(postid) => {
+const handleApply = async (postid) => {
   try {
     if (token) {
-      const res = await axios.put(`${config.API_URL}/api/update_job_post`, {
-        userid: jwtDecode(token).userid, 
-        postid:postid
-      });
+      const res = await axios.put(
+        `${config.API_URL}/api/update_job_post`,
+        {
+          userid: jwtDecode(token).userid,
+          postid: postid
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          }
+        }
+      );
       // console.log(res.data);
       console.log('update_job_post');
-      console.log(res.data);
-    }else{
+      console.log('update_job_post',res.data.isApply);
+      if(res.data.isApply){
+        setIsApply(true);
+      }else if (res.data.isApply === false) {
+        setIsApply(false);
+      }
+    } else {
       navigation.navigate('Login');
     }
-    
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 }
 
-const handleMessage = () => {
+
+const handleMessage = (touserid, tousername) => {
   if (token) {
     navigation.navigate('ChatRoom', 
-    {touserid: postby_userid, title: capitalizeWords(postby_username)})
+    {touserid: touserid, title: capitalizeWords(tousername)})
   }else{
     navigation.navigate('Login');
   }
@@ -118,24 +136,31 @@ const handleMessage = () => {
     return (
       <>
       {/* post detail container */}
+       
+      {data && (
+      <>
         <View style={{padding:10, backgroundColor:"#fff",  borderColor:'lightgrey',
         borderWidth:0.5, marginHorizontal:5, marginTop:15, marginBottom:0, borderRadius:5}}>
-        {data && (
-          <>
-          <View style={{display:"flex", flexDirection:"row",}}>
+
+      <View style={{display:"flex", flexDirection:"row", marginTop:25}}>
+
         {data[0].imageurl !== null ? 
-        <Image source={{ uri: `${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:15}} />
+        <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25}} />
         :
         <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20}}/>
         }
 
         <View>
-        <Text style={{marginLeft:5, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
-        <Text style={{color:"grey", marginLeft:5, fontSize:12}}>{data[0].email}</Text>
+        <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
+        {/* <Text style={{color:"grey", marginLeft:5, fontSize:12}}>{data[0].email}</Text> */}
+        <Text style={{marginLeft:10, color:"grey", fontSize:12, textAlignVertical:'center'}}>~Verified Employer</Text>
         </View>
 
-        <Text style={{color:"grey",position:"absolute", top:0, right:0}}>{getTimeDifference(data[0].postdate)}</Text>
       </View>
+
+      <Text style={{color:"grey",position:"absolute", top:10, right:10, fontSize:12}}>
+        {data[0].status == 'o' && 'Open ~ '}{data[0].status == 'o' && getTimeDifference(data[0].postdate)}
+        {data[0].status == 'c' && 'Closed'}</Text>
  
       <View style={styles.container}>
 
@@ -153,17 +178,17 @@ const handleMessage = () => {
         </View> 
         
         <View style={styles.tableRow}>
-          <Text style={styles.headerCell}>vacancy_no</Text>
+          <Text style={styles.headerCell}>Total Slots</Text>
           <Text style={styles.cell}>{data[0].vacancy_no}</Text>
         </View> 
         
         <View style={styles.tableRow}>
-          <Text style={styles.headerCell}>nature</Text>
-          <Text style={styles.cell}>{data[0].nature}</Text>
+          <Text style={styles.headerCell}>Job Type</Text>
+          <Text style={styles.cell}>{capitalizeWords(data[0].nature)}</Text>
         </View> 
         
         <View style={styles.tableRow}>
-          <Text style={styles.headerCell}>location_</Text>
+          <Text style={styles.headerCell}>Location</Text>
           <Text style={styles.cell}>{data[0].location_}</Text>
         </View> 
         
@@ -177,10 +202,9 @@ const handleMessage = () => {
           <Text style={styles.cell}>{data[0]?.remarks === "" ? "-" : data[0].remarks}</Text>
         </View>
 
-      </View>    
-          </>
-        )}
-        </View>
+      </View>
+
+      </View>
 
         {/* bottom buttons */}
         <View style={{ width:'100%', marginVertical:10,
@@ -189,7 +213,7 @@ const handleMessage = () => {
           {role !== 'em' &&
             <>
             <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'grey',borderWidth:0.25, flex:.3, borderRadius:25 }} underlayColor="#F1F2F6"  
-            onPress={()=>navigation.navigate('Profile', { userid: postby_userid })}
+            onPress={()=>navigation.navigate('ViewProfile', { userid: data[0].postby })}
             >
               <Text style={{ paddingVertical:10,  textAlign:"center", color:'grey' }}>
                 View Profile
@@ -197,7 +221,7 @@ const handleMessage = () => {
             </TouchableHighlight>
         
             <TouchableHighlight style={{borderColor:'grey',borderWidth:0.25, flex:.3, borderRadius:25}} underlayColor="#F1F2F6"  
-            onPress={handleMessage}
+            onPress={()=>handleMessage(data[0].postby, data[0].name)}
             >
               <Text style={{ paddingVertical:10,  textAlign:"center", color:'grey' }}>
                 {/* <MaterialIcons name="mail" size={20} color="lightgrey" /> */}
@@ -208,7 +232,7 @@ const handleMessage = () => {
             <TouchableHighlight style={{ borderColor:'grey',borderWidth:0.25, flex:.3, borderRadius:25, backgroundColor:'#1E319D'}} underlayColor="#1E319D"  
             onPress={()=>handleApply(id)}>
               <Text style={{ paddingVertical:10,  textAlign:"center", color:'#fff' }}>
-              Apply
+              {isApply ? 'Applied': 'Apply'}
               </Text>
             </TouchableHighlight>
             </>
@@ -226,7 +250,11 @@ const handleMessage = () => {
               </Text>
             </TouchableHighlight>
           } 
-        </View>
+        </View>    
+          </>
+        )}
+
+      
 
         {/* menu bar */}
         {
@@ -307,7 +335,7 @@ const handleMessage = () => {
   return (
     <>   
   {/* user applied list */}
-      <View style={{backgroundColor:"#fff", 
+      <View style={{backgroundColor:"#fff", flex:1
     // borderTopWidth:.5, borderColor:"lightgrey"
     }}>
       <FlatList
@@ -317,7 +345,12 @@ const handleMessage = () => {
         renderItem={renderUserItem} // Use the renderUserItem function to render each item
         ListEmptyComponent={()=>{
           return(
-            <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No applicants</Text>
+            <>
+              {
+                role === 'em' &&
+                <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No applicants</Text>
+              }
+            </>
           )
         }}
         keyExtractor={(item) => item.id} // Provide a unique key for each item

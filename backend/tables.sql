@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     --role em for employee and js for job seeker
-    imageurl TEXT,
+    imageurl TEXT[] DEFAULT '{}',
     bio TEXT,
     created_on TIMESTAMP NOT NULL
 );
@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS job_posts (
     remark TEXT,
     postby INTEGER NOT NULL,
     postdate TIMESTAMP, --
+    closedate TIMESTAMP, --
     location JSON, 
     status CHAR(1), ---o open, c close
     applicants INTEGER[] DEFAULT '{}',

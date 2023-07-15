@@ -6,6 +6,7 @@ import { Text, View } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import BottomTab from './bottomtab';
 import { DrawerActions } from '@react-navigation/native';
+import jwtDecode from 'jwt-decode';
 
 const Drawer = createDrawerNavigator();
 
@@ -13,6 +14,9 @@ export default function DrawerNav({ navigation }) {
   const dispatch = useDispatch();
 
   const token = useSelector((state)=> state.token);
+  const userid = token ? jwtDecode(token).userid : null;
+  // const userid = jwtDecode(token).userid;// this giving a getter problem
+  // console.log('userid',userid)
 
   const handleLogout = () => {
     navigation.dispatch(DrawerActions.closeDrawer());
@@ -110,13 +114,29 @@ export default function DrawerNav({ navigation }) {
              )}
            />
 
+          <DrawerItem
+            label="Applied Lists"
+            onPress={() => navigation.navigate('AppliedLists')}
+            icon={({ color, size }) => (
+              <Ionicons
+                name="file-tray-full-outline"
+                color={color}
+                size={size}
+              />
+            )}
+          />
+
+          </>
+          )}
+
           <View style={{alignContent: 'center', marginVertical: 20,
           borderBottomWidth:1, borderColor:"lightgrey"}}/>
 
+          {token !== null && token && (
             <DrawerItem
-              label="Setting"
+              label="Settings"
               onPress={() => {
-                navigation.navigate('Setting');
+                navigation.navigate('Setting', {userid});
                 navigation.dispatch(DrawerActions.closeDrawer());
               }}
               icon={({ color, size }) => (
@@ -127,25 +147,21 @@ export default function DrawerNav({ navigation }) {
                 />
               )}
             />
-
-            <DrawerItem
-              label="Help & Support"
-              onPress={() => {
-                navigation.navigate('Support');
-                navigation.dispatch(DrawerActions.closeDrawer());
-              }}
-              icon={({ color, size }) => (
-                <Ionicons
-                  name="help-circle-outline"
-                  color={color}
-                  size={size}
-                />
-              )}
-            />
-
-
-          </>
           )}
+          <DrawerItem
+            label="Help & Support"
+            onPress={() => {
+              navigation.navigate('Support');
+              navigation.dispatch(DrawerActions.closeDrawer());
+            }}
+            icon={({ color, size }) => (
+              <Ionicons
+                name="help-circle-outline"
+                color={color}
+                size={size}
+              />
+            )}
+          />
 
           {/* Spacer */}
           <View style={{ flex: 1 }} />
@@ -156,14 +172,14 @@ export default function DrawerNav({ navigation }) {
             borderBottomWidth:1, borderColor:"lightgrey"}}>
           <DrawerItem
               label="Logout"
-              labelStyle={{ color: 'rgba(255,0,0,.7)' }} // Specify the desired label color here
-              // inactiveBackgroundColor='#F1F2F0'
+              labelStyle={{ color: 'rgba(255,0,0,.5)' }} // Specify the desired label color here
+              inactiveBackgroundColor='rgba(255,0,0,.1)'
               onPress={handleLogout}
               style={{ marginVertical: 20 , alignContent:"center",}}
               icon={({ color, size }) => (
                 <Ionicons
                   name="log-out"
-                  color='rgba(255,0,0,.7)'
+                  color='rgba(255,0,0,.5)'
                   size={size}
                 />
               )}

@@ -147,3 +147,12 @@ export function validateEmail(email) {
   const pattern = /^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
   return pattern.test(email);
 }
+
+//cut name/ strings
+export function truncateName(name, maxLength) {
+  if (name.length <= maxLength) {
+    return name;
+  } else {
+    return name.substring(0, maxLength) + "...";
+  }
+}

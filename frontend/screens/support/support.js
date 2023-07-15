@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from "react-native";
+import { TouchableHighlight } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Image } from "react-native";
 
 const Support = () => {
   const handleContactSupport = () => {
@@ -10,16 +11,18 @@ const Support = () => {
 
   return (
     <View style={styles.container}>
+    <Image style={{ width: 200, height: 200, alignSelf:"center" }} source={require("../../assets/images/mail.png")} />
+
       <Text style={styles.message}>
-        If any problems arise between employers and employees, please contact us
+        If any disputes arise between the parties, please contact us
         at:
       </Text>
-      <TouchableOpacity
+      <TouchableHighlight underlayColor='#F1F2F6'
         style={styles.emailButton}
         onPress={handleContactSupport}
       >
         <Text style={styles.email}>support@example.com</Text>
-      </TouchableOpacity>
+      </TouchableHighlight>
     </View>
   );
 };
@@ -27,7 +30,9 @@ const Support = () => {
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    marginVertical: 20,
+    padding: 20,
+    backgroundColor:"#fff",
+    flex:1
   },
   message: {
     fontSize: 18,
@@ -36,13 +41,15 @@ const styles = StyleSheet.create({
   },
   emailButton: {
     padding: 10,
-    backgroundColor: "#2196F3",
+    backgroundColor: "#fff",
     borderRadius: 5,
+    borderWidth:.25,
+    marginVertical:15
   },
   email: {
-    color: "#FFF",
+    color: "#000",
     fontSize: 16,
-    fontWeight: "bold",
+    // fontWeight: "bold",
     textAlign: "center",
   },
 });

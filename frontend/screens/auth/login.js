@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Image,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-} from "react-native";
+import { Image, TouchableOpacity, View, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
-import { TextInput ,Text, DefaultTheme } from "react-native-paper";
+import { TextInput ,Text } from "react-native-paper";
 import { useDispatch } from 'react-redux';
 import { setToken, setRole } from '../../reducers'; 
 import config from '../config';
@@ -16,11 +11,12 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { TouchableHighlight } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { ScrollView } from "react-native";
+
 export default function Login({navigation}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [hide, setHide] = useState(true);
-  const [isPasswordSecure, setIsPasswordSecure] = useState(false);
+  const [hide, setHide] = useState(false);
+  const [isPasswordSecure, setIsPasswordSecure] = useState(true);
 
   const [message, setMessage] = useState("");
 
@@ -77,7 +73,6 @@ export default function Login({navigation}) {
   }
   return (
     <ScrollView style={{backgroundColor:'#fff', flex:1}}>
-      {/* <Image source={require('../../assets/wave.png')} style={{position:"absolute", width:'90%', height:180}}/> */}
 
        {/* header */}
         <TouchableHighlight onPress={()=>navigation.goBack()} underlayColor='#fff'

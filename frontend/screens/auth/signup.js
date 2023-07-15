@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  ToastAndroid,  TouchableOpacity,
+  ActivityIndicator,  TouchableOpacity,
   View,
   StyleSheet,
 } from "react-native";
 import { TextInput ,Text, Switch, Checkbox } from "react-native-paper";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import { TouchableHighlight } from "react-native";
+import { TouchableHighlight, Image } from "react-native";
 import { ScrollView } from "react-native";
 import { validateInput, validateInputContainNumOnly } from "../fn";
 import axios from "axios";
@@ -34,7 +34,7 @@ export default function Signup({navigation}) {
   const [isToggled, setToggle] = useState(true);
   const [checked, setChecked] = useState(false);
 
-  const [validOtp, setValidOtp] = useState("");
+  const [loading, setLoading] = useState(false);
   
   const handleToggle = () => {
     setToggle(!isToggled);
@@ -65,11 +65,14 @@ export default function Signup({navigation}) {
         password,
         role
       }
+      setLoading(true);
+
       axios.post(`${config.API_URL}/api/getOTP`, { email })
 
       .then(response => {
         if (response.data.success){
           navigation.navigate('SignupStep2', {email, validOtp:response.data.otp, data});
+          setLoading(false);
         }
         console.log('otp',response.data.otp)
       })
@@ -127,11 +130,8 @@ export default function Signup({navigation}) {
  {/* login components */}
   <View style={styles.container}>
     
-      <View style={{marginHorizontal:10, marginBottom:10}}>
+      <View style={{marginHorizontal:10, marginBottom:5}}>
       <Text style={{
-        // textAlign: 'center',
-        // fontWeight:'100',
-        // fontSize: 20,
         color:'grey'
         }}>Sign up to create an account</Text>
       </View>  
@@ -184,10 +184,10 @@ export default function Signup({navigation}) {
         />
 
         <View  style={{ flexDirection: "row", alignItems: "center", marginTop:10, justifyContent:'space-between'}}>
-        <Text>Job Seeker</Text>
+        <Text style={{color:!isToggled?'grey':'#000'}}>Job Seeker</Text>
         <Switch value={isToggled} onValueChange={handleToggle} color='#3a348e' />
 
-        <Text>Employer</Text>
+        <Text style={{color:isToggled?'grey':'#000'}}>Employer</Text>
         <Switch value={!isToggled} onValueChange={handleToggle} color='#3a348e' />
         </View>
 
@@ -231,7 +231,9 @@ export default function Signup({navigation}) {
 
           <View style={{ marginVertical:20, display:'flex', justifyContent:"center"}}>
           <TouchableHighlight style={styles.button} onPress={handleNext} underlayColor='#1E319D'>
-            <Text style={styles.buttonText}>Next</Text>
+            <Text style={styles.buttonText}>
+              {loading ? <ActivityIndicator size='small' color="#fff" /> : 'Next'}
+              </Text>
           </TouchableHighlight>
           </View>
 

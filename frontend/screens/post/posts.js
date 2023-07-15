@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableHighlight, StyleSheet, FlatList } from 'react-native';
-import { capitalizeWords, getTimeDifference } from '../fn';
+import { capitalizeWords, getTimeDifference, truncateName } from '../fn';
 import config from '../config';
 import { memo } from 'react';
 
@@ -9,22 +9,29 @@ const Posts = (({item, role, navigation}) => {
   <TouchableHighlight style={styles.itemContainer} underlayColor="#fff" 
   onPress={() => navigation.navigate('PostDetails', { id: item.id, role })}>
     
-  <View style={{padding:15}}>
-    <View style={{display:"flex", flexDirection:"row",}}>
+  <View style={{paddingHorizontal:15, paddingVertical:10}}>
+    <View style={{display:"flex", flexDirection:'row', paddingTop:25}}>
       {item.imageurl !== null ? 
-      <Image source={{ uri: `${item.imageurl}` }} style={{width:40, height:40, borderRadius:15}} />
+      
+      <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{width:40, height:40, borderRadius:25}} />
       :
       <Image  source={{ uri : `${config.API_URL}/uploads/123.png`}}  
         style={{width:45, height:45, backgroundColor:"blue", borderRadius:25, borderColor:"#fff", borderWidth:2}}
         />
       }
       <View style={{}}>
-      <Text style={{marginLeft:5, fontWeight:"bold", fontSize:14}}>{capitalizeWords(item.name)}</Text>
-      <Text style={{color:"grey", marginLeft:5, fontSize:12}}>{item.email}</Text>
+      <Text style={{
+        marginLeft:10,
+      textAlignVertical:'center', fontWeight:'500', color:"#404040", fontSize:14}}>{capitalizeWords(item.name)}</Text>
+        <Text style={{color:"grey", fontSize:12, textAlignVertical:'center', marginLeft:10}}>~Verified Employer</Text>
+      {/* <Text style={{color:"grey", marginLeft:5, fontSize:12}}>{item.email}</Text> */}
       </View>
 
-    <Text style={{color:"grey",position:"absolute", top:0, right:0, fontSize:13}}>{getTimeDifference(item.postdate)}</Text>
     </View>
+    <Text style={{color:"grey",position:"absolute", top:10, right:10, fontSize:13}}>
+      {item.status == 'o' && 'Open ~ '}{item.status == 'o' && getTimeDifference(item.postdate)}
+      {item.status == 'c' && 'Closed'}
+    </Text>
   
     <Text style={{marginTop:10, fontWeight:'500', color:"#404040" }}>{capitalizeWords(item.job_title)} 
     <Text style={{fontWeight:'normal'}}> - {capitalizeWords(item.nature)}</Text>
@@ -49,8 +56,8 @@ const styles = StyleSheet.create({
       margin:10,
       borderRadius: 5,
       marginBottom:0,
-      borderColor:'grey',
-      borderWidth:0.5
+      borderColor:'#000',
+      borderWidth:0.25
       // elevation: 2, // Add elevation for shadow effect (Android)
     },
   });

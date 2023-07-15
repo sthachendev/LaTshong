@@ -89,7 +89,7 @@ export default ChatRoom = ({route, navigation}) => {
   return (
     <>
     <View style={{flex:1, 
-    // backgroundColor:'#fff'
+    backgroundColor:'#fff'
     }}>
     {/* <Text>
       To user id: {touserid} from {userid}
@@ -143,7 +143,7 @@ export default ChatRoom = ({route, navigation}) => {
           <Text
             style={{
               textAlign: "center",
-              backgroundColor:'#F8F8F8'
+              // backgroundColor:'#F8F8F8'
             }}
           >
             {messageDateLabel ? messageDateLabel : 'Today'}

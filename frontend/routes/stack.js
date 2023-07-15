@@ -14,6 +14,9 @@ import Signup from "../screens/auth/signup";
 import SignupStep2 from "../screens/auth/signupStep2";
 import DrawerNav from "./drawerNav";
 import Support from "../screens/support/support";
+import ForgotPassword from "../screens/auth/forgotPassword";
+import ChangePassword from "../screens/setting/changePassword";
+import AppliedLists from "../screens/post/appliedLists";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -55,6 +58,7 @@ function Stack() {
             headerShown: true,
             headerTitle: "Job Details",
             headerTitleAlign: "center",
+            headerShadowVisible:false
           }}
         />
        <Stack.Screen
@@ -63,7 +67,8 @@ function Stack() {
           options={{
             headerShown: true,
             headerTitle:"Post",
-            headerTitleAlign:"center"
+            headerTitleAlign:"center",
+            headerShadowVisible:false
           }}
         />
 
@@ -77,7 +82,7 @@ function Stack() {
         // }}
         options={({ route }) => ({ 
           headerTitle: route.params.title,
-        headerTitleAlign:"center"
+        headerTitleAlign:"center",
         })}
 
       />
@@ -123,7 +128,9 @@ function Stack() {
         component={Setting}
         options={{
           headerShown: true,
-          // headerTitle:"Add New Post"
+          headerTitle:'Settings',
+          headerTitleAlign:"center",
+          headerShadowVisible:false
         }}
       />
 
@@ -132,7 +139,39 @@ function Stack() {
         component={Support}
         options={{
           headerShown: true,
-          // headerTitle:"Add New Post"
+          headerTitle:"Help & Support",
+          headerTitleAlign:"center",
+          headerShadowVisible:false
+        }}
+      />
+
+      <Stack.Screen
+        name="ForgotPassword"
+        component={ForgotPassword}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="ChangePassword"
+        component={ChangePassword}
+        options={{
+          headerShown: true,
+          headerTitle:'',
+          headerTitleAlign:'center',
+          headerShadowVisible:false
+        }}
+      />
+
+      <Stack.Screen
+        name="AppliedLists"
+        component={AppliedLists}
+        options={{
+          headerShown: true,
+          headerTitle:'Job Applied List',
+          headerTitleAlign:'center',
+          headerShadowVisible:false
         }}
       />
 

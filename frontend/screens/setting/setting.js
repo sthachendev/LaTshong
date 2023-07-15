@@ -1,51 +1,50 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet, TouchableHighlight, ToastAndroid, TouchableOpacity } from "react-native";
 
-export default function Setting({ navigation }) {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+export default function Setting({ navigation, route }) {
+  
+  const { userid } = route.params;
 
-  const handleSaveChanges = () => {
-    // TODO: Add logic to save changes
-    if (newPassword !== confirmPassword) {
-      // TODO: Show error message that passwords don't match
-      return;
-    }
-
-    // TODO: Add logic to update the password
-
-    // Redirect or navigate to another screen
-    navigation.navigate("Home");
-  };
+  const handleRequest = () => {
+    ToastAndroid.show("Account verification request sent", ToastAndroid.SHORT);
+  }
 
   return (
-    <View>
-      <Text>Hello, this is the Setting.js</Text>
+    <View style={{flex:1, backgroundColor:"#fff", padding:10, paddingLeft:25}}>
+
+      <Text style={{color:'#404040'}}>Account Setting</Text>
       
-      <Text>Current Password</Text>
-      <TextInput
-        secureTextEntry
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-      />
+      <TouchableOpacity onPress={()=>navigation.navigate('ChangePassword', userid)} style={{marginTop:20}} activeOpacity={0.6}>
+        <Text style={{fontSize:16}}>Change Password</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity onPress={()=>handleRequest()} style={{marginTop:25}} activeOpacity={0.6}>
+        <Text style={{fontSize:16}}>Request Account Verification</Text>
+      </TouchableOpacity>
 
-      <Text>New Password</Text>
-      <TextInput
-        secureTextEntry
-        value={newPassword}
-        onChangeText={setNewPassword}
-      />
+      <Text style={{color:'#404040', marginTop:25}}>Legal</Text>
 
-      <Text>Confirm New Password</Text>
-      <TextInput
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
+      <TouchableOpacity onPress={()=>handleRequest()} style={{marginTop:25}} activeOpacity={0.6}>
+        <Text style={{fontSize:16}}>Privacy Policy</Text>
+      </TouchableOpacity>
 
-<Button title="Save Changes" onPress={handleSaveChanges} />
-<Button title="Save Changes" onPress={handleSaveChanges} />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+    button: {
+      width: '100%',
+      backgroundColor: '#1E319D',
+      paddingVertical: 13,
+      paddingHorizontal: 20,
+      borderRadius: 50,
+      marginTop:50,
+      alignItems:'center',
+      elevation:2
+    },
+    buttonText: {
+      color: "#fff",
+      fontSize: 14,
+      fontWeight:'bold'
+    },
+  });

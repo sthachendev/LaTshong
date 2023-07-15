@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, TextInput, ToastAndroid
-} from "react-native";
+import { StyleSheet, Text, View, Image, Dimensions, TouchableOpacity, TextInput,
+ToastAndroid, TouchableHighlight} from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import config from "../config";
 import axios from "axios";
@@ -26,6 +26,8 @@ export default ProfilePost = ({navigation, route}) => {
         quality: 1,
       });
   
+      delete result.cancelled;
+      
       console.log(result);
   
       if (!result.canceled) {
@@ -34,57 +36,51 @@ export default ProfilePost = ({navigation, route}) => {
     };
     
     const handlePost = async () => {
-   
-        try {
-          const formData = new FormData();
-          formData.append('description', desc);
-          formData.append('postby', userid);
-          formData.append('image', {
-            uri: image,
-            name: 'image.jpg',
-            type: 'image/jpg',
-          });
-        
-          await axios.patch(`${config.API_URL}/api/post`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
-          });
-        
-          setDesc("");
-          setImage(null);
-          handleGoBack();
-          ToastAndroid.show("Posted", ToastAndroid.SHORT);
-          console.log('posted')
-        } catch (error) {
-          console.log(error);
-        }
+      try {
+        const formData = new FormData();
+        formData.append('description', desc);
+        formData.append('postby', userid);
+        formData.append('image', {
+          uri: image,
+          name: 'image.jpg',
+          type: 'image/jpg',
+        });
+      
+        await axios.patch(`${config.API_URL}/api/post`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+      
+        setDesc("");
+        setImage(null);
+        handleGoBack();
+        ToastAndroid.show("Posted", ToastAndroid.SHORT);
+        console.log('posted')
+      } catch (error) {
+        console.log(error);
+      }
     };
 
     return (
-      <View style={styles.container}>
-
+      <>
       {/* top close header and next/ post btn */}
       <View style={styles.buttonContainer2}>
       
-      <TouchableOpacity style={styles.button} onPress={handleGoBack}>
+      <TouchableOpacity onPress={handleGoBack}>
       <MaterialIcons name="close" size={24} color="black" />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} activeOpacity={1}>
-          <Text style={styles.buttonText2}>New Post</Text>
+      <TouchableOpacity activeOpacity={1}>
+          <Text style={styles.buttonText2}>Add Certificate</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-      onPress={handlePost}
-      style={{backgroundColor:"#fff",}}
-      >
-      <Text style={styles.buttonText}>
-          Post
-      </Text>
-      </TouchableOpacity>
+      <TouchableOpacity/>
+
       </View>
 
+      <View style={styles.container}>
+     
       {/* desc */}
       <View style={styles.textContainer}>
           <TextInput
@@ -103,19 +99,27 @@ export default ProfilePost = ({navigation, route}) => {
     style={{ width: "95%", height: 200, borderWidth:1, borderRadius:5, borderColor:'lightgrey', marginTop:25}} />}
     
     <TouchableOpacity title="Pick an image from camera roll" onPress={pickImage} 
-    style={{backgroundColor:"#1E319D", padding:10, paddingHorizontal:15, borderRadius:10, elevation:2, marginTop:20}}>
-      <Text style={{color:'#fff'}}>Add Image</Text>
+    style={{backgroundColor:"#fff", padding:10, paddingHorizontal:15, borderRadius:10, 
+     marginTop:20, borderWidth:0.5, borderColor:"grey"}} activeOpacity={.7}>
+      <Text style={{color:'grey'}}>Upload Certificate</Text>
     </TouchableOpacity>
+
+    <TouchableHighlight style={styles.button} onPress={handlePost} underlayColor='#1E319D'>
+        <Text style={styles.buttonText3}>Add</Text>
+    </TouchableHighlight>
     
-  </View>
       </View>
+
+      </View>
+      </>
     );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F1F2F6",
+    backgroundColor: "#fff",
+    padding:10
   },
   buttonContainer2: {
     backgroundColor: "#fff",
@@ -126,7 +130,23 @@ const styles = StyleSheet.create({
     width: "100%",
     display:"flex",
     flexDirection:"row",
-    justifyContent:"space-between"
+    justifyContent:"space-between",
+    elevation:5
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#1E319D',
+    paddingVertical: 13,
+    paddingHorizontal: 20,
+    borderRadius: 50,
+    marginTop:50,
+    alignItems:'center',
+    elevation:2
+  },
+  buttonText3: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight:'bold'
   },
   buttonText: {
     fontSize: 16,
@@ -139,10 +159,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     flexDirection: "row",
-    marginTop:40,
+    marginTop:20,
   },
   inputDesc: {
-    backgroundColor: "#fff",
+    backgroundColor: "#F1F2F6",
     width: "95%",
     height: 150,
     maxHeight:300,
@@ -153,53 +173,6 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
     color: "black",
     textAlignVertical: "top",
-    elevation:2
-  },
-  dropdownContainer: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical:20,
-    width:"100%"
-  },
-  assetsContainer: {
-    display: "flex",
-    flexDirection: "row",
-    backgroundColor:'#000',
-    marginHorizontal:10
-  },
-  selectedImage: {
-    width: Dimensions.get("window").width,
-    height: Dimensions.get("window").width - 200,
-    resizeMode: "center"
-  },
-  indexCircle: {
-    position: "absolute",
-    top: 7,
-    right: 7,
-    justifyContent: "center",
-    alignItems: "center",
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "#1E319D",
-  },
-  indexText: {
-    color: "white",
-    fontSize: 10,
-    fontWeight: "bold",
-  },
-  picker: {
-    backgroundColor: "#F5F5F5",
-    borderRadius: 10,
-    marginBottom: 15,
-    height: 40,
-    width: "100%",
-    alignSelf: "center",
-    paddingHorizontal: 10,
-  },
-  pickerItem: {
-    fontSize: 16,
-    color: "#000",
+    // elevation:2
   },
 });

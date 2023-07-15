@@ -341,7 +341,7 @@ app.get("/api/get_job_post", async (req, res) => {
   }
 });
 
-//particular
+//particular post by post id
 app.get("/api/get_job_post/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -362,22 +362,36 @@ app.get("/api/get_job_post/:id", async (req, res) => {
   }
 });
 
-//applicants {}
-app.put("/api/update_job_post", async (req, res) => {
-  try {
-  const {userid, postid} = req.body;
+//api to get all job posts posted by 
 
-  if (postid) {
-  await pool.query("UPDATE job_posts SET applicants = array_append(applicants, $1) WHERE id = $2", [userid, postid]);
-  } else {
-    return res.status(400).send("Invalid update request");
-  }
-    res.status(200).send("Job post updated");
+
+//applicants {}
+app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { userid, postid } = req.body;
+
+    if (postid) {
+      const jobPost = await pool.query("SELECT applicants FROM job_posts WHERE id = $1", [postid]);
+      const applicants = jobPost.rows[0].applicants;
+
+      if (applicants.includes(userid)) {
+        // User has already applied, so remove them from the applicants array
+        await pool.query("UPDATE job_posts SET applicants = array_remove(applicants, $1) WHERE id = $2", [userid, postid]);
+        res.status(200).send({isApply:false});
+      } else {
+        // User hasn't applied, so add them to the applicants array
+        await pool.query("UPDATE job_posts SET applicants = array_append(applicants, $1) WHERE id = $2", [userid, postid]);
+        res.status(200).send({isApply:true});
+      }
+    } else {
+      return res.status(400).send("Invalid update request");
+    }
   } catch (error) {
     console.log(error);
-    res.status(500).send("Error updating user email");
+    res.status(500).send("Error updating job post");
   }
 });
+
 
 //mutiple user info
 app.get("/api/get_user_info", async (req, res) => {
@@ -587,6 +601,65 @@ app.get("/api/chat_rooms/:id", async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.log(error);
+  }
+});
+
+//update user password using userid
+app.put("/api/updatePassword/:userid", async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const { userid } = req.params;
+
+    console.log(userid, currentPassword, newPassword)
+    // Check if current password matches the password in the database
+    const user = await pool.query("SELECT * FROM users WHERE id = $1", [
+      userid,
+    ]);
+    if (user.rows.length === 0) {
+      return res.status(404).json({ msg: "User not found!" });
+    }
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      user.rows[0].password
+    );
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Incorrect password!" });
+    }
+
+    // Hash the new password and update the password in the database
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await pool.query("UPDATE users SET password = $1 WHERE id = $2", [
+      hashedPassword,
+      userid,
+    ]);
+
+    res.json({ msg: "Password updated!" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+//update user profile
+app.patch('/api/updateProfile', upload, async (req, res) => {
+  try {
+    const { userid } = req.body;
+    console.log(req.body);
+
+    const files = req.files.image;
+    console.log(files)
+
+    const filepaths = files.map(file => file.path);
+
+    const { rows } = await pool.query("UPDATE users SET imageurl = $1 WHERE id = $2  RETURNING *", [ filepaths, userid ]);
+
+    res.status(201).json(rows[0]);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
   }
 });
 

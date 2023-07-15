@@ -79,16 +79,17 @@ function BottomTab({ navigation }) {
           },
           // tabBarLabel: role === "em" ? "Dashboard" : "Home",
           title: "Home",
-          headerStyle: {
-            shadowColor: "black",
-            shadowOpacity: 0.25,
-            shadowOffset: {
-              width: 0,
-              height: 2,
-            },
-            shadowRadius: 4,
-            elevation: 5,
-          },
+          headerTitleAlign:'center',
+          // headerStyle: {
+          //   shadowColor: "black",
+          //   shadowOpacity: 0.25,
+          //   shadowOffset: {
+          //     width: 0,
+          //     height: 2,
+          //   },
+          //   shadowRadius: 4,
+          //   elevation: 5,
+          // },
         }}
       />
 
@@ -109,16 +110,17 @@ function BottomTab({ navigation }) {
               headerStyle: {},
               tabBarLabel: "Messages",
               headerTitle: "Messages",
-              headerStyle: {
-                shadowColor: "black",
-                shadowOpacity: 0.25,
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
-                },
-                shadowRadius: 4,
-                elevation: 5,
-              },
+              headerTitleAlign:'center',
+              // headerStyle: {
+              //   shadowColor: "black",
+              //   shadowOpacity: 0.25,
+              //   shadowOffset: {
+              //     width: 0,
+              //     height: 2,
+              //   },
+              //   shadowRadius: 4,
+              //   elevation: 5,
+              // },
             })}
           />
           <Tab.Screen
@@ -127,6 +129,7 @@ function BottomTab({ navigation }) {
             options={({ navigation }) => ({
               tabBarLabel: "Profile",
               headerShown: true,
+              headerTitleAlign:'center',
             })}
           />
         </>
