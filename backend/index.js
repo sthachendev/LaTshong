@@ -13,6 +13,11 @@ dotenv.config();
 
 const app = express();
 
+const folderPath = "./uploads";
+
+// Create the folder if it doesn't exist
+if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath);
+
 const httpServer = require('http').createServer(app);
 const io = require('socket.io')(httpServer);
 
