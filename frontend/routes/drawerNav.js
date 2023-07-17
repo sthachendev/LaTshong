@@ -2,11 +2,15 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@rea
 import { useSelector, useDispatch } from 'react-redux';
 import { clearToken, clearRole } from '../reducers';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Text, View } from 'react-native';
+import { Text, View, ToastAndroid, Image, TouchableOpacity } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
 import BottomTab from './bottomtab';
 import { DrawerActions } from '@react-navigation/native';
 import jwtDecode from 'jwt-decode';
+import config from '../screens/config';
+import { capitalizeWords } from '../screens/fn';
+import { MaterialIcons } from '@expo/vector-icons';
+import { TouchableHighlight } from 'react-native';
 
 const Drawer = createDrawerNavigator();
 
@@ -15,6 +19,10 @@ export default function DrawerNav({ navigation }) {
 
   const token = useSelector((state)=> state.token);
   const userid = token ? jwtDecode(token).userid : null;
+  const imageurl = token ? jwtDecode(token).imageurl : null;
+  const username = token ? jwtDecode(token).username : null;
+
+  const role = useSelector(state => state.role);
   // const userid = jwtDecode(token).userid;// this giving a getter problem
   // console.log('userid',userid)
 
@@ -24,6 +32,7 @@ export default function DrawerNav({ navigation }) {
     dispatch(clearRole());
     AsyncStorage.removeItem('token');
     AsyncStorage.removeItem('role');
+    ToastAndroid.show("Log out", ToastAndroid.SHORT);
   };
 
   const CustomDrawerContent = (props) => {
@@ -31,7 +40,7 @@ export default function DrawerNav({ navigation }) {
       <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, marginHorizontal:10 }}>
         <View style={{ flex: 1 }}>
           {/* LaTshong */}
-          <View style={{ alignItems: 'center', marginVertical: 20, paddingBottom:20, borderBottomWidth:1, borderColor:"lightgrey"}}>
+          <View style={{ alignItems: 'center', marginTop: 20}}>
             <Text
               style={{
                 fontWeight: 'bold',
@@ -44,9 +53,27 @@ export default function DrawerNav({ navigation }) {
             </Text>
           </View>
 
+          <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
+          
+          {token !== null && token && imageurl && username &&
+            <TouchableOpacity style={{display:'flex', flexDirection:'row'}} activeOpacity={1}
+             onPress={() => navigation.navigate('Profile')}>
+              <Image source={{ uri: `${config.API_URL}/${imageurl}` }} style={{width:50, height:50, borderRadius:25}} />
+                <View style={{marginLeft:20}}>
+                  <Text style={{fontWeight:'500',}}>{capitalizeWords(username)}</Text>
+                  <Text>
+                  {role === 'em' && 'Employer'}
+                  {role === 'js' && 'Job Seeker'}
+                  </Text>
+                </View>
+            </TouchableOpacity>
+          }
+
+          <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
+
           {/* Drawer items */}
           {/* <DrawerItemList {...props} /> */}
-          {token !== null && token && (
+          {/* {token !== null && token && (
              <DrawerItem
              label="Profile"
              onPress={() => navigation.navigate('Profile')}
@@ -58,14 +85,15 @@ export default function DrawerNav({ navigation }) {
                />
              )}
            />
-          )}
+          )} */}
        
         <DrawerItem
           label="Home"
+          // labelStyle={{color:'#000'}}
           onPress={() => navigation.navigate('Home')}
           icon={({ color, size }) => (
             <Ionicons
-              name="home-outline"
+              name="home-sharp"
               color={color}
               size={size}
             />
@@ -76,7 +104,7 @@ export default function DrawerNav({ navigation }) {
           onPress={() => navigation.navigate('Explore')}
           icon={({ color, size }) => (
             <Ionicons
-              name="search-outline"
+              name="search"
               color={color}
               size={size}
             />
@@ -92,7 +120,7 @@ export default function DrawerNav({ navigation }) {
             }}
             icon={({ color, size }) => (
               <Ionicons
-                name="person-outline"
+                name="person"
                 color={color}
                 size={size}
               />
@@ -103,34 +131,36 @@ export default function DrawerNav({ navigation }) {
         {token !== null && token && (
           <>
             <DrawerItem
-             label="Messages"
+             label="Message"
              onPress={() => navigation.navigate('Chat')}
              icon={({ color, size }) => (
                <Ionicons
-                 name="chatbubbles-outline"
+                 name="chatbox-ellipses"
                  color={color}
                  size={size}
                />
              )}
            />
 
-          <DrawerItem
+          </>
+          )}
+
+          {role === 'js' && 
+            <DrawerItem
             label="Applied Lists"
             onPress={() => navigation.navigate('AppliedLists')}
             icon={({ color, size }) => (
               <Ionicons
-                name="file-tray-full-outline"
+                name="file-tray-full"
                 color={color}
                 size={size}
               />
             )}
           />
-
-          </>
-          )}
+          }
 
           <View style={{alignContent: 'center', marginVertical: 20,
-          borderBottomWidth:1, borderColor:"lightgrey"}}/>
+          borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
 
           {token !== null && token && (
             <DrawerItem
@@ -141,7 +171,7 @@ export default function DrawerNav({ navigation }) {
               }}
               icon={({ color, size }) => (
                 <Ionicons
-                  name="build-outline"
+                  name="build"
                   color={color}
                   size={size}
                 />
@@ -156,7 +186,7 @@ export default function DrawerNav({ navigation }) {
             }}
             icon={({ color, size }) => (
               <Ionicons
-                name="help-circle-outline"
+                name="help-circle"
                 color={color}
                 size={size}
               />
@@ -168,30 +198,23 @@ export default function DrawerNav({ navigation }) {
          
         
         {token !== null && token && (
-          <View style={{alignContent: 'center', marginBottom: 20,
-            borderBottomWidth:1, borderColor:"lightgrey"}}>
-          <DrawerItem
-              label="Logout"
-              labelStyle={{ color: 'rgba(255,0,0,.5)' }} // Specify the desired label color here
-              inactiveBackgroundColor='rgba(255,0,0,.1)'
-              onPress={handleLogout}
-              style={{ marginVertical: 20 , alignContent:"center",}}
-              icon={({ color, size }) => (
-                <Ionicons
-                  name="log-out"
-                  color='rgba(255,0,0,.5)'
-                  size={size}
-                />
-              )}
-            />
-           
+          <View style={{alignContent: 'center', justifyContent:'center', flexDirection:'row', marginBottom:20 }}>
+          <TouchableHighlight onPress={handleLogout} style={{flexDirection:'row', padding:10, borderRadius:25, paddingHorizontal:20}}
+           underlayColor='rgba(49, 105, 210, 0.5)'>
+          <>
+          <Ionicons
+            name="power"
+            color='#3E56C5'
+            size={20}
+          />
+          <Text style={{ marginLeft:10, color:'#3E56C5' }}>Log Out</Text>
+          </>
+          </TouchableHighlight>
           </View>
           )}
+          {/* <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"lightgrey"}}/> */}
 
-          <Text style={{
-           textAlign:"center", marginBottom:20, color:'grey'
-          }}>Version 1.0.0</Text>
-        
+          <Text style={{ textAlign:"center", marginBottom:20, color:'grey' }}>Version 1.0.0</Text>
           
         </View>
       </DrawerContentScrollView>
@@ -206,7 +229,7 @@ export default function DrawerNav({ navigation }) {
         headerShown: false,
         drawerIcon: ({ color, size }) => (
           <Ionicons
-            name="menu-outline"
+            name="menu"
             color={color}
             size={size}
           />

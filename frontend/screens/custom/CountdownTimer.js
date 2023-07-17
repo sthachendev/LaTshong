@@ -37,3 +37,4 @@ const CountdownTimer = ({ minutes }) => {
 };
 
 export default CountdownTimer;
+//used in otp

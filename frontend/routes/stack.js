@@ -66,7 +66,7 @@ function Stack() {
           component={ViewProfile}
           options={{
             headerShown: true,
-            headerTitle:"Post",
+            headerTitle:"Profile",
             headerTitleAlign:"center",
             headerShadowVisible:false
           }}
@@ -82,7 +82,7 @@ function Stack() {
         // }}
         options={({ route }) => ({ 
           headerTitle: route.params.title,
-        headerTitleAlign:"center",
+        headerTitleAlign:"left",
         })}
 
       />

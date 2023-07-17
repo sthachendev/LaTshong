@@ -1,3 +1,4 @@
+import { TouchableWithoutFeedback } from 'react-native';
 import { View, Image, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
@@ -7,12 +8,16 @@ const ImageViewer = ({ uri, modalVisible, setModalVisible }) => {
     <View style={styles.container}>
 
       <Modal visible={modalVisible} transparent={true} onRequestClose={() => setModalVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
           <MaterialIcons name="close" size={30} color='#fff' />
           </TouchableOpacity>
+          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
           <Image source={{ uri }} style={styles.zoomedImage} resizeMode="contain" />
+          </TouchableWithoutFeedback>
         </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );

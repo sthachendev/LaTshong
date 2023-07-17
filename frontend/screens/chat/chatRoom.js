@@ -1,23 +1,26 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image} from 'react-native';
 import io from 'socket.io-client';
 import config from '../config';
 import { useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
 import Icon from "react-native-vector-icons/Ionicons";
 import { isToday, isSameDate, getTime } from '../fn';
+import CustomHeader from '../custom/customHeader';
+import Spinner from '../custom/Spinner';
 
 export default ChatRoom = ({route, navigation}) => {
 
   const token = useSelector((state) => state.token);
   const userid = jwtDecode(token).userid;
 
-  const {touserid} = route.params;
+  const {touserid, imageurl} = route.params;
 
   useLayoutEffect(() => {
-    navigation.setOptions({ title: route.params.title });
-  }, [navigation, route.params.title]);
-
+    navigation.setOptions({
+      headerTitle: () => <CustomHeader title={route.params.title} imageUrl={imageurl} />,
+    });
+  }, [navigation, route.params.title, imageurl]);
   // Create the Socket.IO connection
   const socket = io(config.API_URL, {
     auth: {
@@ -86,23 +89,41 @@ export default ChatRoom = ({route, navigation}) => {
     }
   };
 
+  if (!messages) return <Spinner/>
+
   return (
     <>
     <View style={{flex:1, 
     backgroundColor:'#fff'
     }}>
-    {/* <Text>
-      To user id: {touserid} from {userid}
-    </Text>
-    <Text>
-      Joined chat room with room ID: {roomId}
-    </Text> */}
 
     <FlatList
+    //header is footer, the message is shown in reverse oorder
       // ref={flatListRef}
       data={messages}
       keyExtractor={(item) => item.id.toString()}
       initialNumToRender={10}
+      ListFooterComponent={()=>{
+        return(
+          <>
+            <View style={{display:'flex', alignContent:'flex-end', justifyContent:'center', flexDirection:'row'}}>
+            <Image style={{ width: 200, height: 200, }} source={require("../../assets/images/message.png")} />
+            </View>
+            <Text style={{textAlign:'center', fontSize:12, color:'grey'}}>---</Text>
+            <Text style={{ textAlign:"justify", fontSize:12, color:'grey', padding:10}}>
+            🙏 Please remember to be polite and respectful. Treat others the way you want to be treated.
+            {'\n'}{'\n'}
+            🚫 Avoid sharing any personal or sensitive information, such as passwords, financial details.
+            {'\n'}{'\n'}
+            🔒 Your privacy is important to us! Be cautious when sharing links or interacting with unknown users.
+            {'\n'}{'\n'}
+            🔧 If you encounter any issues or need assistance, feel free to reach out to the moderators or support team.
+           </Text>
+           <Text style={{textAlign:'center', fontSize:12, color:'grey', marginBottom:30}}>---</Text>
+          </>
+         
+        )
+      }}  
       inverted 
       renderItem={({ item, index}) => 
       {
@@ -143,13 +164,13 @@ export default ChatRoom = ({route, navigation}) => {
           <Text
             style={{
               textAlign: "center",
-              // backgroundColor:'#F8F8F8'
+              // backgroundColor:'#F8F8F8',
+              color:'grey'
             }}
           >
             {messageDateLabel ? messageDateLabel : 'Today'}
           </Text>
         )}
-
         {/* message box */}
         <View 
         style={{
@@ -163,7 +184,7 @@ export default ChatRoom = ({route, navigation}) => {
         >
           <TouchableOpacity
           style={{
-            backgroundColor: msg.userid === userid ? '#E0E0E0' : '#F0F0F0',
+            backgroundColor: msg.userid === userid ? '#3E56C5' : '#F0F0F0',
             borderRadius: 20,
             borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
             borderBottomRightRadius: msg.userid === userid ? 0 : 20,
@@ -173,7 +194,7 @@ export default ChatRoom = ({route, navigation}) => {
           }}
           activeOpacity={0.7}
         >
-          <Text>{msg.message}</Text>
+          <Text style={{color: msg.userid === userid ? '#fff' : '#000',}}>{msg.message}</Text>
             
         </TouchableOpacity>
       
@@ -196,8 +217,6 @@ export default ChatRoom = ({route, navigation}) => {
 
     <View
     style={{
-      // position: "absolute",
-      // bottom: 0,
       width: "100%",
       backgroundColor: "#fff",
       padding: 10,

@@ -1,30 +1,33 @@
-import React, { useEffect, useState, } from "react";
-import { View, Text, TouchableHighlight, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
+import React, { useEffect, useState, useRef } from "react";
+import { View, Text, TouchableHighlight, StyleSheet, Alert,
+ FlatList, Image, ToastAndroid, RefreshControl } from "react-native";
 import axios from "axios";
 import config from "../config";
-import { capitalizeWords, getTimeDifference } from "../fn";
-import { useNavigation } from "@react-navigation/native";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { capitalizeWords, getTimeDifference, getTimeDifference2 } from "../fn";
 import jwtDecode from "jwt-decode";
 import { useSelector } from "react-redux";
 import Spinner from "../custom/Spinner";
+import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default PostDetails = ({ route }) => {
+export default PostDetails = ({ route, navigation }) => {
   
   const { id, role } = route.params;//post id
+  // console.log('postid', id)
 
   const [data, setData] = useState('');
-  const [usersData, setUserData] = useState('');
-  // const [postby_userid, setPostbyuserid] = useState('');
-  // const [postby_username, setPostbyusername] = useState('');
+  const [usersData, setUserData] = useState([]);
+  const [applicants, setApplicants] = useState([]);
+  const [acceptedApplicants, setAcceptedApplicants] = useState([]);
+
   const [isApply, setIsApply] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const token = useSelector((state)=>state.token);
-  const userid = jwtDecode(token).userid;
+  const userid = token ? jwtDecode(token).userid : null;
 
-  const navigation = useNavigation();
 
   useEffect(() => {
     console.log('userid',id);
@@ -38,30 +41,52 @@ export default PostDetails = ({ route }) => {
      
   }, []);
 
+  const onRefresh = async () => {
+    setRefreshing(true); // Set refreshing to true to show the loader
+    try {
+      await getJobPost(); // Fetch data again
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRefreshing(false); // Set refreshing to false when done, to hide the loader
+    }
+  };
+
 const getJobPost = async () => {
   try {//post id
     setLoading(true);
-    const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);
+    const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);//no need to add token
     setData(res.data);
-    // setPostbyuserid(res.data[0].postby);
-    // console.log(res.data[0].postby);
-    // setPostbyusername(res.data[0].name);
-    const applicants = res.data[0].applicants;
-    // console.log('userid',userid);
-    if(applicants.includes(userid)) setIsApply(true)
-    // console.log('applicants',applicants.length)
-
     setLoading(false);
+    // console.log(res.data[0].postby);
+    const applicants = res.data[0].applicants;
+    const accepted_applicants = res.data[0].accepted_applicants;
 
-    if ( role === 'em' && role !== 'js' && applicants.length > 0){
+    if(applicants.includes(userid)) setIsApply(true)
+
+    if ( role === 'em' && role !== 'js' ){
       setLoading(true);
-      const response = await axios.get(`${config.API_URL}/api/get_user_info`, {
+      const response = await axios.get(`${config.API_URL}/api/get_user_info_`, {
         params: {
-          userArray: applicants
+          applicants: applicants,
+          acceptedApplicants: accepted_applicants,
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         }
       });
-      // console.log(response.data,'response');
-      setUserData(response.data);
+
+      const applicants2 = response.data.applicants ?? []; // Set applicants to an empty array if it's undefined or null
+      const acceptedApplicants2 = response.data.acceptedApplicants ?? []; // Set acceptedApplicants to an empty array if it's undefined or null
+
+      setUserData(applicants2);
+      setApplicants(applicants2);
+      setAcceptedApplicants(acceptedApplicants2);
+
+      console.log(applicants2,'applicants2')
+      console.log(acceptedApplicants2,'acceptedApplicants2')
+
       setLoading(false);
     }
 
@@ -86,8 +111,6 @@ const handleApply = async (postid) => {
           }
         }
       );
-      // console.log(res.data);
-      console.log('update_job_post');
       console.log('update_job_post',res.data.isApply);
       if(res.data.isApply){
         setIsApply(true);
@@ -102,7 +125,6 @@ const handleApply = async (postid) => {
   }
 }
 
-
 const handleMessage = (touserid, tousername) => {
   if (token) {
     navigation.navigate('ChatRoom', 
@@ -112,20 +134,187 @@ const handleMessage = (touserid, tousername) => {
   }
 }
   
-  const [selectedOption, setSelectedOption] = useState("all");
+  const [selectedOption, setSelectedOption] = useState("p");
 
+  // all accept pending rejected
   const handleOptionSelect = (option) => {
     setSelectedOption(option);
-    if(option === 'all'){
+    if(option === 'p'){
         console.log(option);
-    }else if(option === 'p'){
+        setUserData(applicants);
+      }else if(option === 'a'){
         console.log(option);
-    }else if(option === 'a'){
-        console.log(option);
-    }else if(option === 'r'){
-        console.log(option);
-    }
+        setUserData(acceptedApplicants);
+      }
   }
+
+  //open and close posts btn
+  const handlePostStatus = (status) => {
+    Alert.alert(
+      status === 'o' ? "Do you want to close the post?" : 'Do you want to open the post?',
+      status === 'o' ? "Job seeker won't be able to apply for this job." : 'Job seeker will be able apply for this job.',
+      [
+          {
+              text: status === 'o' ? "Close" : 'Re-open',
+              onPress: async() => {
+                  try {
+                    axios.put(`${config.API_URL}/api/update_job_post_status/${id}`,{}, {
+                      headers:{
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}`,
+                      }
+                    })
+                    .then(res=>{
+                      console.log(res.data);
+                      getJobPost();
+                    })
+                    .catch(e=>console.log(e))
+                  } catch (error) {
+                    console.error('Error deleting post:', error);
+                  }
+              },
+            },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
+      
+  }
+
+  //post delete options
+  const Option = (postby_userid) => {
+    Alert.alert(
+      "Do you want to delete the post?",
+      "Once deleted, you can not undo it.",
+      [
+        // userid === postby_userid ? 
+          {
+              text: "Delete",
+              onPress: async() => {
+                  try {
+                    axios.delete(`${config.API_URL}/api/delete_job_post/${id}`,{
+                      headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                      }
+                    })
+                    .then(res=>{
+                      console.log(res.data);
+                      ToastAndroid.show("Post deleted", ToastAndroid.SHORT);
+                      navigation.goBack()
+                    })
+                    .catch(e=>console.log(e))
+                  } catch (error) {
+                    console.error('Error deleting post:', error);
+                  }
+              },
+            },
+          // : {
+          //   text: "Report",
+          //   onPress: () => {
+          //     handleReport();
+          //   },
+          // },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  //update the applicants list and put the user in accept lists
+  const handleUserSelect = (userId) => {
+    console.log(userid)
+    const jobPostId = id;
+    axios.put(`${config.API_URL}/api/move_user_to_accepted/${jobPostId}/${userId}`,{},{
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      }
+    })
+    .then(res=>{
+      console.log(res.data);
+      // ToastAndroid.show("Selected", ToastAndroid.SHORT);
+      //getJobPost();//instead of fetching the data, remove the add from applicants and add to accept array
+
+      // Instead of using `applicants` and `acceptedApplicants` directly,
+
+      // Instead of using `applicants` and `acceptedApplicants` directly,
+      // modify the state directly to trigger a re-render
+      if (selectedOption === 'p') {
+        setUserData((prevApplicants) => {
+          const indexToRemove = prevApplicants.findIndex((applicant) => applicant.id === userId);
+          if (indexToRemove !== -1) {
+            const removedItem = prevApplicants[indexToRemove];
+            setAcceptedApplicants((prevAcceptedApplicants) => [...prevAcceptedApplicants, removedItem]);
+            setApplicants((prev) => prev.filter((applicant) => applicant.id !== userId));
+            ToastAndroid.show("Selected", ToastAndroid.SHORT);
+            return prevApplicants.filter((_, index) => index !== indexToRemove);
+          }
+          return prevApplicants;
+        });
+      } else if (selectedOption === 'a') {
+        setUserData((prevAcceptedApplicants) => {
+          const indexToRemove = prevAcceptedApplicants.findIndex((applicant) => applicant.id === userId);
+          if (indexToRemove !== -1) {
+            const removedItem = prevAcceptedApplicants[indexToRemove];
+            setApplicants((prevApplicants) => [...prevApplicants, removedItem]);
+            setAcceptedApplicants((prev) => prev.filter((applicant) => applicant.id !== userId));
+            ToastAndroid.show("Un-selected", ToastAndroid.SHORT);
+            return prevAcceptedApplicants.filter((_, index) => index !== indexToRemove);
+          }
+          return prevAcceptedApplicants;
+        });
+      }
+      
+    })
+    .catch(e=>console.log(e))
+  }
+
+  //this to retain the faltlist position when scrolling 
+  const flatListRef = useRef(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setScrollOffset(offsetY);
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      try {
+        const lastScrollOffset = await AsyncStorage.getItem('lastScrollOffset');
+        if (flatListRef.current && lastScrollOffset) {
+          flatListRef.current.scrollToOffset({ offset: Number(lastScrollOffset), animated: false });
+        }
+      } catch (error) {
+        console.error('Error retrieving scroll offset:', error);
+      }
+    });
+  
+    navigation.addListener('blur', saveScrollOffset);
+  
+    return () => {
+      saveScrollOffset();
+      unsubscribe();
+    };
+  }, [navigation]);
+  
+  const saveScrollOffset = async () => {
+    if (flatListRef.current) {
+      const offsetY = flatListRef.current._listRef._scrollMetrics.offset;
+      try {
+        await AsyncStorage.setItem('lastScrollOffset', String(offsetY));
+      } catch (error) {
+        console.error('Error saving scroll offset:', error);
+      }
+    }
+  };
 
   if (loading) {
     return <Spinner />;
@@ -136,7 +325,6 @@ const handleMessage = (touserid, tousername) => {
     return (
       <>
       {/* post detail container */}
-       
       {data && (
       <>
         <View style={{padding:10, backgroundColor:"#fff",  borderColor:'lightgrey',
@@ -160,7 +348,7 @@ const handleMessage = (touserid, tousername) => {
 
       <Text style={{color:"grey",position:"absolute", top:10, right:10, fontSize:12}}>
         {data[0].status == 'o' && 'Open ~ '}{data[0].status == 'o' && getTimeDifference(data[0].postdate)}
-        {data[0].status == 'c' && 'Closed'}</Text>
+        {data[0].status == 'c' && 'Closed ~ '}{data[0].status == 'c' && getTimeDifference(data[0].closedate)}</Text>
  
       <View style={styles.container}>
 
@@ -240,21 +428,34 @@ const handleMessage = (touserid, tousername) => {
 
           {
             role === 'em' &&
-            <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'red',
-            borderWidth:0.25, flex:1, borderRadius:25}} 
-            underlayColor="rgba(255,0,0,.1)"  
-            onPress={() => navigation.navigate('PostDetails', { id: item.id })}
-            >
-              <Text style={{ paddingVertical:10,  textAlign:"center", color:'rgba(255,0,0,.7)' }}>
-              Close
-              </Text>
-            </TouchableHighlight>
+             <>
+              <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:"rgba(0,0,0,1)",
+              borderWidth:0.25, flex:1, borderRadius:25}} 
+              underlayColor="rgba(0,0,0,0.1)"
+              onPress={()=>handlePostStatus(data[0].status)}
+              >
+                <Text style={{ paddingVertical:10,  textAlign:"center", 
+                color: 'rgba(0,0,0,0.7)' }}>
+                {data[0].status == 'c' && 'Re-open'}
+                {data[0].status == 'o' && 'Close'}
+                </Text>
+              </TouchableHighlight>
+              <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(255,0,0,.7)',
+              borderWidth:0.25, flex:1, borderRadius:25, marginLeft:10}} 
+              underlayColor='rgba(255,0,0,.1)'  
+              onPress={()=>Option(data[0].postby)}
+              >
+                <Text style={{ paddingVertical:10,  textAlign:"center", 
+                color:'rgba(255,0,0,.7)' }}>
+                Delete
+                </Text>
+              </TouchableHighlight>
+             </>
           } 
+          
         </View>    
           </>
         )}
-
-      
 
         {/* menu bar */}
         {
@@ -266,12 +467,6 @@ const handleMessage = (touserid, tousername) => {
               </View>
 
               <View style={{backgroundColor:"lightgrey", display:"flex", flexDirection:"row", padding:10}}>
-              <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'all' ? '#fff' : 'lightgrey',
-              elevation: selectedOption === 'all' ? 2: 0}]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("all")}>
-                <Text style={styles.btnText}>
-                All
-                </Text>
-              </TouchableHighlight>
               
               <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'p' ? '#fff' : 'lightgrey',
                 elevation: selectedOption === 'p' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("p")}>
@@ -282,16 +477,12 @@ const handleMessage = (touserid, tousername) => {
               <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'a' ? '#fff' : 'lightgrey',
                 elevation: selectedOption === 'a' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("a")}>
                 <Text style={styles.btnText}>
-                Accept
+                Selected
                 </Text>
               </TouchableHighlight>
-              <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'r' ? '#fff' : 'lightgrey',
-                elevation: selectedOption === 'r' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("r")}>
-                <Text style={styles.btnText}>
-                Decline
-                </Text>
-              </TouchableHighlight>
+             
               </View>
+              <Text style={{color:"grey", paddingHorizontal:10, fontSize:12}}>*Applicant will not be notified when you select an applicant.</Text>
             </>
           )
         }
@@ -302,29 +493,37 @@ const handleMessage = (touserid, tousername) => {
 
   // user apply list
   const renderUserItem = ({ item }) => {
+  
       return (
         <TouchableHighlight style={styles.itemContainer}  underlayColor="#F1F2F6" 
-        onPress={()=>navigation.navigate('Profile', { userid: item.id })}>
+        onPress={()=>navigation.navigate('ViewProfile', { userid: item.id })}>
           <View style={{padding:10}}>
         <View style={{display:"flex", flexDirection:"row", flex:1}}>
 
-          {item.imageurl !== null ? 
-          <Image source={{ uri: `${item.imageurl}` }} style={{width:40, height:40, borderRadius:15}} />
-          :
-          <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20}}/>
-          }
-          <View>
-          <Text style={{marginLeft:5, fontWeight:"bold", fontSize:14}}>{capitalizeWords(item.name)}</Text>
-          <Text style={{color:"grey", marginLeft:5, fontSize:12}}>{item.email}</Text>
-          </View>
+        {item.imageurl.length > 0 ? (
+          <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{ width: 40, height: 40, borderRadius: 25 }} />
+        ) : (
+          <Ionicons name="person-circle-outline" size={45} color="grey" />
+        )}
 
-          <TouchableHighlight style={[styles.btn2, {position:"absolute", top:0, right:0}]} 
-          underlayColor="#F1F2F6" 
-          onPress={() => handleOptionSelect("all")}>
-          <Text style={[styles.btnText, { color:'grey' }]}>
-          Accept
-          </Text>
-        </TouchableHighlight>
+          {/* <View> */}
+          <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14, textAlignVertical:'center'}}>{capitalizeWords(item.name)}</Text>
+          {/* <Text style={{color:"grey", marginLeft:5, fontSize:12, textAlignVertical:'bottom'}}>{item.email}</Text> */}
+          {/* </View> */}
+
+            <>
+               <TouchableHighlight
+              style={[styles.btn2, { position: 'absolute', top: 0, right: 0 }]}
+              underlayColor="#F1F2F6"
+              onPress={() => handleUserSelect(item.id)}
+            >
+              <Text style={[styles.btnText, { color: 'grey' }]}>
+              {selectedOption === 'p' && 'Select'}
+              {selectedOption === 'a' && 'Un-select'}
+              </Text>
+            </TouchableHighlight>
+            </>
+
         </View>
         
       </View>
@@ -336,9 +535,9 @@ const handleMessage = (touserid, tousername) => {
     <>   
   {/* user applied list */}
       <View style={{backgroundColor:"#fff", flex:1
-    // borderTopWidth:.5, borderColor:"lightgrey"
     }}>
       <FlatList
+        ref={flatListRef}
         data={usersData} // Pass the usersData as the data for the FlatList
         ListHeaderComponent={PostDetailsInfo}
         ListFooterComponent={()=>{return(<View style={{margin:10}}></View>)}}
@@ -355,6 +554,10 @@ const handleMessage = (touserid, tousername) => {
         }}
         keyExtractor={(item) => item.id} // Provide a unique key for each item
         maxToRenderPerBatch={4}
+        onScroll={handleScroll} // Add onScroll event to track the scroll position
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
         />
       </View>
     </>
@@ -363,14 +566,12 @@ const handleMessage = (touserid, tousername) => {
 
 const styles = StyleSheet.create({
     btn:{ 
-    // borderColor:'#000',
-    // borderWidth:0.25, 
     borderRadius:20, 
-    flex:.25,
+    flex:.5,
     marginHorizontal:2.5,
     },
     btn2:{ 
-    borderColor:'#3a348e',
+    borderColor:'#000',
     borderWidth:0.25, 
     borderRadius:25, 
     marginHorizontal:5,
@@ -387,14 +588,12 @@ const styles = StyleSheet.create({
     marginHorizontal:10,
     borderRadius: 5,
     marginBottom:0,
-    // elevation: 2, 
     borderWidth:.25,
     borderColor:"grey"
   },
   container: {
     marginTop: 16,
     padding:5,
-    // backgroundColor: 'red',
   },
   tableRow: {
     flexDirection: 'row',

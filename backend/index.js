@@ -22,17 +22,19 @@ const { v4: uuidv4 } = require('uuid');
 const PORT = 3000; // Replace with your desired port number
 
 const pool = new Pool({
-    user: process.env.USER,
-    host: process.env.HOST,
-    database: process.env.DATABASE,
-    password: process.env.PASSWORD,
-    port: process.env.PORT,
+    // user: process.env.USER,
+    // host: process.env.HOST,
+    // database: process.env.DATABASE,
+    // password: process.env.PASSWORD,
+    // port: process.env.PORT,
 
-    //production
-    // connectionString: process.env.DATABASE_URL,
-    // ssl: {
-    //   rejectUnauthorized: false // Add this line if you encounter SSL certificate validation errors
-    // }
+    // production
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false // Add this line if you encounter SSL certificate validation errors
+    }
+
+    // encoding: 'UTF8', // Set the encoding option to UTF8
 
   });
 
@@ -106,7 +108,7 @@ app.post("/api/login", async (req, res) => {
   }
 
   // Generate JWT
-  const token = jwt.sign({ userid: user.id, usename: user.name, role: user.role }, secretKey, { expiresIn: '30d' });
+  const token = jwt.sign({ userid: user.id, username: user.name, role: user.role, imageurl:user.imageurl }, secretKey, { expiresIn: '30d' });
 
   res.json({token});
 
@@ -341,7 +343,7 @@ app.get("/api/get_job_post", async (req, res) => {
   }
 });
 
-//particular post by post id
+//particular post by post id //this doesnt require token user user have to view w/o login
 app.get("/api/get_job_post/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -363,7 +365,6 @@ app.get("/api/get_job_post/:id", async (req, res) => {
 });
 
 //api to get all job posts posted by 
-
 
 //applicants {}
 app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
@@ -392,24 +393,49 @@ app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
   }
 });
 
+//mutiple user info for array of users
+// app.get("/api/get_user_info", authenticateTokenAPI, async (req, res) => {
+//   const { userArray } = req.query;
 
-//mutiple user info
-app.get("/api/get_user_info", async (req, res) => {
-  const { userArray } = req.query;
+//   console.log(userArray)
 
-  console.log(userArray)
+//   try {
+//     const query = `SELECT id, name, imageurl FROM users WHERE id IN (${userArray.join(",")})`;
+//     const { rows } = await pool.query(query);
+//     res.json(rows);
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
 
+//same as above but takes multiple arrays
+app.get("/api/get_user_info_", authenticateTokenAPI, async (req, res) => {
+  const { applicants, acceptedApplicants } = req.query;
+  
   try {
-    const query = `SELECT * FROM users WHERE id IN (${userArray.join(",")})`;
-    const { rows } = await pool.query(query);
-    res.json(rows);
+    const response = {};
+    
+    if (applicants && applicants.length > 0) {
+      const queryApplicants = `SELECT id, name, imageurl FROM users WHERE id IN (${applicants.join(",")})`;
+      const { rows: applicantsData } = await pool.query(queryApplicants);
+      response.applicants = applicantsData;
+    }
+    
+    if (acceptedApplicants && acceptedApplicants.length > 0) {
+      const queryAccepted = `SELECT id, name, imageurl FROM users WHERE id IN (${acceptedApplicants.join(",")})`;
+      const { rows: acceptedData } = await pool.query(queryAccepted);
+      response.acceptedApplicants = acceptedData;
+    }
+    
+    res.json(response);
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 //user info
-app.get("/api/get_user_info/:id", async (req, res) => {
+app.get("/api/get_user_info/:id", authenticateTokenAPI, async (req, res) => {
   const id = req.params.id;
   try {
     const { rows } = await pool.query(
@@ -582,23 +608,60 @@ const fetchMessage = async (roomId) => {
 //   }
 // })
 
-//user info
-app.get("/api/chat_rooms/:id", async (req, res) => {
-  const id = req.params.id;//userid
+//user info // fetch imageurl n last chat message as t or false
+app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
+  const id = req.params.id; // userid
   try {
-    const query = `
+    const chatRoomsQuery = `
       SELECT chat_rooms.*, 
-             u1.name AS user1_name,
-             u2.name AS user2_name
+        u1.name AS user1_name,
+        u1.imageUrl AS user1_imageUrl,
+        u2.name AS user2_name,
+        u2.imageUrl AS user2_imageUrl,
+        CASE
+          WHEN u1.id = $1 THEN u2.imageUrl
+          ELSE u1.imageUrl
+        END AS other_user_imageUrl
       FROM chat_rooms
       INNER JOIN users AS u1 ON chat_rooms.user1 = u1.id
       INNER JOIN users AS u2 ON chat_rooms.user2 = u2.id
       WHERE chat_rooms.user1 = $1 OR chat_rooms.user2 = $1
     `;
-    const values = [id];
-    const { rows } = await pool.query(query, values);
-    
-    res.json(rows);
+    const chatRoomsValues = [id];
+    const { rows: chatRooms } = await pool.query(chatRoomsQuery, chatRoomsValues);
+
+    const roomIds = chatRooms.map((room) => room.room_id);
+    const messagesQuery = `
+      SELECT DISTINCT ON (room_id) *
+      FROM messages
+      WHERE room_id::text = ANY($1)
+      ORDER BY room_id, date DESC;
+    `;
+    const messagesValues = [roomIds];
+    const { rows: messages } = await pool.query(messagesQuery, messagesValues);
+
+    // Create a map to store the latest message for each room
+    const latestMessagesMap = new Map();
+    messages.forEach((message) => {
+      if (!latestMessagesMap.has(message.room_id)) {
+        latestMessagesMap.set(message.room_id, message);
+      }
+    });
+
+    // Combine chat rooms and latest messages based on room_id
+    const result = chatRooms.map((chatRoom) => {
+      const latestMessage = latestMessagesMap.get(chatRoom.room_id);
+      return {
+        ...chatRoom,
+        message: latestMessage ? latestMessage.message : null,
+        message_type: latestMessage ? latestMessage.message_type : null,
+        date: latestMessage ? latestMessage.date : null,
+        message_by_userid: latestMessage ? latestMessage.userid : null,
+      };
+    });
+
+    console.log(result);
+    res.json(result);
   } catch (error) {
     console.log(error);
   }
@@ -660,6 +723,130 @@ app.patch('/api/updateProfile', upload, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// api to handle post status close and open
+// Update job post status by ID
+app.put("/api/update_job_post_status/:id", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Retrieve the current status and dates of the job post
+    const { rows } = await pool.query(
+      "SELECT status, postdate, closedate FROM job_posts WHERE id = $1",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Job post not found." });
+    }
+
+    const currentStatus = rows[0].status;
+    let newStatus;
+    let updatedDate;
+
+    // Determine the new status based on the current status
+    if (currentStatus === "o") {
+      newStatus = "c";
+      updatedDate = new Date(); // Set the closedate to the current date/time
+    } else if (currentStatus === "c") {
+      newStatus = "o";
+      updatedDate = null; // Set the closedate to null when changing status to open
+    } else {
+      return res.status(400).json({ error: "Invalid status. The status should be 'o' or 'c'." });
+    }
+
+    // Update the job post status and dates in the database
+    const updateQuery = `UPDATE job_posts SET status = $1, closedate = $2, postdate = CASE WHEN $3 = 'o' THEN $2 ELSE postdate END WHERE id = $4`;
+    await pool.query(updateQuery, [newStatus, updatedDate, new Date(), id]);
+
+    res.status(200).json({ message: "Job post status updated successfully.", newStatus });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while updating the job post status." });
+  }
+});
+
+//api to delete job post by id
+// Delete job post by ID
+app.delete("/api/delete_job_post/:id", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the job post exists before attempting to delete
+    const checkQuery = "SELECT id FROM job_posts WHERE id = $1";
+    const { rows } = await pool.query(checkQuery, [id]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Job post not found." });
+    }
+
+    // Delete the job post
+    const deleteQuery = "DELETE FROM job_posts WHERE id = $1";
+    await pool.query(deleteQuery, [id]);
+
+    res.status(200).json({ message: "Job post deleted successfully." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while deleting the job post." });
+  }
+});
+
+//api to delte posts // profile posts
+
+//api to update the applicants
+// Move the user from applicants to accepted_applicants and vice versa
+app.put("/api/move_user_to_accepted/:jobPostId/:userId", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { jobPostId, userId } = req.params;
+
+    // Check if the job post exists before attempting to update
+    const checkQuery = "SELECT id, applicants, accepted_applicants FROM job_posts WHERE id = $1";
+    const { rows } = await pool.query(checkQuery, [jobPostId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Job post not found." });
+    }
+
+    const jobPost = rows[0];
+    const applicantIndex = jobPost.applicants.indexOf(parseInt(userId, 10));
+    const acceptedApplicantIndex = jobPost.accepted_applicants.indexOf(parseInt(userId, 10));
+
+    if (applicantIndex !== -1) {
+      // Move the user ID from applicants to accepted_applicants
+      jobPost.applicants.splice(applicantIndex, 1); // Remove from applicants
+      jobPost.accepted_applicants.push(userId); // Add to accepted_applicants
+    } else if (acceptedApplicantIndex !== -1) {
+      // Move the user ID from accepted_applicants to applicants
+      jobPost.accepted_applicants.splice(acceptedApplicantIndex, 1); // Remove from accepted_applicants
+      jobPost.applicants.push(userId); // Add to applicants
+    } else {
+      return res.status(404).json({ error: "User not found in applicants list or accepted_applicants list." });
+    }
+
+    // Create shallow copies of the arrays before updating the database
+    const updatedApplicants = jobPost.applicants.slice();
+    const updatedAcceptedApplicants = jobPost.accepted_applicants.slice();
+
+    // Update the job post in the database with the modified arrays
+    const updateQuery = "UPDATE job_posts SET applicants = $1, accepted_applicants = $2 WHERE id = $3";
+    await pool.query(updateQuery, [updatedApplicants, updatedAcceptedApplicants, jobPostId]);
+
+    res.status(200).json({ message: "User moved successfully." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while moving the user." });
+  }
+});
+
+app.get("/api/get_job_post_location", async (req, res) => {//token not required
+  try {
+    const { rows } = await pool.query(`SELECT id, location, job_title FROM job_posts;`);
+    // console.log("rows", rows);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
   }
 });
 

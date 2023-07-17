@@ -40,7 +40,12 @@ export default Profile = ({navigation}) => {
 
   const getPost = async() => {
     try {
-      const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`);
+      const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`,{
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      });
       setData(res.data)
       // console.log(res.data);
     } catch (error) {
@@ -75,19 +80,20 @@ export default Profile = ({navigation}) => {
   
   if (!data) return <Spinner/>
 
-// Render each item of the data array
+// Render each item of the data array //posts
 const renderItem = ({ item }) => {
   return (
     <>
     <View style={{ backgroundColor:'#fff', padding:10, borderRadius:0, marginVertical:5,
     // marginHorizontal:10, 
     // borderColor:'grey', borderWidth:.5, 
-    borderTopWidth:.25, borderColor:'grey', paddingTop:15, paddingHorizontal:25,
+    // borderWidth:.25, borderColor:'lightgrey',
+     paddingTop:15, paddingHorizontal:25,
     flex:1}}>
 
       <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
-      {item._desc && <Text style={{ paddingBottom:10}}>{item._desc}</Text>}
+      {item._desc && <Text style={{ paddingBottom:10, color:'grey'}}>{item._desc}</Text>}
 
       <TouchableOpacity onPress={()=>{ setImageUri(`${config.API_URL}/${item.images}`); handleImageClick();}} activeOpacity={1}>
       <Image  source={{ uri : `${config.API_URL}/${item.images}`}}  
@@ -110,17 +116,22 @@ const renderItem = ({ item }) => {
 const keyExtractor = (item) => item.id.toString();
 
   return(
-    <View style={{backgroundColor:"#fff", flex:1}}>
-         {image && 
-          <View style={{backgroundColor:'#fff', display:'flex', flexDirection:'row', paddingVertical:15, justifyContent:'space-around'}}>
-            <TouchableOpacity activeOpacity={1} onPress={()=>setImage(null)}>
-              <Text>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity activeOpacity={1} onPress={handleUpload}>
-              <Text style={{color:'blue', fontWeight:"bold"}}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        }
+    <View style={{
+      // backgroundColor:"#fff",
+     flex:1}}>
+
+    {/* image upload save // cancel btn  */}
+      {image && 
+      <View style={{backgroundColor:'#fff', display:'flex', flexDirection:'row', paddingVertical:15, 
+      justifyContent:'space-around', borderColor:"grey", borderWidth:.25}}>
+        <TouchableOpacity activeOpacity={1} onPress={()=>setImage(null)}>
+          <Text>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity activeOpacity={1} onPress={handleUpload}>
+          <Text style={{color:'#1E319D', fontWeight:"bold"}}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    }
 
     <FlatList
       data={data}

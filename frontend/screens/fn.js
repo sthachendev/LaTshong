@@ -38,7 +38,11 @@ export function getTimeDifference(postDate) {
   const diffInSeconds = Math.floor((now - date) / 1000);
 
   if (diffInSeconds < 60) {
-    return `${diffInSeconds} s ago`;
+    if (diffInSeconds < 10) {
+      return 'Just now';
+    } else {
+      return `${diffInSeconds} s ago`;
+    }
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
@@ -64,7 +68,42 @@ export function getTimeDifference(postDate) {
   const year = date.getFullYear();
   return `${month} ${day}, ${year} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }
+//yesterday /// date/month/year
+export function getTimeDifference2(postDate) {
+  const date = new Date(postDate);
+  const now = new Date();
+  const diffInMilliseconds = now - date;
 
+  const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+  const diffInDays = Math.floor(diffInMilliseconds / oneDayInMilliseconds);
+
+  if (diffInDays === 0) {
+    const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
+
+    if (diffInSeconds < 60) {
+      if (diffInSeconds < 10) {
+        return 'Just now';
+      } else {
+        return `${diffInSeconds} s ago`;
+      }
+    }
+
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} min ago`;
+    }
+
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    return `${diffInHours} h ago`;
+  } else if (diffInDays === 1) {
+    return 'Yesterday';
+  } else {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return `${month}/${day}/${year}`;
+  }
+}
 
 //get in 12h format
 export function getTime(postDate) {

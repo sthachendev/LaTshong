@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, ToastAndroid, Image, TouchableHighlight } from "react-native";
+import { View, Text, Button, Image, TouchableHighlight } from "react-native";
 import axios from "axios";
 import config from "../config";
 import { capitalizeWords } from "../fn";
@@ -8,8 +8,13 @@ import ImageViewer from "../custom/ImageViewer";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
+import { useSelector } from "react-redux";
+import jwtDecode from "jwt-decode";
 
 export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) => {
+
+  const token = useSelector(state => state.token)
+  const current_userid = jwtDecode(token).userid;
 
   const [userInfo, setUserInfo] = useState('');
 
@@ -30,7 +35,12 @@ export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) 
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`);
+      const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      });
       setUserInfo(response.data);
     console.log(response.data,'response');
 
@@ -57,10 +67,12 @@ export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) 
   }
 
   return (
-    <View style={{margin:10, marginTop:15}}>
+    <View style={{margin:0, marginTop:15, marginBottom:10}}>
       {userInfo ? (
-        <View style={{ backgroundColor:'#fff', padding:10, borderTopLeftRadius:15,borderTopRightRadius:15, borderBottomLeftRadius:0,
-        borderBottomRightRadius:0, borderColor:'#000', borderWidth:.25}}>
+        <View style={{ backgroundColor:'#fff', padding:10, 
+        // borderTopLeftRadius:15, borderTopRightRadius:15,
+        // borderColor:'#000', borderWidth:.25
+        }}>
           <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
             <View style={{display:'flex', flexDirection:"row", justifyContent:"center",}} >
@@ -84,19 +96,19 @@ export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) 
          />
           }
 
-         <TouchableHighlight style={{borderColor:'rgba(0,0,255,.5)', borderWidth:2, backgroundColor:'#fff',
-         position:"absolute", bottom:0, right:0, borderRadius:5, padding:2}} onPress={handlePickImage} underlayColor='#F1F2F6'>
-         <MaterialIcons
-            name="create"
-            color='#1E319D'
-            size={20}
-            // style={{position:"absolute", bottom:0, right:0}}
-          />
-         </TouchableHighlight>
-          
+          {/* add profile pic btn  // show if profile is of current user*/}
+          {userid === current_userid && //add image btn
+            <TouchableHighlight style={{borderColor:'rgba(30,49,157,0.7)', borderWidth:2, backgroundColor:'#fff',
+              position:"absolute", bottom:0, right:0, borderRadius:5, padding:3}} onPress={handlePickImage} underlayColor='#F1F2F6'>
+              <MaterialIcons
+                  name="create"
+                  color='#1E319D'
+                  size={20}
+                />
+              </TouchableHighlight>
+          }
           </TouchableOpacity>
       
-      {/* <Button title="Message" onPress={() => navigation.navigate('ChatRoom', {touserid: userid, title: capitalizeWords(userInfo[0].name) })} /> */}
         </View>
         <View style={{flexDirection:"column",}}>
           <Text style={{textAlign:"center", fontSize:20, marginLeft:15}}>{capitalizeWords(userInfo[0].name)}</Text>
@@ -111,20 +123,30 @@ export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) 
       ) : (
         <Text>Loading user information...</Text>
       )}
+    
+    {userInfo && userid !== current_userid &&
+      <Button title="Message" onPress={() => navigation.navigate('ChatRoom', {touserid: userid, title: capitalizeWords(userInfo[0].name) })} />
+    }
 
+
+    {/* add certificate btn */}
+    {userid === current_userid &&
     <TouchableOpacity onPress={()=>navigation.navigate('ProfilePost', {userid})} activeOpacity={1}
-    style={{backgroundColor:"#F1F2F6", justifyContent:'space-between', flexDirection:"row",
-    paddingHorizontal:5, borderColor:'grey', borderWidth:0.25, marginTop:15}}>
-    <Text style={{textAlignVertical:"center", fontSize:14, padding:10,}}>
-      Add Certificates
-    </Text>
-    <Ionicons
-      name="add-circle-outline"
-      color='grey'
-      size={30}
-      style={{alignSelf:"center"}}
-    />
+    style={{backgroundColor:"#fff", justifyContent:'space-between', flexDirection:"row",
+    paddingHorizontal:5, 
+    // borderColor:'grey', borderWidth:0.25,
+     marginTop:15}}>
+      <Text style={{textAlignVertical:"center", fontSize:14, padding:10, color:'grey'}}>
+        Add Certificates / Posts
+      </Text>
+      <Ionicons
+        name="add-circle-outline"
+        color='#1E319D'
+        size={30}
+        style={{alignSelf:"center"}}
+      />
     </TouchableOpacity>
+    }
     </View>
   );
 };

@@ -49,7 +49,7 @@ function BottomTab({ navigation }) {
           } else if (route.name === "Explore") {
             iconName = focused ? "search" : "search-outline";
           } else if (route.name === "Chat") {
-            iconName = focused ? "chatbubbles" : "chatbubbles-outline";
+            iconName = focused ? "chatbox-ellipses" : "chatbox-ellipses-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
           }
@@ -65,6 +65,10 @@ function BottomTab({ navigation }) {
         },
         tabBarActiveTintColor: "#1E319D",
         tabBarInactiveTintColor: "#A0A0A0",
+        headerTitleStyle:{
+          // color:'#1E319D',
+          // fontWeight:'bold'
+        },
         headerLeft: () => <DrawerToggleButton />,
       })}
     >
@@ -74,9 +78,9 @@ function BottomTab({ navigation }) {
         options={{
           // title: role === "em" ? "Dashboard" : "Home",
           title: "Home",
-          headerTitleStyle: {
-            // fontWeight: 'bold',
-          },
+          // headerTitleStyle: {
+          //   // fontWeight: 'bold',
+          // },
           // tabBarLabel: role === "em" ? "Dashboard" : "Home",
           title: "Home",
           headerTitleAlign:'center',
@@ -108,8 +112,8 @@ function BottomTab({ navigation }) {
             component={Chat}
             options={({ navigation }) => ({
               headerStyle: {},
-              tabBarLabel: "Messages",
-              headerTitle: "Messages",
+              tabBarLabel: "Message",
+              headerTitle: "Message",
               headerTitleAlign:'center',
               // headerStyle: {
               //   shadowColor: "black",
