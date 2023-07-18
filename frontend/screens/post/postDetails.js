@@ -3,7 +3,7 @@ import { View, Text, TouchableHighlight, StyleSheet, Alert,
  FlatList, Image, ToastAndroid, RefreshControl } from "react-native";
 import axios from "axios";
 import config from "../config";
-import { capitalizeWords, getTimeDifference, getTimeDifference2 } from "../fn";
+import { capitalizeFirstLetterOfParagraphs, capitalizeWords, getTimeDifference, getTimeDifference2 } from "../fn";
 import jwtDecode from "jwt-decode";
 import { useSelector } from "react-redux";
 import Spinner from "../custom/Spinner";
@@ -352,14 +352,18 @@ const handleMessage = (touserid, tousername) => {
  
       <View style={styles.container}>
 
-        <View style={styles.tableRow}>
+        {/* <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Job Title</Text>
           <Text style={styles.cell}>{capitalizeWords(data[0].job_title)}</Text>
-        </View>
-        <View style={styles.tableRow}>
+        </View> */}
+
+        <Text style={{padding:10, fontWeight:'bold'}}>{capitalizeWords(data[0].job_title)}</Text>
+        <Text style={{padding:10, color:'#404040'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
+
+        {/* <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Description</Text>
           <Text style={styles.cell}>{data[0].job_description}</Text>
-        </View>
+        </View> */}
         <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Requirements</Text>
           <Text style={styles.cell}>{data[0].job_requirements}</Text>
@@ -391,6 +395,8 @@ const handleMessage = (touserid, tousername) => {
         </View>
 
       </View>
+
+      <Text style={{color:'grey'}}>Total Applicant: {data[0].applicants.length}</Text>
 
       </View>
 
@@ -604,16 +610,16 @@ const styles = StyleSheet.create({
     borderBottomWidth:.25
   },
   headerCell: {
-    fontWeight: 'bold',
+    // fontWeight: 'bold',
     fontSize: 14,
-    flex: .7,
+    flex: .5,
     textAlign: 'left',
-    color:'grey',
+    color:'#404040',
     textAlignVertical:"center",
     padding:10
   },
   cell: {
-    flex: 1,
+    flex: .5,
     textAlign: 'left',
     paddingVertical:10,
     color:'#404040'

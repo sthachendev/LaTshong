@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import config from '../config';
 
-const CustomHeader = ({ title, imageUrl }) => {
+const ChatRoomHeader = ({ title, imageUrl }) => {
   return (
     <View style={styles.container}>
       <Image source={{ uri: `${config.API_URL}/${imageUrl}` }} style={styles.image} />
@@ -28,5 +28,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomHeader;
+export default ChatRoomHeader;
 //used in chat room

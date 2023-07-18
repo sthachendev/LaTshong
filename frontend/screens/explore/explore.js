@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, TextInput } from "react-native";
+import { StyleSheet, Text, View, TextInput, Dimensions, FlatList } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -7,11 +7,12 @@ import axios from "axios";
 import config from "../config";
 import { Ionicons } from "@expo/vector-icons";
 import CustomModal from "../custom/CustomModal";
+import { Keyboard } from "react-native";
 
 export default function Explore({ navigation }) {
 
   const [userLocation, setUserLocation] = useState(null);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]);//set loaction marker for each job posts
 
   const [selectedMarkerData, setSelectedMarkerData] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -40,11 +41,10 @@ export default function Explore({ navigation }) {
   }, []);
 
   useEffect(()=>{
-    // if(isFocused)
       getJobPost();
 
     return () => {
-     setData('');
+     setData([]);
     };
     
   },[])
@@ -70,6 +70,23 @@ export default function Explore({ navigation }) {
     setIsModalVisible(false);
   };
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      setIsModalVisible(false);
+    });
+  
+    return unsubscribe;
+  }, [navigation]);
+  
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      setIsModalVisible(true);
+      Keyboard.dismiss();//keep keyboard dismiss
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
   return (
     <>
       <View
@@ -81,27 +98,39 @@ export default function Explore({ navigation }) {
           // marginTop:20
         }}
       >
-        <TextInput
-          style={{
-            flex: 1,
-            padding: 5,
-            paddingLeft: 45,
-            marginHorizontal: 5,
-            fontSize: 14,
-            backgroundColor: "#F1F2F6",
-            borderRadius: 10,
-          }}
-          placeholder="Search"
-          // value={searchText}
-          // onChangeText={setSearchText}
-        />
-        <Icon
-          name="search"
-          size={18}
-          color="grey"
-          style={{ position: "absolute", left: 28, top: 20 }}
-        />
+
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 5,
+        marginHorizontal: 5,
+        backgroundColor: '#F1F2F6',
+        borderRadius: 10,
+      }}
+    >
+      <Icon
+        name="search"
+        size={18}
+        color="grey"
+        style={{ marginHorizontal: 10 }}
+      />
+      <TextInput
+        style={{
+          flex: 1,
+          fontSize: 14,
+        }}
+        placeholder="Search Job"
+        onFocus={()=>{
+          navigation.navigate('Search');
+          Keyboard.dismiss();
+        }}
+
+      />
+    </View>
+ 
       </View>
+
       <View style={styles.container}>
         <View style={styles.myMap}>
           <MapView
@@ -136,11 +165,18 @@ export default function Explore({ navigation }) {
               }}
               onPress={() => handleMarkerClick(data)} // Call handleMarkerClick on marker press
             >
-              <Ionicons name="location" size={40} color='#1E319D'/>
+              <Ionicons name="pin" size={40} color='#1E319D'/>
+
               <Callout>
-              <Text style={{flex:1}}>{data.job_title}</Text>
-            </Callout>
-             
+              <Ionicons name="eye" size={20} color='#1E319D'/>
+              </Callout>
+              {/* <Callout >
+              <View style={{ width: Dimensions.get('window').width, backgroundColor:"transparent"}} tooltip>
+                <View style={{ alignSelf: 'center'}}>
+                  <Text style={{ alignSelf: 'center' }} >{data.job_title}</Text>
+                </View>
+              </View>
+              </Callout> */}
             </Marker>
           ))}
           </MapView>

@@ -17,6 +17,7 @@ import Support from "../screens/support/support";
 import ForgotPassword from "../screens/auth/forgotPassword";
 import ChangePassword from "../screens/setting/changePassword";
 import AppliedLists from "../screens/post/appliedLists";
+import Search from "../screens/explore/search";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -170,6 +171,17 @@ function Stack() {
         options={{
           headerShown: true,
           headerTitle:'Job Applied List',
+          headerTitleAlign:'center',
+          headerShadowVisible:false
+        }}
+      />
+
+      <Stack.Screen
+        name="Search"
+        component={Search}
+        options={{
+          headerShown: false,
+          headerTitle:'Job Search',
           headerTitleAlign:'center',
           headerShadowVisible:false
         }}

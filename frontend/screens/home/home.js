@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
 import Posts from '../post/posts';
 import Spinner from '../custom/Spinner';
+import { Ionicons } from '@expo/vector-icons';
 
 export default Home = () => {
 
@@ -117,6 +118,7 @@ export default Home = () => {
   //change color of name n job title on press,
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const [jobTabSelected, setJobTabSelected] = useState(true);
 
   if (!data) {
     return <Spinner/>;
@@ -130,6 +132,21 @@ export default Home = () => {
 
   return (
     <View style={styles.container}>
+
+      <View style={{display:'flex', flexDirection:'row', width:'100%', justifyContent:'space-evenly', padding:10, backgroundColor:'#F1F2F6'}}>
+        
+      <TouchableOpacity style={{flexDirection:'row', borderBottomColor: jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:1}} 
+      onPress={()=>setJobTabSelected(true)} activeOpacity={1}>
+          <Ionicons name='person' size={20} color='#000'/>
+          <Text style={{marginLeft:5}}>Job</Text>
+        </TouchableOpacity> 
+
+        <TouchableOpacity style={{flexDirection:'row', borderBottomColor: !jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:1}} 
+        onPress={()=>setJobTabSelected(false)} activeOpacity={1}>
+          <Ionicons name='book' size={20} color='#000'/>
+          <Text style={{marginLeft:5}}>Feeds</Text>
+        </TouchableOpacity> 
+      </View>
      
      {role === null && <>
         <View style={{paddingVertical:20, backgroundColor:'#fff'}}>
@@ -141,27 +158,32 @@ export default Home = () => {
         </View>
       </>}
       
-      <FlatList
-        ref={flatListRef}
-        data={data}
-        // ListFooterComponent={()=>{return(<Text style={{textAlign:'center', color:'grey'}}>{'<>'}</Text>)}}
-        // ListFooterComponent={()=>{return(<View style={{margin:5}}></View>)}}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        maxToRenderPerBatch={3} // Adjust this value based on your needs
-        ListEmptyComponent={()=>{
-          return(
-            <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No posts</Text>
-          )
-        }}
-        getItemLayout={(data, index) => (
-          {length: 500, offset: 500 * index, index}
-        )}
-        onScroll={handleScroll} // Add onScroll event to track the scroll position
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-    />
+      {
+        jobTabSelected &&
+        <>
+          <FlatList
+            ref={flatListRef}
+            data={data}
+            // ListFooterComponent={()=>{return(<Text style={{textAlign:'center', color:'grey'}}>{'<>'}</Text>)}}
+            // ListFooterComponent={()=>{return(<View style={{margin:5}}></View>)}}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            maxToRenderPerBatch={3} // Adjust this value based on your needs
+            ListEmptyComponent={()=>{
+              return(
+                <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No posts</Text>
+              )
+            }}
+            getItemLayout={(data, index) => (
+              {length: 500, offset: 500 * index, index}
+            )}
+            onScroll={handleScroll} // Add onScroll event to track the scroll position
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        </>
+      }
 
     {/* Floating Add Post Option */}
     {role === "em" && 

@@ -195,3 +195,26 @@ export function truncateName(name, maxLength) {
     return name.substring(0, maxLength) + "...";
   }
 }
+
+export function capitalizeFirstLetterOfParagraphs(text) {
+  return text.replace(/(^\s*\w|[\.\!\?]\s*\w)/gm, match => match.toUpperCase());
+}
+
+export const getFileSize = (file) => {
+  const fileSizeInBytes = file.size;
+  const fileSizeInKB = fileSizeInBytes / 1024;
+  const fileSizeInMB = fileSizeInKB / 1024;
+
+  if (fileSizeInMB >= 1) {
+    return `${fileSizeInMB.toFixed(2)} MB`;
+  } else if (fileSizeInKB >= 1) {
+    return `${fileSizeInKB.toFixed(2)} KB`;
+  } else {
+    return `${fileSizeInBytes} bytes`;
+  }
+};
+
+//fn to make the downable link from the messages of type a attachemnent
+function removeBackslashes(str) {
+  return str.replaceAll(/[{}]/g, "").replaceAll("\\\\", "/");
+}

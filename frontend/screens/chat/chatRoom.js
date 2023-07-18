@@ -5,9 +5,12 @@ import config from '../config';
 import { useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
 import Icon from "react-native-vector-icons/Ionicons";
-import { isToday, isSameDate, getTime } from '../fn';
-import CustomHeader from '../custom/customHeader';
+import { isToday, isSameDate, getTime, getFileSize } from '../fn';
+import Header from './chatRoomHeader';
 import Spinner from '../custom/Spinner';
+import * as DocumentPicker from 'expo-document-picker';
+import { Ionicons } from '@expo/vector-icons';
+import axios from 'axios';
 
 export default ChatRoom = ({route, navigation}) => {
 
@@ -18,7 +21,7 @@ export default ChatRoom = ({route, navigation}) => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: () => <CustomHeader title={route.params.title} imageUrl={imageurl} />,
+      headerTitle: () => <Header title={route.params.title} imageUrl={imageurl} />,
     });
   }, [navigation, route.params.title, imageurl]);
   // Create the Socket.IO connection
@@ -56,6 +59,8 @@ export default ChatRoom = ({route, navigation}) => {
       socket.on('messageAdded', (data) => {
         const { id, userid, roomId, message, date} = data;
 
+        console.log('new message', userid, touserid)
+
         setMessages((prevMessages) => [
           {
             id,
@@ -87,7 +92,58 @@ export default ChatRoom = ({route, navigation}) => {
       socket.emit('addMessage', { message, userid, roomId });
       setMessage('');
     }
+
+    if (file) {
+      // socket.emit('addAttachment', { file, userid, roomId });
+        try {
+          const formData = new FormData();
+          formData.append('userid', userid);
+          formData.append('roomId', roomId);
+          formData.append('image', {
+            uri: file.uri,
+            name: file.name,
+            type: file.mimeType,
+          });
+        
+          axios.patch(`${config.API_URL}/api/upload_attachement`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          })
+          .then(res=>{
+            // console.log(res.data)
+          })
+          .catch(e=>console.log(e))
+        
+          console.log('posted')
+        } catch (error) {
+          console.log(error);
+        }
+      setFile('');
+    }
   };
+
+  const [file, setFile] = useState('');
+  
+  const pickAttachment = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*', // You can specify the allowed file types here. For example, "image/*" for images.
+      });
+  
+      if (result.type === 'success') {
+        // You can access the selected file using the `result.uri` property.
+        // You may want to store the selected file URI in state or use it directly to send the file.
+        console.log('File URI:', result);
+        setFile(result)
+      } else if (result.type === 'cancel') {
+        console.log('Document picking canceled.');
+      }
+    } catch (error) {
+      console.log('Error while picking a document:', error);
+    }
+  };
+  
 
   if (!messages) return <Spinner/>
 
@@ -228,32 +284,41 @@ export default ChatRoom = ({route, navigation}) => {
     >
     <TouchableOpacity
       style={{ backgroundColor: "#fff", borderRadius: 20 }} activeOpacity={.3}
-      onPress={() => sendMessage(message)}
+      onPress={() => (pickAttachment())}
     >
-      <Icon name="add-circle" size={20} color="#4267B2" />
+      <Icon name="add-circle" size={30} color="#4267B2" />
     </TouchableOpacity>
 
-    <TextInput
-      style={{
-        flex: 1,
-        padding: 10,
-        marginLeft: 10,
-        marginRight: 10,
-        fontSize: 14,
-        backgroundColor: "#F1F2F6",
-        borderRadius: 20,
-        maxHeight:100
-      }}
-      placeholder="Write a message..."
-      multiline
-      onChangeText={setMessage}
-      value={message}
-    />
+    {file ? 
+      <View style={{maxHeight:100, padding:10, display:'flex', flexDirection:'row', flex:1}}>
+        <Ionicons name='document' size={20} color='#000'/>
+        <View>
+        <Text style={{color:'grey'}} numberOfLines={1}>{file.name}{getFileSize(file)}</Text>
+        </View>
+      </View>
+      :
+      <TextInput
+        style={{
+          flex: 1,
+          padding: 10,
+          marginLeft: 10,
+          marginRight: 10,
+          fontSize: 14,
+          backgroundColor: "#F1F2F6",
+          borderRadius: 20,
+          maxHeight:100
+        }}
+        placeholder="Write a message..."
+        multiline
+        onChangeText={setMessage}
+        value={message}
+      />
+    }
     <TouchableOpacity
-      style={{ backgroundColor: "#fff", borderRadius: 20 }} activeOpacity={.3}
+       activeOpacity={.5}
       onPress={() => sendMessage(message)}
     >
-      <Icon name="send" size={20} color="#4267B2" />
+      <Icon name="send" size={30} color="#4267B2" />
     </TouchableOpacity>
     </View>
     </>

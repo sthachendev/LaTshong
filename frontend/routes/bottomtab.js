@@ -40,6 +40,7 @@ function BottomTab({ navigation }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        tabBarHideOnKeyboard: true,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
           let outlineIconName;
