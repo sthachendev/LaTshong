@@ -25,6 +25,7 @@ export default Profile = ({navigation}) => {
   const handleImageClick = () => {
     setModalVisible(true);
   };
+  
   console.log(userid);
 
   const [data, setData] = useState([]);

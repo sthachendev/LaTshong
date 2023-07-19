@@ -1,15 +1,14 @@
 const express = require("express");
-const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const fs = require('fs');
-const dotenv = require("dotenv");
 const jwt = require('jsonwebtoken');
+const pool = require('./db');
+const upload = require('./multerConfig');
+const setupSocket = require('./socketConfig');
 
 // Secret key for signing JWT
 const secretKey = 'latshong123';
-
-dotenv.config();
 
 const app = express();
 
@@ -19,29 +18,9 @@ const folderPath = "./uploads";
 if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath);
 
 const httpServer = require('http').createServer(app);
-const io = require('socket.io')(httpServer);
-
-//to generate random uid 
-const { v4: uuidv4 } = require('uuid');
+const io = setupSocket(httpServer);
 
 const PORT = 3000; // Replace with your desired port number
-
-const pool = new Pool({
-    // user: process.env.USER,
-    // host: process.env.HOST,
-    // database: process.env.DATABASE,
-    // password: process.env.PASSWORD,
-    // port: process.env.PORT,
-
-    // production
-    connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false // Add this line if you encounter SSL certificate validation errors
-    }
-
-    // encoding: 'UTF8', // Set the encoding option to UTF8
-
-  });
 
 const allowedOrigins = ["http://localhost:3000"];
 //CORS allow frontend to communicate w backend
@@ -76,7 +55,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/uploads", express.static("uploads"));
 
 // Read the table schema file
-const tableSchema = fs.readFileSync('./tables.sql', 'utf8');
+const tableSchema = fs.readFileSync('./tableSchema.sql', 'utf8');
 
 // Execute the SQL script to create the tables
 pool.query(tableSchema, (error) => {
@@ -148,11 +127,6 @@ app.post("/api/signup", (req, res) => {
   });
 });
 
-// Protected route
-app.get('/protected', authenticateTokenAPI, (req, res) => {
-  res.json({ message: 'Protected endpoint accessed successfully' });
-});
-
 // Middleware to authenticate JWT token
 function authenticateTokenAPI(req, res, next) {
   const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
@@ -189,6 +163,11 @@ function authenticateTokenSocketIO(socket, next) {
     next();
   });
 }
+
+// Protected route
+app.get('/protected', authenticateTokenAPI, (req, res) => {
+  res.json({ message: 'Protected endpoint accessed successfully' });
+});
 
 const nodemailer = require("nodemailer");
 
@@ -240,39 +219,6 @@ app.post("/api/getOTP", async (req, res) => {
   }
 });
 
-const multer = require("multer");
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const fileFilter = function (req, file, cb) {
-  const allowedMimes = ["image/jpeg", "image/jpg", "image/png", "image/gif"];
-  if (allowedMimes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(
-      new Error(
-        "Invalid file type. Only JPEG, PNG, and GIF files are allowed."
-      ),
-      false
-    );
-  }
-};
-
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 20, // 20 MB
-  },
-  fileFilter: fileFilter,
-}).fields([{ name: "image", maxCount: 20 }]);
-
 //upload post
 app.patch('/api/post', upload, async (req, res) => {
   try {
@@ -310,7 +256,6 @@ app.get("/api/get_post/:id", async (req, res) => {
     console.log(error);
   }
 });
-
 
 app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
     try {
@@ -486,100 +431,6 @@ app.post("/api/employer_post", (req, res) => {
 // Configure Socket.IO middleware for JWT authentication
 io.use(authenticateTokenSocketIO);
 
-// Define Socket.IO event handlers
-io.on('connection', (socket) => {
-  console.log('A client connected.');
-  
-  socket.on('joinChat', async (data) => {
-    const { user1, user2 } = data;
-    console.log('joinChat');
-
-    let roomId;
-
-    try {
-      // Check if user already has a room ID assigned
-      const client = await pool.connect();
-      try {
-        // Start a transaction
-        await client.query('BEGIN');
-
-        const query1 = 'SELECT room_id FROM chat_rooms WHERE (user1 = $1 AND user2 = $2) OR (user1 = $2 AND user2 = $1)';
-        const values1 = [user1, user2];
-        const result1 = await client.query(query1, values1);
-
-        if (result1.rows.length > 0) {
-          roomId = result1.rows[0].room_id;
-          console.log('room exits', roomId)
-        } else {
-          roomId = uuidv4(); // Generate a random UUID as the room ID
-
-          const query2 = 'INSERT INTO chat_rooms (room_id, user1, user2) VALUES ($1, $2, $3)';
-          const values2 = [roomId, user1, user2];
-          await client.query(query2, values2);
-        }
-
-        // Commit the transaction
-        await client.query('COMMIT');
-      } catch (error) {
-        // Rollback the transaction in case of any error
-        await client.query('ROLLBACK');
-        throw error;
-      } finally {
-        // Release the client back to the pool
-        client.release();
-      }
-    } catch (error) {
-      console.error('Error occurred:', error);
-      // Handle the error as required
-    }
-
-    console.log(`User ${user1} joined chat room ${roomId} with User ${user2}`);
-
-    // Fetch data from the database
-    const messages = await fetchMessage(roomId);
-    socket.emit('fetchMessages', { messages });
-
-    // Send the room ID to the frontend
-    socket.emit('roomJoined', { roomId });
-
-    // Join the chat room
-    socket.join(roomId);
-  });
-
-  socket.on('addMessage', async(data) => {
-    console.log('addMessage');
-
-    const { userid, message, roomId } = data;
-    // include message_type
-
-    const date = new Date();
-    //   console.log(date,'date');
-    const query = 'INSERT INTO messages (userid, room_id, message, date) VALUES ($1, $2, $3, $4) RETURNING id';
-    const values = [userid, roomId, message, date ];
-
-    pool.query(query, values, (error, result) => {
-      if (error) {
-        console.error('Error adding message:', error);
-      } else {
-        const id = result.rows[0].id; // Get the ID of the newly added message
-
-        console.log('Message added successfully');
-        // Emit the newly added message to all clients in the room
-        io.to(roomId).emit('messageAdded', { id, userid, roomId, message, date });
-
-      }
-    });
-
-   
-  });
-
-  // Clean up on client disconnect
-  socket.on('disconnect', () => {
-    console.log('A client disconnected.');
-    // Perform any necessary clean-up tasks
-  });
-});
-
 const fetchMessage = async (roomId) => {
   console.log('fetchMessage');
   try {
@@ -597,21 +448,6 @@ const fetchMessage = async (roomId) => {
     throw error;
   }
 };
-
-// //user info
-// app.get("/api/chat_rooms/:id", async (req, res) => {
-//   const id = req.params.id;
-//   try {
-
-//     const query = 'SELECT * FROM chat_rooms WHERE user1 = $1 OR user2 = $1';
-//     const value = [id];
-//     const { rows } = await pool.query(query, value);
-
-//     res.json(rows);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// })
 
 //user info // fetch imageurl n last chat message as t or false
 app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
@@ -798,8 +634,6 @@ app.delete("/api/delete_job_post/:id", authenticateTokenAPI, async (req, res) =>
   }
 });
 
-//api to delte posts // profile posts
-
 //api to update the applicants
 // Move the user from applicants to accepted_applicants and vice versa
 app.put("/api/move_user_to_accepted/:jobPostId/:userId", authenticateTokenAPI, async (req, res) => {
@@ -854,6 +688,91 @@ app.get("/api/get_job_post_location", async (req, res) => {//token not required
     console.log(error);
   }
 });
+
+//search //token not required
+app.get("/api/search_job", async (req, res) => {
+  try {
+    const { query } = req.query; // Get the search query from the request
+    // Define the search query
+    const searchQuery = `
+      SELECT job_title, job_description FROM job_posts WHERE job_title ILIKE $1 OR job_description ILIKE $1 OR job_requirements ILIKE $1
+      OR nature ILIKE $1 OR location_ ILIKE $1 OR job_salary ILIKE $1`;
+
+    // Execute the search query
+    const result = await pool.query(searchQuery, [`%${query}%`]);
+
+    // Send the search results as the API response
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error occurred:", err);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+
+//update user profile
+app.patch('/api/upload_attachement', upload, async (req, res) => {
+  try {
+    const { roomId, userid } = req.body;
+    console.log(req.body);
+
+    const files = req.files.image;
+    console.log(files)
+
+    const filepaths = files.map(file => file.path);
+
+    let message_type;
+
+    // Assuming you want to check for MIME types like 'application/*' or 'image/*':
+    if (files.some(file => file.mimetype.startsWith('application/'))) {
+      message_type = 'a';
+    } else if (files.some(file => file.mimetype.startsWith('audio/'))) {
+      message_type = 'a';
+    } else if (files.some(file => file.mimetype.startsWith('video/'))) {
+      message_type = 'a';
+    } else if (files.some(file => file.mimetype.startsWith('image/'))) {
+      message_type = 'i';
+    } else {
+      // Set a default value or handle other mime types if necessary
+      message_type = '-';
+    }
+
+    const date = new Date();
+
+    // insert the post data into the database
+    const { rows } = await pool.query(
+      `INSERT INTO messages 
+      (room_id, message, userid, message_type, date) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [roomId, filepaths, userid, message_type, date]
+    );
+      console.log(rows)
+
+     // Insert attachment details into the 'attachment_details' table
+     const attachmentDetails = files.map(file => {
+      return {
+        file_name: file.originalname,
+        file_size: file.size,
+        file_uri: file.path,
+        message_id: messageId
+      };
+    });
+
+    await pool.query(
+      `INSERT INTO attachment_details (file_name, file_size, file_uri, message_id) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [attachmentDetails.map(att => att.file_name), attachmentDetails.map(att => att.file_size), attachmentDetails.map(att => att.file_uri), messageId]
+    );
+    // Emit an event to inform clients about the new file
+    io.emit('messageAdded', 
+    {id:rows[0].id, userid:rows[0].userid, roomId, message:rows[0].message, message_type:rows[0].message_type, date });
+
+    res.status(201).json(rows[0]);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+//api to delte posts // profile posts
 
 // app.listen(3000, () => {
 //     console.log("Server listening on port 3000");

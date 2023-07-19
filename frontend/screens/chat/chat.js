@@ -58,8 +58,13 @@ const Chat = ({navigation}) => {
           style={{backgroundColor:'#fff', borderColor:'rgba(49, 105, 210, 0.5)', borderWidth:0.25, borderTopWidth:0}}>
           <>
           
-          <View style={{flexDirection:'row', padding:20, flex:1}}>
-          <Image source={{ uri: `${config.API_URL}/${item.other_user_imageurl}` }} style={{width:50, height:50, borderRadius:25}} />
+          <View style={{flexDirection:'row', padding:15, flex:1}}>
+            {
+              item.other_user_imageurl.length > 0 ?
+              <Image source={{ uri: `${config.API_URL}/${item.other_user_imageurl}` }} style={{width:50, height:50, borderRadius:25}} />
+              :
+              <Ionicons name="person-circle-outline" size={45} color="grey" />
+            }
             <View style={{flexDirection:'column', flex:1}}>
               <Text style={{fontWeight:"bold", fontSize:15, paddingLeft:10, textAlignVertical:'top'}}>
               {item.user1 !== id ? capitalizeWords(item.user1_name) : capitalizeWords(item.user2_name)}

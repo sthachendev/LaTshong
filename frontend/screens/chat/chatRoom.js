@@ -5,12 +5,15 @@ import config from '../config';
 import { useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
 import Icon from "react-native-vector-icons/Ionicons";
-import { isToday, isSameDate, getTime, getFileSize } from '../fn';
+import { isToday, isSameDate, getTime, getFileSize, removeBrackets } from '../fn';
 import Header from './chatRoomHeader';
 import Spinner from '../custom/Spinner';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
+import * as FileSystem from 'expo-file-system';
+import * as Linking from 'expo-linking';  
+import ImageViewer from '../custom/ImageViewer';
 
 export default ChatRoom = ({route, navigation}) => {
 
@@ -57,7 +60,7 @@ export default ChatRoom = ({route, navigation}) => {
       });    
 
       socket.on('messageAdded', (data) => {
-        const { id, userid, roomId, message, date} = data;
+        const { id, userid, roomId, message, message_type, date} = data;
 
         console.log('new message', userid, touserid)
 
@@ -67,6 +70,7 @@ export default ChatRoom = ({route, navigation}) => {
             userid,
             roomId,
             message,
+            message_type,
             date
           },
           ...prevMessages
@@ -86,15 +90,15 @@ export default ChatRoom = ({route, navigation}) => {
 
   const sendMessage = (message) => {
     // Emit the message event to the server
-    const msg = message.trim();
-    if (msg !== ''){
+    console.log('send btn');
+    if (message && message.trim() !== ''){
+    console.log('send msg');
       // socket.emit('message', { message, fromuserid:userid, touserid:touserid});
       socket.emit('addMessage', { message, userid, roomId });
       setMessage('');
-    }
-
-    if (file) {
+    }else if (file) {
       // socket.emit('addAttachment', { file, userid, roomId });
+    console.log('send file');
         try {
           const formData = new FormData();
           formData.append('userid', userid);
@@ -144,6 +148,37 @@ export default ChatRoom = ({route, navigation}) => {
     }
   };
   
+  const downloadFile = async (uri) => {
+    const fileUri =  `${config}/${uri}`;
+    const fileUriParts = fileUri.split('/');
+    const fileName = fileUriParts[fileUriParts.length - 1];
+    const downloadResumable = FileSystem.createDownloadResumable(
+      fileUri,
+      FileSystem.documentDirectory + fileName,
+      {},
+      (downloadProgress) => {
+        const progress =
+          downloadProgress.totalBytesWritten /
+          downloadProgress.totalBytesExpectedToWrite;
+        console.log(`Download progress: ${progress}`);
+      }
+    );
+    try {
+      const { uri } = await downloadResumable.downloadAsync();
+      console.log(`Downloaded file: ${uri}`);
+      Linking.openURL(uri);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [imageUri, setImageUri] = useState('');
+
+  const handleImageClick = (uri) => {
+    setImageUri(uri);
+    setModalVisible(true);
+  };
 
   if (!messages) return <Spinner/>
 
@@ -152,6 +187,8 @@ export default ChatRoom = ({route, navigation}) => {
     <View style={{flex:1, 
     backgroundColor:'#fff'
     }}>
+
+    <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
     <FlatList
     //header is footer, the message is shown in reverse oorder
@@ -218,12 +255,10 @@ export default ChatRoom = ({route, navigation}) => {
 
         {isLastMessageOfDate && (
           <Text
-            style={{
-              textAlign: "center",
+            style={{ textAlign: "center",
               // backgroundColor:'#F8F8F8',
               color:'grey'
-            }}
-          >
+            }}>
             {messageDateLabel ? messageDateLabel : 'Today'}
           </Text>
         )}
@@ -236,23 +271,47 @@ export default ChatRoom = ({route, navigation}) => {
           margin: 10,
           marginTop:10,
           marginBottom: 5,
-        }}
-        >
-          <TouchableOpacity
-          style={{
-            backgroundColor: msg.userid === userid ? '#3E56C5' : '#F0F0F0',
-            borderRadius: 20,
-            borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
-            borderBottomRightRadius: msg.userid === userid ? 0 : 20,
-            padding:10,
-            alignSelf:"flex-start",
-            maxWidth: "85%",
-          }}
-          activeOpacity={0.7}
-        >
-          <Text style={{color: msg.userid === userid ? '#fff' : '#000',}}>{msg.message}</Text>
-            
+        }}>    
+        {msg.message_type === 'i' ? //if i --image
+         <TouchableOpacity
+         style={{
+           backgroundColor: msg.userid === userid ? '#3E56C5' : '#F0F0F0',
+           borderRadius: 20,
+           borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
+           borderBottomRightRadius: msg.userid === userid ? 0 : 20,
+           padding:10,
+           alignSelf:"flex-start",
+           maxWidth: "85%",
+         }}
+         activeOpacity={1} onPress={()=>{handleImageClick(`${config.API_URL}/${removeBrackets(msg.message)}`)}}> 
+        <Image source={{uri:`${config.API_URL}/${removeBrackets(msg.message)}`}} 
+        style={{ width: '100%', height: undefined, aspectRatio: 1 }} // aspectRatio 1 ensures the image maintains its original size
+        resizeMode="contain" // Set resizeMode to 'contain'
+        />
         </TouchableOpacity>
+      :
+      <TouchableOpacity
+        style={{
+          backgroundColor: msg.userid === userid ? '#3E56C5' : '#F0F0F0',
+          borderRadius: 20,
+          borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
+          borderBottomRightRadius: msg.userid === userid ? 0 : 20,
+          padding:10,
+          alignSelf:"flex-start",
+          maxWidth: "85%",
+        }}
+        activeOpacity={1}>
+        {/* t --text */}
+      {msg.message_type === 't' && <Text style={{color: msg.userid === userid ? '#fff' : '#000',}}>{msg.message}</Text>}
+      {msg.message_type === 'a' &&  //a mimetype aplication/*
+      <TouchableOpacity onPress={() => Linking.openURL(`${config.API_URL}/${removeBrackets(msg.message)}`)}>
+        <Text numberOfLines={1}>
+          <Ionicons name='document' size={20} color='#fff'/>
+        </Text>
+      </TouchableOpacity>}
+            
+      </TouchableOpacity>
+      }
       
         </View>
 
@@ -282,12 +341,21 @@ export default ChatRoom = ({route, navigation}) => {
       borderTopColor: "lightgrey",
     }}
     >
+    
+    {!file ? 
     <TouchableOpacity
-      style={{ backgroundColor: "#fff", borderRadius: 20 }} activeOpacity={.3}
-      onPress={() => (pickAttachment())}
-    >
-      <Icon name="add-circle" size={30} color="#4267B2" />
+      style={{ backgroundColor: "#fff", borderRadius: 20 }} activeOpacity={.7}
+      onPress={() => (pickAttachment())}>
+      <Icon name="add-circle" size={30} color="#1E319D" />
     </TouchableOpacity>
+    :
+    <TouchableOpacity
+      style={{ backgroundColor: "#fff", borderRadius: 20 }} activeOpacity={.7}
+      onPress={() => (setFile(''))}
+    >
+      <Icon name="close" size={30} color="#1E319D" />
+    </TouchableOpacity>
+    }
 
     {file ? 
       <View style={{maxHeight:100, padding:10, display:'flex', flexDirection:'row', flex:1}}>
@@ -315,10 +383,10 @@ export default ChatRoom = ({route, navigation}) => {
       />
     }
     <TouchableOpacity
-       activeOpacity={.5}
+       activeOpacity={.7}
       onPress={() => sendMessage(message)}
     >
-      <Icon name="send" size={30} color="#4267B2" />
+      <Icon name="send" size={30} color="#1E319D" />
     </TouchableOpacity>
     </View>
     </>

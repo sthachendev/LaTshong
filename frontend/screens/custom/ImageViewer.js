@@ -1,4 +1,3 @@
-import { TouchableWithoutFeedback } from 'react-native';
 import { View, Image, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
@@ -8,16 +7,12 @@ const ImageViewer = ({ uri, modalVisible, setModalVisible }) => {
     <View style={styles.container}>
 
       <Modal visible={modalVisible} transparent={true} onRequestClose={() => setModalVisible(false)}>
-        <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
         <View style={styles.modalContainer}>
           <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-          <MaterialIcons name="close" size={30} color='#fff' />
+          <MaterialIcons name="close" size={30} color='#fff' style={styles.closeIcon}/>
           </TouchableOpacity>
-          <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
           <Image source={{ uri }} style={styles.zoomedImage} resizeMode="contain" />
-          </TouchableWithoutFeedback>
         </View>
-        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
@@ -37,15 +32,18 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    // backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor:'#000'
   },
   closeButton: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
+    // position: 'absolute',
+    // top: 20,
+    // right: 20,
+    alignSelf:'flex-end',
+    marginRight:20
   },
   zoomedImage: {
-    width: '90%',
+    width: '100%',
     height: '90%',
   },
 });

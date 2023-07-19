@@ -215,6 +215,14 @@ export const getFileSize = (file) => {
 };
 
 //fn to make the downable link from the messages of type a attachemnent
-function removeBackslashes(str) {
-  return str.replaceAll(/[{}]/g, "").replaceAll("\\\\", "/");
+export function removeBrackets(str) {
+  // Remove curly brackets and double quotes from the string
+  str = str.replace(/[{"}]/g, '').replace(/"/g, '');
+
+  // Replace double backslashes with forward slashes
+  str = str.replace(/\\\\/g, '/');
+
+  return str;
+
+  return str;
 }

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     --role em for employee and js for job seeker
+    --admin
     imageurl TEXT[] DEFAULT '{}',
     bio TEXT,
     created_on TIMESTAMP NOT NULL
@@ -52,10 +53,21 @@ CREATE TABLE IF NOT EXISTS messages (
     room_id UUID NOT NULL,
     userid INTEGER NOT NULL,
     message TEXT NOT NULL,
-    message_type CHAR(1) DEFAULT 't',
+    message_type CHAR(1) DEFAULT 't',--- t text, a attachment applications, mp3, mp4, 
     --t for text
     --a for attachement
+    --i for image
     date TIMESTAMP NOT NULL
+);
+
+-- Creating the 'attachment_details' table
+CREATE TABLE IF NOT EXISTS attachment_details (
+    id BIGSERIAL PRIMARY KEY,
+    file_name TEXT NOT NULL,
+    file_size BIGINT NOT NULL,
+    file_uri TEXT NOT NULL,
+    message_id BIGINT NOT NULL,
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS posts (
