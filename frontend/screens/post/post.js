@@ -142,31 +142,32 @@ const Post = ({navigation}) => {
       style={styles.input2}
       theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
       multiline={true}
-    />
+      blurOnSubmit={true}
+      />
 
-<View   style={{
-    borderWidth: 1,
-    borderColor: 'lightgrey',
-    borderRadius: 4,
-    marginTop:20,
-  }}>
-<Picker
-  selectedValue={selectedValue}
-  onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}
-  prompt="Nature of Employment"
->
-  {pickerOptions.map((option, index) => (
-    <Picker.Item
-      key={index}
-      label={option.label}
-      value={option.value}
-      style={{
-        fontSize:14,
-      }}
-    />
-  ))}
-</Picker>
-</View>
+    <View style={{
+        borderWidth: 1,
+        borderColor: 'lightgrey',
+        borderRadius: 4,
+        marginTop:20,
+      }}>
+    <Picker
+      selectedValue={selectedValue}
+      onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}
+      prompt="Nature of Employment"
+    >
+      {pickerOptions.map((option, index) => (
+        <Picker.Item
+          key={index}
+          label={option.label}
+          value={option.value}
+          style={{
+            fontSize:14,
+          }}
+        />
+      ))}
+    </Picker>
+    </View>
 
     <TextInput
       mode="outlined"
@@ -185,7 +186,8 @@ const Post = ({navigation}) => {
       style={styles.input2}
       theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
       multiline={true}
-    />
+      blurOnSubmit={true}
+      />
 
       <TextInput
       mode="outlined"
@@ -213,7 +215,8 @@ const Post = ({navigation}) => {
       style={styles.input2}
       theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
       multiline={true}
-    />
+      blurOnSubmit={true}
+      />
 
   <Text 
   style={{color:"grey", marginTop:10, paddingTop:10, borderColor:'lightgrey', borderTopWidth:0.5}}>

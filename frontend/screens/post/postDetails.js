@@ -9,11 +9,11 @@ import { useSelector } from "react-redux";
 import Spinner from "../custom/Spinner";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 export default PostDetails = ({ route, navigation }) => {
   
   const { id, role } = route.params;//post id
-  // console.log('postid', id)
 
   const [data, setData] = useState('');
   const [usersData, setUserData] = useState([]);
@@ -316,6 +316,27 @@ const handleMessage = (touserid, tousername) => {
     }
   };
 
+  const handlePostSave = (postid) => {
+    axios.post(`${config.API_URL}/api/user_saved_post`, {userid: jwtDecode(token).userid, postid: postid},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        }
+      }
+    )
+    .then(res=>{
+      console.log(res.data.isSaved);
+      if(res.data.isSaved){
+      ToastAndroid.show("Post saved", ToastAndroid.SHORT);
+      }else if (res.data.isSaved === false){
+      ToastAndroid.show("Post Removed", ToastAndroid.SHORT);
+      }
+
+    })
+    .catch(e=>console.log(e))
+  }
+
   if (loading) {
     return <Spinner />;
   }
@@ -330,7 +351,15 @@ const handleMessage = (touserid, tousername) => {
         <View style={{padding:10, backgroundColor:"#fff",  borderColor:'lightgrey',
         borderWidth:0.5, marginHorizontal:5, marginTop:15, marginBottom:0, borderRadius:5}}>
 
-      <View style={{display:"flex", flexDirection:"row", marginTop:25}}>
+        <View style={{display:'flex', flexDirection:'row', justifyContent:'flex-end', marginBottom:5}}>
+          <Text style={{color:"grey", fontSize:12, textAlignVertical:'center', marginLeft:5}}>
+            {data[0].status == 'o' && 'Open ~ '}{data[0].status == 'o' && getTimeDifference(data[0].postdate)}
+            {data[0].status == 'c' && 'Closed ~ '}{data[0].status == 'c' && getTimeDifference(data[0].closedate)}</Text>
+            
+        </View>
+      
+      {/* user dp and name */}
+      <View style={{display:"flex", flexDirection:"row",}}>
 
         {data[0].imageurl !== null ? 
         <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25}} />
@@ -340,16 +369,13 @@ const handleMessage = (touserid, tousername) => {
 
         <View>
         <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
-        {/* <Text style={{color:"grey", marginLeft:5, fontSize:12}}>{data[0].email}</Text> */}
-        <Text style={{marginLeft:10, color:"grey", fontSize:12, textAlignVertical:'center'}}>~Verified Employer</Text>
+        <Text style={{marginLeft:10, color:"grey", fontSize:12}}>{data[0].email}</Text>
+        {/* <Text style={{marginLeft:10, color:"grey", fontSize:12, textAlignVertical:'center'}}>~Verified Employer</Text> */}
         </View>
 
       </View>
-
-      <Text style={{color:"grey",position:"absolute", top:10, right:10, fontSize:12}}>
-        {data[0].status == 'o' && 'Open ~ '}{data[0].status == 'o' && getTimeDifference(data[0].postdate)}
-        {data[0].status == 'c' && 'Closed ~ '}{data[0].status == 'c' && getTimeDifference(data[0].closedate)}</Text>
- 
+      
+      {/* job details */}
       <View style={styles.container}>
 
         {/* <View style={styles.tableRow}>
@@ -358,7 +384,7 @@ const handleMessage = (touserid, tousername) => {
         </View> */}
 
         <Text style={{padding:10, fontWeight:'bold'}}>{capitalizeWords(data[0].job_title)}</Text>
-        <Text style={{padding:10, color:'#404040'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
+        <Text style={{padding:10, paddingTop:0, color:'#404040'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
 
         {/* <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Description</Text>
@@ -366,7 +392,7 @@ const handleMessage = (touserid, tousername) => {
         </View> */}
         <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Requirements</Text>
-          <Text style={styles.cell}>{data[0].job_requirements}</Text>
+          <Text style={styles.cell}>{capitalizeFirstLetterOfParagraphs(data[0].job_requirements)}</Text>
         </View> 
         
         <View style={styles.tableRow}>
@@ -381,7 +407,7 @@ const handleMessage = (touserid, tousername) => {
         
         <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Location</Text>
-          <Text style={styles.cell}>{data[0].location_}</Text>
+          <Text style={styles.cell}>{capitalizeFirstLetterOfParagraphs(data[0].location_)}</Text>
         </View> 
         
         <View style={styles.tableRow}>
@@ -391,13 +417,23 @@ const handleMessage = (touserid, tousername) => {
 
         <View style={[styles.tableRow,{borderBottomWidth:0}]}>
           <Text style={styles.headerCell}>Remarks</Text>
-          <Text style={styles.cell}>{data[0]?.remarks === "" ? "-" : data[0].remarks}</Text>
+          <Text style={styles.cell}>{data[0]?.remarks === "" ? "-" : capitalizeFirstLetterOfParagraphs(data[0].remarks)}</Text>
         </View>
 
       </View>
 
-      <Text style={{color:'grey'}}>Total Applicant: {data[0].applicants.length}</Text>
+     <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
+     <Text style={{color:'grey'}}>Total Applicant: {data[0].applicants.length}</Text>
 
+      { token && <>
+        <TouchableHighlight style={{color:"grey", fontSize:13, padding:3, borderColor:'rgba(30,49,157,0.3)', borderWidth:2, borderRadius:20}} 
+        onPress={()=>handlePostSave(data[0].id)} 
+        underlayColor='rgba(49, 105, 210, 0.5)'>
+        <Icon name="bookmark-outline" size={24} color="rgba(30,49,157,0.7)" />
+        </TouchableHighlight>
+      </>}
+
+     </View>
       </View>
 
         {/* bottom buttons */}
@@ -475,13 +511,13 @@ const handleMessage = (touserid, tousername) => {
               <View style={{backgroundColor:"lightgrey", display:"flex", flexDirection:"row", padding:10}}>
               
               <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'p' ? '#fff' : 'lightgrey',
-                elevation: selectedOption === 'p' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("p")}>
+              }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("p")}>
                 <Text style={styles.btnText}>
                 Pending
                 </Text>
               </TouchableHighlight>
               <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'a' ? '#fff' : 'lightgrey',
-                elevation: selectedOption === 'a' ? 2 : 0 }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("a")}>
+              }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("a")}>
                 <Text style={styles.btnText}>
                 Selected
                 </Text>
@@ -509,7 +545,7 @@ const handleMessage = (touserid, tousername) => {
         {item.imageurl.length > 0 ? (
           <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{ width: 40, height: 40, borderRadius: 25 }} />
         ) : (
-          <Ionicons name="person-circle-outline" size={45} color="grey" />
+          <Image source={require("../../assets/images/default.png")} style={{ width: 40, height: 40, borderRadius: 25 }} />
         )}
 
           {/* <View> */}
@@ -572,7 +608,7 @@ const handleMessage = (touserid, tousername) => {
 
 const styles = StyleSheet.create({
     btn:{ 
-    borderRadius:20, 
+    borderRadius:5, 
     flex:.5,
     marginHorizontal:2.5,
     },
@@ -598,7 +634,7 @@ const styles = StyleSheet.create({
     borderColor:"grey"
   },
   container: {
-    marginTop: 16,
+    // marginTop: 10,
     padding:5,
   },
   tableRow: {

@@ -1,19 +1,21 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ToastAndroid } from 'react-native';
 import io from 'socket.io-client';
 import config from '../config';
 import { useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
 import Icon from "react-native-vector-icons/Ionicons";
-import { isToday, isSameDate, getTime, getFileSize, removeBrackets } from '../fn';
+import { isToday, isSameDate, getTime, getFileSize } from '../fn';
 import Header from './chatRoomHeader';
 import Spinner from '../custom/Spinner';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
-import * as Linking from 'expo-linking';  
 import ImageViewer from '../custom/ImageViewer';
+import { ProgressBar } from 'react-native-paper';
+import * as Sharing from 'expo-sharing';
+const { StorageAccessFramework } = FileSystem;
 
 export default ChatRoom = ({route, navigation}) => {
 
@@ -55,14 +57,15 @@ export default ChatRoom = ({route, navigation}) => {
 
       socket.on('fetchMessages', (data) => {
         const { messages} = data;
+        console.log(messages,'messages')
         setMessages(messages.reverse());
         // scrollToBottom();
       });    
 
       socket.on('messageAdded', (data) => {
-        const { id, userid, roomId, message, message_type, date} = data;
+        const { id, userid, roomId, message, message_type, date, file_name, file_size, file_uri, file_type} = data;
 
-        console.log('new message', userid, touserid)
+        console.log('new message', userid, touserid, file_name, file_size, file_uri, file_type);
 
         setMessages((prevMessages) => [
           {
@@ -71,7 +74,11 @@ export default ChatRoom = ({route, navigation}) => {
             roomId,
             message,
             message_type,
-            date
+            date,
+            file_name,
+            file_size,
+            file_uri,
+            file_type
           },
           ...prevMessages
         ]);
@@ -148,29 +155,75 @@ export default ChatRoom = ({route, navigation}) => {
     }
   };
   
-  const downloadFile = async (uri) => {
-    const fileUri =  `${config}/${uri}`;
-    const fileUriParts = fileUri.split('/');
-    const fileName = fileUriParts[fileUriParts.length - 1];
-    const downloadResumable = FileSystem.createDownloadResumable(
-      fileUri,
-      FileSystem.documentDirectory + fileName,
-      {},
-      (downloadProgress) => {
-        const progress =
-          downloadProgress.totalBytesWritten /
-          downloadProgress.totalBytesExpectedToWrite;
-        console.log(`Download progress: ${progress}`);
-      }
-    );
-    try {
-      const { uri } = await downloadResumable.downloadAsync();
-      console.log(`Downloaded file: ${uri}`);
-      Linking.openURL(uri);
-    } catch (e) {
-      console.error(e);
+  const [progress, setProgress] = useState(0);
+
+//download attachment sent in mail
+const downloadPath = FileSystem.documentDirectory + (Platform.OS == 'android' ? '' : '');
+
+const ensureDirAsync = async (dir, intermediates = true) => {
+  const props = await FileSystem.getInfoAsync(dir)
+  if (props.exist && props.isDirectory) {
+      return props;
+  }
+  let _ = await FileSystem.makeDirectoryAsync(dir, { intermediates })
+  return await ensureDirAsync(dir, intermediates)
+}
+
+const downloadCallback = downloadProgress => {
+  const progress = downloadProgress.totalBytesWritten / downloadProgress.totalBytesExpectedToWrite;
+  setProgress(progress);
+};
+
+const downloadFile = async (fileUrl, fileName) => {
+  if (Platform.OS == 'android') {
+    const dir = ensureDirAsync(downloadPath);
+  }
+
+  const downloadResumable = FileSystem.createDownloadResumable(
+    fileUrl,
+    downloadPath + fileName,
+    {},
+    downloadCallback
+  );
+
+  try {
+    const { uri } = await downloadResumable.downloadAsync();
+    if (Platform.OS == 'android')
+      saveAndroidFile(uri, fileName)
+    else
+      saveIosFile(uri);
+  } catch (e) {
+    console.error('download error:', e);
+  } finally {
+    // Reset the progress state to 0
+    setProgress(0);
+  }
+}
+
+const saveAndroidFile = async (fileUri, fileName) => {
+  try {
+    const fileString = await FileSystem.readAsStringAsync(fileUri, { encoding: FileSystem.EncodingType.Base64 });
+    
+    const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
+    if (!permissions.granted) {
+      return;
     }
-  };
+
+    try {
+      await StorageAccessFramework.createFileAsync(permissions.directoryUri, fileName, '*/*')
+        .then(async (uri) => {
+          await FileSystem.writeAsStringAsync(uri, fileString, { encoding: FileSystem.EncodingType.Base64 });
+          ToastAndroid.show("File Downloaded", ToastAndroid.SHORT);
+        })
+        .catch((e) => {
+        });
+    } catch (e) {
+      throw new Error(e);
+    }
+
+  } catch (err) {
+  }
+}
 
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUri, setImageUri] = useState('');
@@ -180,6 +233,32 @@ export default ChatRoom = ({route, navigation}) => {
     setModalVisible(true);
   };
 
+  //download and share the file 
+  const downloadAndShareFile = async (uri, file_name) => {
+    const remoteUrl = uri; // Replace this with the actual file URL
+    const localFileUri = FileSystem.cacheDirectory + file_name; // Replace 'yourFileName.ext' with the desired file name
+
+    try {
+      const downloadResult = await FileSystem.downloadAsync(remoteUrl, localFileUri);
+      
+      if (downloadResult.status === 200) {
+        // File download successful
+        const shareResult = await Sharing.shareAsync(downloadResult.uri);
+
+        if (shareResult && shareResult.action === Sharing.sharedAction) {
+          console.log('File shared successfully!');
+        } else {
+          console.log('Sharing was cancelled or failed.');
+        }
+      } else {
+        console.log('File download failed.');
+      }
+    } catch (error) {
+      console.error('Error while downloading or sharing the file:', error);
+    }
+  };
+
+
   if (!messages) return <Spinner/>
 
   return (
@@ -187,6 +266,16 @@ export default ChatRoom = ({route, navigation}) => {
     <View style={{flex:1, 
     backgroundColor:'#fff'
     }}>
+
+    {progress > 0 && 
+    <ProgressBar
+       styleAttr="Horizontal"
+       indeterminate={false}
+       progress={progress}
+       style={{ width: '100%', height: 5 }}
+       color="#1E319D"
+     />
+     }
 
     <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
@@ -200,7 +289,7 @@ export default ChatRoom = ({route, navigation}) => {
         return(
           <>
             <View style={{display:'flex', alignContent:'flex-end', justifyContent:'center', flexDirection:'row'}}>
-            <Image style={{ width: 200, height: 200, }} source={require("../../assets/images/message.png")} />
+            <Image style={{ width: 200, height: 200, borderRadius:100, marginVertical:10}} source={require("../../assets/images/message.png")} />
             </View>
             <Text style={{textAlign:'center', fontSize:12, color:'grey'}}>---</Text>
             <Text style={{ textAlign:"justify", fontSize:12, color:'grey', padding:10}}>
@@ -209,8 +298,6 @@ export default ChatRoom = ({route, navigation}) => {
             🚫 Avoid sharing any personal or sensitive information, such as passwords, financial details.
             {'\n'}{'\n'}
             🔒 Your privacy is important to us! Be cautious when sharing links or interacting with unknown users.
-            {'\n'}{'\n'}
-            🔧 If you encounter any issues or need assistance, feel free to reach out to the moderators or support team.
            </Text>
            <Text style={{textAlign:'center', fontSize:12, color:'grey', marginBottom:30}}>---</Text>
           </>
@@ -275,7 +362,7 @@ export default ChatRoom = ({route, navigation}) => {
         {msg.message_type === 'i' ? //if i --image
          <TouchableOpacity
          style={{
-           backgroundColor: msg.userid === userid ? '#3E56C5' : '#F0F0F0',
+           backgroundColor: msg.userid === userid ? '#373B58' : '#F0F0F0',
            borderRadius: 20,
            borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
            borderBottomRightRadius: msg.userid === userid ? 0 : 20,
@@ -283,8 +370,10 @@ export default ChatRoom = ({route, navigation}) => {
            alignSelf:"flex-start",
            maxWidth: "85%",
          }}
-         activeOpacity={1} onPress={()=>{handleImageClick(`${config.API_URL}/${removeBrackets(msg.message)}`)}}> 
-        <Image source={{uri:`${config.API_URL}/${removeBrackets(msg.message)}`}} 
+         activeOpacity={1} onPress={()=>{handleImageClick(`${config.API_URL}/${msg.file_uri}`)}}
+         onLongPress={() => downloadAndShareFile(`${config.API_URL}/${msg.file_uri}`, msg.file_name)}
+         > 
+        <Image source={{uri:`${config.API_URL}/${msg.file_uri}`}} 
         style={{ width: '100%', height: undefined, aspectRatio: 1 }} // aspectRatio 1 ensures the image maintains its original size
         resizeMode="contain" // Set resizeMode to 'contain'
         />
@@ -292,7 +381,7 @@ export default ChatRoom = ({route, navigation}) => {
       :
       <TouchableOpacity
         style={{
-          backgroundColor: msg.userid === userid ? '#3E56C5' : '#F0F0F0',
+          backgroundColor: msg.userid === userid ? '#373B58' : '#F0F0F0',
           borderRadius: 20,
           borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
           borderBottomRightRadius: msg.userid === userid ? 0 : 20,
@@ -304,11 +393,20 @@ export default ChatRoom = ({route, navigation}) => {
         {/* t --text */}
       {msg.message_type === 't' && <Text style={{color: msg.userid === userid ? '#fff' : '#000',}}>{msg.message}</Text>}
       {msg.message_type === 'a' &&  //a mimetype aplication/*
-      <TouchableOpacity onPress={() => Linking.openURL(`${config.API_URL}/${removeBrackets(msg.message)}`)}>
-        <Text numberOfLines={1}>
-          <Ionicons name='document' size={20} color='#fff'/>
+      
+      <TouchableOpacity 
+      // onPress={() => Linking.openURL(`${config.API_URL}/${msg.file_uri}`)}
+      onPress={() => downloadFile(`${config.API_URL}/${msg.file_uri}`, msg.file_name)}
+      onLongPress={() => downloadAndShareFile(`${config.API_URL}/${msg.file_uri}`, msg.file_name)}
+      >
+        <Text numberOfLines={1} style={{color: msg.userid === userid ? '#fff' : '#000',}}>
+          <Ionicons name="document-outline" size={20} color={msg.userid === userid ? '#fff' : '#000'}/> {msg.file_name}
         </Text>
-      </TouchableOpacity>}
+        <Text style={{color: msg.userid === userid ? '#fff' : '#000', fontSize:12}}>
+        {getFileSize(msg.file_size)}
+        </Text>
+      </TouchableOpacity>
+      }
             
       </TouchableOpacity>
       }
@@ -321,7 +419,7 @@ export default ChatRoom = ({route, navigation}) => {
         paddingLeft: msg.userid === userid ? 0 : 10,
         paddingRight: msg.userid === userid ? 10 : 0,
         }}>
-          {getTime(msg.date)}
+          {getTime(msg.date)} {msg.userid !== userid && msg.message_type === 'a' && ' ~ attachment'}
         </Text>
 
         </View>
@@ -357,13 +455,15 @@ export default ChatRoom = ({route, navigation}) => {
     </TouchableOpacity>
     }
 
-    {file ? 
-      <View style={{maxHeight:100, padding:10, display:'flex', flexDirection:'row', flex:1}}>
-        <Ionicons name='document' size={20} color='#000'/>
+    {file ? //make to show image
+      <TouchableOpacity style={{maxHeight:100, paddingHorizontal:20, display:'flex', flexDirection:'row', flex:1, backgroundColor:'#F1F2F6', marginHorizontal:10,
+      borderRadius:10}} activeOpacity={1} > 
+        <Ionicons name='document-outline' size={30} color='grey'/>
         <View>
-        <Text style={{color:'grey'}} numberOfLines={1}>{file.name}{getFileSize(file)}</Text>
+        <Text style={{color:'#000', marginRight:10}} numberOfLines={1}>{file.name}</Text>
+        <Text style={{color:'#000'}} numberOfLines={1}>{getFileSize(file.size)}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
       :
       <TextInput
         style={{

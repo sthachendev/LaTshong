@@ -8,7 +8,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
 import Posts from '../post/posts';
 import Spinner from '../custom/Spinner';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
+// import ActionButton from 'react-native-action-button';
+import { FAB } from 'react-native-paper';
+import ActionButton from './actionButton';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import FeedPost from '../post/feedPost';
+import jwtDecode from 'jwt-decode';
+import FeedPosts from '../post/feedPosts';
 
 export default Home = () => {
 
@@ -17,18 +24,23 @@ export default Home = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
-  const handlePostClick = () => {
-    navigation.navigate('Post');
-  };
+  // const handlePostClick = () => {
+  //   navigation.navigate('Post');
+  // };
 
-  // const token = useSelector((state) => state.token);
+  const token = useSelector((state) => state.token);
   const role = useSelector((state) => state.role);
-
+  const userid = token ? jwtDecode(token).userid : null;
+  // const userid = jwtDecode(token).userid;
+  
   const [data, setData] = useState('');
+  const [feedsData, setFeedsData] = useState('');
   
   useEffect(()=>{
-    if(isFocused)
+    if(isFocused){
       getJobPost();
+      getFeedPost();
+    }
 
     return () => {
      setData('');
@@ -39,8 +51,18 @@ export default Home = () => {
   const getJobPost = async() => {
     try {
       const res = await axios.get(`${config.API_URL}/api/get_job_post`);
-      // console.log('getJobPost');
+      console.log('getJobPost', res.data);
       setData(res.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const getFeedPost = async() => {
+    try {
+      const res = await axios.get(`${config.API_URL}/api/feed_posts`);
+      // console.log('getFeedPost', res.data);
+      setFeedsData(res.data)
     } catch (error) {
       console.error(error)
     }
@@ -50,6 +72,7 @@ export default Home = () => {
     setRefreshing(true); // Set refreshing to true to show the loader
     try {
       await getJobPost(); // Fetch data again
+      await getFeedPost(); // Fetch data again
     } catch (error) {
       console.error(error);
     } finally {
@@ -120,35 +143,47 @@ export default Home = () => {
 
   const [jobTabSelected, setJobTabSelected] = useState(true);
 
+  const [visible, setVisible] = useState(false);//action btn
+
+  const handleMainButtonPress = () => {
+    setVisible(!visible);
+  };
+
+  const [isModalVisible, setIsModalVisible] = useState(false);//feed post modal
+
   if (!data) {
     return <Spinner/>;
   }
 
- // Render each item of the data array
-  const renderItem = ({ item }) => <Posts item={item} role={role} navigation={navigation} selectedItem={selectedItem} setSelectedItem={setSelectedItem}/>;
-
-  //aviod using anynomus fn
-  const keyExtractor = (item) => item.id.toString();
-
   return (
     <View style={styles.container}>
+      {/* modal to post in feed */}
+    <FeedPost isModalVisible={isModalVisible} userid={userid} setIsModalVisible={setIsModalVisible} getFeedPost={getFeedPost}/>
 
-      <View style={{display:'flex', flexDirection:'row', width:'100%', justifyContent:'space-evenly', padding:10, backgroundColor:'#F1F2F6'}}>
+    {/* top tab btn */}
+      <View style={{display:'flex', flexDirection:'row', width:'100%', justifyContent:'space-evenly', backgroundColor:'#F1F2F6'}}>
         
-      <TouchableOpacity style={{flexDirection:'row', borderBottomColor: jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:1}} 
+      <TouchableOpacity style={{ flexDirection:'row', borderBottomColor: jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:3,
+       flex:1, padding:10, justifyContent:'center'}} 
       onPress={()=>setJobTabSelected(true)} activeOpacity={1}>
-          <Ionicons name='person' size={20} color='#000'/>
-          <Text style={{marginLeft:5}}>Job</Text>
+          {/* <Ionicons name='folder-open-sharp' size={20} color='#000' style={{alignSelf:'center'}}/> */}
+          <Icon name="work-outline" size={24} color={jobTabSelected ? '#1E319D' : 'grey'} />
+          {/* <Text style={{textAlign:'center', justifyContent:'center', fontWeight:'700', color: jobTabSelected ? '#1E319D' : 'grey',
+           fontSize:18}}>Job</Text> */}
         </TouchableOpacity> 
 
-        <TouchableOpacity style={{flexDirection:'row', borderBottomColor: !jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:1}} 
+        <TouchableOpacity style={{ flexDirection:'row', borderBottomColor: !jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:3,
+       flex:1, padding:10, justifyContent:'center'}}
         onPress={()=>setJobTabSelected(false)} activeOpacity={1}>
-          <Ionicons name='book' size={20} color='#000'/>
-          <Text style={{marginLeft:5}}>Feeds</Text>
+          {/* <Ionicons name='grid-sharp' size={20} color='#000' style={{alignSelf:'center'}}/> */}
+          {/* <Text style={{textAlign:'center', justifyContent:'center', fontWeight:'700', color: !jobTabSelected ? '#1E319D' : 'grey',
+           fontSize:18}}>Feeds</Text> */}
+          <Icon name="article" size={24} color={!jobTabSelected ? '#1E319D' : 'grey'} />
         </TouchableOpacity> 
       </View>
      
-     {role === null && <>
+     {/* login btn show if not logged in */}
+     {/* {role === null && <>
         <View style={{paddingVertical:20, backgroundColor:'#fff'}}>
           <TouchableHighlight  style={{backgroundColor:"#1E319D", marginHorizontal:20, 
           paddingVertical:10, paddingHorizontal:15, borderRadius:20, elevation:2}} underlayColor='#1E319D'
@@ -156,18 +191,15 @@ export default Home = () => {
           <Text style={{color:"#fff", fontWeight:"500", textAlign:"center"}}>Log In</Text>
           </TouchableHighlight>
         </View>
-      </>}
+      </>} */}
       
-      {
+      {//job posts
         jobTabSelected &&
-        <>
           <FlatList
             ref={flatListRef}
             data={data}
-            // ListFooterComponent={()=>{return(<Text style={{textAlign:'center', color:'grey'}}>{'<>'}</Text>)}}
-            // ListFooterComponent={()=>{return(<View style={{margin:5}}></View>)}}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
+            renderItem={({ item }) => <Posts item={item} role={role} navigation={navigation} selectedItem={selectedItem} setSelectedItem={setSelectedItem}/>}
+            keyExtractor={(item) => item.id.toString()}
             maxToRenderPerBatch={3} // Adjust this value based on your needs
             ListEmptyComponent={()=>{
               return(
@@ -182,18 +214,68 @@ export default Home = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           />
-        </>
+      }
+
+      {//news feeds posts
+        !jobTabSelected &&
+          <FlatList
+            ref={flatListRef}
+            data={feedsData}
+            renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} selectedItem={selectedItem} setSelectedItem={setSelectedItem}/>}
+            keyExtractor={(item) => item.id.toString()}
+            maxToRenderPerBatch={3} // Adjust this value based on your needs
+            ListEmptyComponent={()=>{
+              return(
+                <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No posts</Text>
+              )
+            }}
+            getItemLayout={(data, index) => (
+              {length: 500, offset: 500 * index, index}
+            )}
+            onScroll={handleScroll} // Add onScroll event to track the scroll position
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
       }
 
     {/* Floating Add Post Option */}
-    {role === "em" && 
+    {/* {role === "js" && 
       <TouchableOpacity
       style={styles.floatingPost}
-      onPress={handlePostClick}
+      onPress={()=>{
+        setIsModalVisible(true);
+        setVisible(false);
+      }}
       activeOpacity={.8}
     >
       <MaterialIcons name="add" size={25} color="white" />
-    </TouchableOpacity>}
+    </TouchableOpacity>} */}
+    
+
+    {role === 'em' && 
+    <>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <FAB
+        style={{ position: 'absolute', bottom: 16, right: 15, backgroundColor:'#1E319D', borderRadius:40}}
+        icon={visible ? 'close' : 'plus'}
+        color='#fff'
+        onPress={handleMainButtonPress}
+      />
+      <ActionButton
+        visible={visible}
+        onButton1Press={() => {
+          navigation.navigate('Post');
+          setVisible(false);
+        }}
+        onButton2Press={() => {
+          setIsModalVisible(true);
+          setVisible(false);
+        }}
+      />
+      </View>
+    </>}
+    
     </View>
   );
 };
@@ -202,6 +284,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     // backgroundColor:'#fff'
+    backgroundColor:'rgba(30,49,157,0.1)'
   },
   floatingPost: {
     position: 'absolute',
@@ -218,5 +301,8 @@ const styles = StyleSheet.create({
       width: 0, // Horizontal offset
       height: 2, // Vertical offset
     },
+    tabBtn:{
+
+    }
   },
 });

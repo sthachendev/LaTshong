@@ -1,8 +1,6 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-
-import BottomTab from "./bottomtab";
 import Setting from "../screens/setting/setting";
 import Post from "../screens/post/post";
 import PostDetails from "../screens/post/postDetails";  
@@ -76,11 +74,6 @@ function Stack() {
       <Stack.Screen
         name="ChatRoom"
         component={chatRoom}
-        // options={{
-        //   headerShown: true,
-        //   headerTitle:"ChatRoom",
-        //   headerTitleAlign:"center"
-        // }}
         options={({ route }) => ({ 
           headerTitle: route.params.title,
         headerTitleAlign:"left",
@@ -93,7 +86,6 @@ function Stack() {
           component={ProfilePost}
           options={{
             headerShown: false,
-            // headerTitle:"Add New Post"
           }}
         />
 
@@ -102,7 +94,6 @@ function Stack() {
         component={Login}
         options={{
           headerShown: false,
-          // headerTitle:"Add New Post"
         }}
       />
 
@@ -111,7 +102,6 @@ function Stack() {
         component={Signup}
         options={{
           headerShown: false,
-          // headerTitle:"Add New Post"
         }}
       />
 
@@ -120,7 +110,6 @@ function Stack() {
         component={SignupStep2}
         options={{
           headerShown: false,
-          // headerTitle:"Add New Post"
         }}
       />
 
@@ -170,7 +159,7 @@ function Stack() {
         component={AppliedLists}
         options={{
           headerShown: true,
-          headerTitle:'Job Applied List',
+          headerTitle:'Saved Job Post',
           headerTitleAlign:'center',
           headerShadowVisible:false
         }}
@@ -181,9 +170,6 @@ function Stack() {
         component={Search}
         options={{
           headerShown: false,
-          headerTitle:'Job Search',
-          headerTitleAlign:'center',
-          headerShadowVisible:false
         }}
       />
 

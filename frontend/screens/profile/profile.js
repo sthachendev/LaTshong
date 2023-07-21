@@ -2,38 +2,41 @@ import jwtDecode from 'jwt-decode';
 import { useSelector } from 'react-redux';
 import UserInfo from "./userInfo";
 import { useState, useEffect } from "react";
-import { FlatList, Text, View, ToastAndroid } from "react-native";
+import { FlatList, Text, View, ToastAndroid, Image } from "react-native";
 import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
 import config from "../config";
-import { Image } from "react-native";
 import ImageViewer from "../custom/ImageViewer";
 import { TouchableOpacity } from "react-native";
 import Spinner from "../custom/Spinner";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import AddCertificate from './addCertificate';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import FeedPosts from "../post/feedPosts";
 
 export default Profile = ({navigation}) => {
   
   const token = useSelector((state)=> state.token);
-  const userid = jwtDecode(token).userid; 
+  const role = useSelector((state)=> state.role);
+  const userid = token ? jwtDecode(token).userid : null;
 
   const [modalVisible, setModalVisible] = useState(false);
   const [imageUri, setImageUri] = useState('');
 
   const [image, setImage] = useState(null);
 
-  const handleImageClick = () => {
-    setModalVisible(true);
-  };
-  
   console.log(userid);
 
   const [data, setData] = useState([]);
+  const [feedsData, setFeedsData] = useState('');
+
   const isFocused = useIsFocused();
-  
+ 
   useEffect(()=>{
-    if(isFocused)
+    if(isFocused){
       getPost();
+      getFeedPost();
+    }
     return () => {
      setData('');
     };
@@ -49,6 +52,16 @@ export default Profile = ({navigation}) => {
       });
       setData(res.data)
       // console.log(res.data);
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  const getFeedPost = async() => {
+    try {
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}`);
+      console.log('getFeedPost', res.data);
+      setFeedsData(res.data)
     } catch (error) {
       console.error(error)
     }
@@ -78,48 +91,58 @@ export default Profile = ({navigation}) => {
       console.log(error);
     }
   };
-  
-  if (!data) return <Spinner/>
 
-// Render each item of the data array //posts
+  const handleImageClick = () => {
+    setModalVisible(true);
+  };
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("blur", () => {
+      setIsModalVisible(false);
+    });
+  
+    return unsubscribe;
+  }, [navigation]);
+
+  const [jobTabSelected, setJobTabSelected] = useState(true);
+  
+  if (!data && !feedsData) return <Spinner/>
+
+// // Render each item of the data array //posts //cetificates
 const renderItem = ({ item }) => {
   return (
-    <>
-    <View style={{ backgroundColor:'#fff', padding:10, borderRadius:0, marginVertical:5,
-    // marginHorizontal:10, 
-    // borderColor:'grey', borderWidth:.5, 
-    // borderWidth:.25, borderColor:'lightgrey',
-     paddingTop:15, paddingHorizontal:25,
-    flex:1}}>
-
-      <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
-
-      {item._desc && <Text style={{ paddingBottom:10, color:'grey'}}>{item._desc}</Text>}
-
-      <TouchableOpacity onPress={()=>{ setImageUri(`${config.API_URL}/${item.images}`); handleImageClick();}} activeOpacity={1}>
-      <Image  source={{ uri : `${config.API_URL}/${item.images}`}}  
-          style={{ flex:1, aspectRatio:4/3, borderRadius:5, borderColor:"lightgrey", borderWidth:0.5}}/>
-            <Ionicons
-            name="expand-outline"
-            color='lightgrey'
-            size={30}
-            style={{position:"absolute", bottom:15, right:15}}
-          />
-
+    <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 0, marginBottom: 5, flex: 1 }}>
+      {/* {item._desc && <Text style={{ paddingBottom: 10, color: 'grey' }}>{item._desc}qwe</Text>} */}
+      <TouchableOpacity onPress={() => { setImageUri(`${config.API_URL}/${item.images[0]}`); handleImageClick(); }} activeOpacity={1}>
+        <Image
+          source={{ uri: `${config.API_URL}/${item.images}` }}
+          style={{ width: '100%', height: 250, borderRadius: 5, borderColor: "lightgrey", borderWidth: 0.5 }}
+          resizeMode="cover" // This ensures the image fills the container without distorting its aspect ratio
+        />
+        <Ionicons
+          name="expand-outline"
+          color='lightgrey'
+          size={30}
+          style={{ position: "absolute", bottom: 15, right: 15 }}
+        />
       </TouchableOpacity>
-
     </View>
-    </>
   );
 };
 
-//aviod using anynomus fn
+// aviod using anynomus fn
 const keyExtractor = (item) => item.id.toString();
 
   return(
-    <View style={{
-      // backgroundColor:"#fff",
-     flex:1}}>
+    <View style={{flex:1,
+    //  backgroundColor:'#fff'
+    elevation:2
+     }}>
+    <AddCertificate isModalVisible={isModalVisible} userid={userid} setIsModalVisible={setIsModalVisible}/>
+
+    <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
     {/* image upload save // cancel btn  */}
       {image && 
@@ -134,28 +157,44 @@ const keyExtractor = (item) => item.id.toString();
       </View>
     }
 
+    {/* show option to upload and display certificates if the usser is js */}
+    {role === 'js' && 
     <FlatList
+    // horizontal
+    ListHeaderComponent={()=>  <UserInfo userid={userid} navigation={navigation} image={image} setImage={setImage} 
+    handleUpload={handleUpload} role={role}
+    setIsModalVisible={setIsModalVisible} />}
       data={data}
-      ListHeaderComponent={<UserInfo userid={userid} navigation={navigation} image={image} setImage={setImage} handleUpload={handleUpload}/>}
-      // ListFooterComponent={
-      // <Button title="Add Cetificates" onPress={()=>navigation.navigate('ProfilePost', {userid})}></Button>
-      // }
       ListEmptyComponent={()=>{
         return(
-          <>
+          <View style={{display:'flex'}}>
             <Image style={{ width: 400, height: 200, alignSelf:"center" }} source={require("../../assets/images/certificate.png")} />
             <Text style={{textAlign:'center', color:'grey'}}>Add certificates, stand out from competition </Text>
-          </>
+          </View>
         )
       }}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
+      showsHorizontalScrollIndicator={false}
       maxToRenderPerBatch={3} // Adjust this value based on your needs
-      getItemLayout={(data, index) => (
-        {length: 500, offset: 500 * index, index}
-      )}
     />
-    
+    }
+     {role === 'em' && 
+    <FlatList
+    // horizontal
+    ListHeaderComponent={()=>  <UserInfo userid={userid} navigation={navigation} image={image} setImage={setImage} 
+    handleUpload={handleUpload} role={role}
+    setIsModalVisible={setIsModalVisible} />}
+      data={feedsData}
+      renderItem={({item})=><FeedPosts item={item} role={role} navigation={navigation}/>}
+      keyExtractor={keyExtractor}
+      showsHorizontalScrollIndicator={false}
+      maxToRenderPerBatch={3} // Adjust this value based on your needs
+      // ListFooterComponent={() => {
+      //   role === 'em' && <UserFeedPosts data={feedsData} role={role} navigation={navigation} />
+      // }}
+    />
+    }
     </View>
   )
 }

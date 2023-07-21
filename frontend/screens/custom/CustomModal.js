@@ -92,7 +92,7 @@ export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, se
           <View style={{ backgroundColor:'#fff', borderColor:"rgba(0,0,0,1)",
               borderWidth:0.25, borderRadius:25, position:"absolute", bottom:10, width:'100%', alignSelf:'center', padding:1}} >
           <TouchableHighlight 
-              underlayColor="rgba(0,0,0,0.1)"
+              underlayColor="rgba(0,0,0,0.1)" style={{ borderRadius:25,}}
               onPress={() => navigation.navigate('PostDetails', { id: postid, role })}>
                 <Text style={{ paddingVertical:10,  textAlign:"center", 
                 color: 'rgba(0,0,0,0.7)' }}>

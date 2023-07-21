@@ -61,9 +61,9 @@ const Chat = ({navigation}) => {
           <View style={{flexDirection:'row', padding:15, flex:1}}>
             {
               item.other_user_imageurl.length > 0 ?
-              <Image source={{ uri: `${config.API_URL}/${item.other_user_imageurl}` }} style={{width:50, height:50, borderRadius:25}} />
+              <Image source={{ uri: `${config.API_URL}/${item.other_user_imageurl}` }} style={{width:50, height:50, borderRadius:25, borderColor:"lightgrey", borderWidth:1}} />
               :
-              <Ionicons name="person-circle-outline" size={45} color="grey" />
+              <Image source={require("../../assets/images/default.png")} style={{width:50, height:50, borderRadius:25, borderColor:"lightgrey", borderWidth:1}} />
             }
             <View style={{flexDirection:'column', flex:1}}>
               <Text style={{fontWeight:"bold", fontSize:15, paddingLeft:10, textAlignVertical:'top'}}>

@@ -7,10 +7,13 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import BottomTab from './bottomtab';
 import { DrawerActions } from '@react-navigation/native';
 import jwtDecode from 'jwt-decode';
-import config from '../screens/config';
+// import config from '../screens/config';
 import { capitalizeWords } from '../screens/fn';
-import { MaterialIcons } from '@expo/vector-icons';
 import { TouchableHighlight } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+// import { useState } from 'react';
+// import { useEffect } from 'react';
+// import axios from 'axios';
 
 const Drawer = createDrawerNavigator();
 
@@ -19,8 +22,31 @@ export default function DrawerNav({ navigation }) {
 
   const token = useSelector((state)=> state.token);
   const userid = token ? jwtDecode(token).userid : null;
-  const imageurl = token ? jwtDecode(token).imageurl : null;
+  // const imageurl = token ? jwtDecode(token).imageurl : null;
   const username = token ? jwtDecode(token).username : null;
+
+  // const [imageurl, setImageurl] = useState('');
+
+  // const fetchUserInfo = async () => {
+  //   try {
+  //     const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         Authorization: `Bearer ${token}`,
+  //       }
+  //     });
+  //     setImageurl(response.data[0].imageurl);
+  //   console.log(response.data,'response');
+
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+
+  // useEffect(()=>{
+  //  if(token)
+  //  fetchUserInfo();
+  // },[])
 
   const role = useSelector(state => state.role);
   // const userid = jwtDecode(token).userid;// this giving a getter problem
@@ -55,13 +81,13 @@ export default function DrawerNav({ navigation }) {
 
           <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
           
-          {token !== null && token && imageurl && username &&
+          {token !== null && token && username &&
             <TouchableOpacity style={{display:'flex', flexDirection:'row'}} activeOpacity={1}
              onPress={() => navigation.navigate('Profile')}>
-              <Image source={{ uri: `${config.API_URL}/${imageurl}` }} style={{width:50, height:50, borderRadius:25}} />
+              {/* <Image source={{ uri: `${config.API_URL}/${imageurl}` }} style={{width:50, height:50, borderRadius:25}} /> */}
                 <View style={{marginLeft:20}}>
                   <Text style={{fontWeight:'500',}}>{capitalizeWords(username)}</Text>
-                  <Text>
+                  <Text style={{color:'grey'}}>
                   {role === 'em' && 'Employer'}
                   {role === 'js' && 'Job Seeker'}
                   </Text>
@@ -70,30 +96,30 @@ export default function DrawerNav({ navigation }) {
           }
 
           <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
+        
+          {token === null && (
+          <DrawerItem
+            label="Login"
+            onPress={() => {
+              navigation.navigate('Login');
+              navigation.dispatch(DrawerActions.closeDrawer());
+            }}
+            icon={({ color, size }) => (
+              <Icon
+                name="person"
+                color={color}
+                size={size}
+              />
+            )}
+          />
+        )}
 
-          {/* Drawer items */}
-          {/* <DrawerItemList {...props} /> */}
-          {/* {token !== null && token && (
-             <DrawerItem
-             label="Profile"
-             onPress={() => navigation.navigate('Profile')}
-             icon={({ color, size }) => (
-               <Ionicons
-                 name="person-outline"
-                 color={color}
-                 size={size}
-               />
-             )}
-           />
-          )} */}
-       
         <DrawerItem
-          label="Home"
-          // labelStyle={{color:'#000'}}
+          label="Dashboard"
           onPress={() => navigation.navigate('Home')}
           icon={({ color, size }) => (
-            <Ionicons
-              name="home-sharp"
+            <Icon
+              name="dashboard"
               color={color}
               size={size}
             />
@@ -103,30 +129,13 @@ export default function DrawerNav({ navigation }) {
           label="Explore"
           onPress={() => navigation.navigate('Explore')}
           icon={({ color, size }) => (
-            <Ionicons
-              name="search"
+            <Icon
+              name="explore"
               color={color}
               size={size}
             />
           )}
         />
-
-        {token === null && (
-          <DrawerItem
-            label="Login"
-            onPress={() => {
-              navigation.navigate('Login');
-              navigation.dispatch(DrawerActions.closeDrawer());
-            }}
-            icon={({ color, size }) => (
-              <Ionicons
-                name="person"
-                color={color}
-                size={size}
-              />
-            )}
-          />
-        )}
 
         {token !== null && token && (
           <>
@@ -134,8 +143,8 @@ export default function DrawerNav({ navigation }) {
              label="Message"
              onPress={() => navigation.navigate('Chat')}
              icon={({ color, size }) => (
-               <Ionicons
-                 name="chatbox-ellipses"
+               <Icon
+                 name="chat"
                  color={color}
                  size={size}
                />
@@ -147,11 +156,11 @@ export default function DrawerNav({ navigation }) {
 
           {role === 'js' && 
             <DrawerItem
-            label="Applied Lists"
+            label="Saved Job Post"
             onPress={() => navigation.navigate('AppliedLists')}
             icon={({ color, size }) => (
-              <Ionicons
-                name="file-tray-full"
+              <Icon
+                name="bookmark"
                 color={color}
                 size={size}
               />
@@ -170,8 +179,8 @@ export default function DrawerNav({ navigation }) {
                 navigation.dispatch(DrawerActions.closeDrawer());
               }}
               icon={({ color, size }) => (
-                <Ionicons
-                  name="build"
+                <Icon
+                  name="settings"
                   color={color}
                   size={size}
                 />
@@ -185,8 +194,8 @@ export default function DrawerNav({ navigation }) {
               navigation.dispatch(DrawerActions.closeDrawer());
             }}
             icon={({ color, size }) => (
-              <Ionicons
-                name="help-circle"
+              <Icon
+                name="help"
                 color={color}
                 size={size}
               />

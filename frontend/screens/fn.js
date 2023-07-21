@@ -197,11 +197,17 @@ export function truncateName(name, maxLength) {
 }
 
 export function capitalizeFirstLetterOfParagraphs(text) {
+  if (typeof text !== 'string') {
+    // Return an empty string if the input is not a string or is undefined.
+    return '';
+  }
+
   return text.replace(/(^\s*\w|[\.\!\?]\s*\w)/gm, match => match.toUpperCase());
 }
 
+
 export const getFileSize = (file) => {
-  const fileSizeInBytes = file.size;
+  const fileSizeInBytes = file;
   const fileSizeInKB = fileSizeInBytes / 1024;
   const fileSizeInMB = fileSizeInKB / 1024;
 

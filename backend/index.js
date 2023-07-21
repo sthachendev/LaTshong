@@ -219,7 +219,7 @@ app.post("/api/getOTP", async (req, res) => {
   }
 });
 
-//upload post
+//upload post //user profile cards // certificates
 app.patch('/api/post', upload, async (req, res) => {
   try {
     const { description, postby } = req.body;
@@ -431,23 +431,23 @@ app.post("/api/employer_post", (req, res) => {
 // Configure Socket.IO middleware for JWT authentication
 io.use(authenticateTokenSocketIO);
 
-const fetchMessage = async (roomId) => {
-  console.log('fetchMessage');
-  try {
-    // Perform the database query
-    const result = await pool.query('SELECT * FROM messages WHERE room_id = $1', [roomId]);
+// const fetchMessage = async (roomId) => {
+//   console.log('fetchMessage');
+//   try {
+//     // Perform the database query
+//     const result = await pool.query('SELECT * FROM messages WHERE room_id = $1', [roomId]);
 
-    // Extract the data from the query result
-    const messages = result.rows;
+//     // Extract the data from the query result
+//     const messages = result.rows;
 
-    console.log(messages)
+//     console.log(messages)
 
-    return messages;
-  } catch (error) {
-    console.error('Error occurred while fetching data from the database:', error);
-    throw error;
-  }
-};
+//     return messages;
+//   } catch (error) {
+//     console.error('Error occurred while fetching data from the database:', error);
+//     throw error;
+//   }
+// };
 
 //user info // fetch imageurl n last chat message as t or false
 app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
@@ -489,7 +489,7 @@ app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
       }
     });
 
-    // Combine chat rooms and latest messages based on room_id
+    // Combine chat rooms and latest messages based on the latest message date
     const result = chatRooms.map((chatRoom) => {
       const latestMessage = latestMessagesMap.get(chatRoom.room_id);
       return {
@@ -501,8 +501,16 @@ app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
       };
     });
 
+    // Sort the result based on the latest message date in descending order
+    result.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date) : new Date(0);
+      const dateB = b.date ? new Date(b.date) : new Date(0);
+      return dateB - dateA;
+    });
+
     console.log(result);
     res.json(result);
+
   } catch (error) {
     console.log(error);
   }
@@ -715,25 +723,28 @@ app.patch('/api/upload_attachement', upload, async (req, res) => {
     const { roomId, userid } = req.body;
     console.log(req.body);
 
-    const files = req.files.image;
-    console.log(files)
+    // const files = req.files.image;
+    const file = req.files.image[0]; // Assuming there's only one attachment uploaded at a time
 
-    const filepaths = files.map(file => file.path);
+    console.log(file)
+
+    // const filepaths = files.map(file => file.path);
+    const filepath = file.path;
 
     let message_type;
 
-    // Assuming you want to check for MIME types like 'application/*' or 'image/*':
-    if (files.some(file => file.mimetype.startsWith('application/'))) {
+    // Assuming you want to check for MIME type of the uploaded file:
+    if (file.mimetype.startsWith('application/')) {
       message_type = 'a';
-    } else if (files.some(file => file.mimetype.startsWith('audio/'))) {
+    } else if (file.mimetype.startsWith('audio/')) {
       message_type = 'a';
-    } else if (files.some(file => file.mimetype.startsWith('video/'))) {
+    } else if (file.mimetype.startsWith('video/')) {
       message_type = 'a';
-    } else if (files.some(file => file.mimetype.startsWith('image/'))) {
+    } else if (file.mimetype.startsWith('image/')) {
       message_type = 'i';
     } else {
       // Set a default value or handle other mime types if necessary
-      message_type = '-';
+      message_type = 'a';
     }
 
     const date = new Date();
@@ -742,27 +753,25 @@ app.patch('/api/upload_attachement', upload, async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO messages 
       (room_id, message, userid, message_type, date) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [roomId, filepaths, userid, message_type, date]
+      [roomId, filepath, userid, message_type, date]
     );
       console.log(rows)
 
-     // Insert attachment details into the 'attachment_details' table
-     const attachmentDetails = files.map(file => {
-      return {
-        file_name: file.originalname,
-        file_size: file.size,
-        file_uri: file.path,
-        message_id: messageId
-      };
-    });
+    // Insert attachment details into the 'attachment_details' table
+    const file_name = file.originalname;
+    const file_size = file.size;
+    const file_uri = file.path;
+    const file_type = file.mimetype;
+    const message_id = rows[0].id;
 
     await pool.query(
-      `INSERT INTO attachment_details (file_name, file_size, file_uri, message_id) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [attachmentDetails.map(att => att.file_name), attachmentDetails.map(att => att.file_size), attachmentDetails.map(att => att.file_uri), messageId]
+      `INSERT INTO attachment_details (file_name, file_size, file_uri, file_type, message_id) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [file_name, file_size, file_uri, file_type, message_id]
     );
     // Emit an event to inform clients about the new file
     io.emit('messageAdded', 
-    {id:rows[0].id, userid:rows[0].userid, roomId, message:rows[0].message, message_type:rows[0].message_type, date });
+    {id:rows[0].id, userid:rows[0].userid, roomId, message:rows[0].message, message_type:rows[0].message_type, date,
+    file_name, file_size, file_uri, file_type});
 
     res.status(201).json(rows[0]);
 
@@ -773,6 +782,177 @@ app.patch('/api/upload_attachement', upload, async (req, res) => {
 });
 
 //api to delte posts // profile posts
+
+//feed_post
+app.patch('/api/feed_post', upload, async (req, res) => {
+  try {//| _desc | media_uri | media_type | postby | postdate
+    const { _desc, postby, media_type,  } = req.body;
+
+    const postdate = new Date();
+    console.log(req.body);
+
+    const files = req.files.image;
+    console.log(files)
+    const filepaths = files.map(file => file.path);
+
+    // insert the post data into the database
+    const { rows } = await pool.query(
+      `INSERT INTO feed_posts 
+      (_desc, postby, media_type, media_uri, postdate) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [_desc, postby, media_type, filepaths, postdate]
+    );
+
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// Get all feed posts in a specific order
+app.get('/api/feed_posts', async (req, res) => {
+  try {
+    // Fetch feed posts from the database, joined with user information, ordered by postdate in descending order (latest first)
+    const { rows } = await pool.query(`
+      SELECT feed_posts.*, users.name, users.imageurl
+      FROM feed_posts
+      INNER JOIN users ON feed_posts.postby = users.id
+      ORDER BY feed_posts.postdate DESC
+    `);
+
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// Get all feed posts by a specific user in a specific order
+app.get('/api/feed_posts/:userid', async (req, res) => {
+  try {
+    const { userid } = req.params;
+
+    // Fetch feed posts from the database, joined with user information, filtered by userid, and ordered by postdate in descending order (latest first)
+    const { rows } = await pool.query(`
+      SELECT feed_posts.*, users.name, users.imageurl
+      FROM feed_posts
+      INNER JOIN users ON feed_posts.postby = users.id
+      WHERE feed_posts.postby = $1
+      ORDER BY feed_posts.postdate DESC
+    `, [userid]);
+
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// API endpoint to add data to the user_saved_posts table //token
+app.post('/api/user_saved_post', authenticateTokenAPI, async (req, res) => {
+  try {
+    const { postid, userid } = req.body;
+
+    let isSaved = false; // Initialize the isSaved flag to false
+
+    // Check if the userid exists in the user_saved_posts table
+    const { rows } = await pool.query(
+      'SELECT postid FROM user_saved_posts WHERE userid = $1',
+      [userid]
+    );
+
+    // If the user exists, update the postid array
+    if (rows.length > 0) {
+      const savedPostIds = rows[0].postid;
+      const updatedPostIds = savedPostIds.includes(postid)
+        ? savedPostIds.filter((id) => id !== postid)
+        : [...savedPostIds, postid];
+
+      // Update the user_saved_posts table with the updated postid array
+      await pool.query(
+        'UPDATE user_saved_posts SET postid = $1 WHERE userid = $2',
+        [updatedPostIds, userid]
+      );
+
+      isSaved = updatedPostIds.includes(postid); // Check if the postid is present in the updatedPostIds array
+    } else {
+      // If the user does not exist, insert both userid and postid
+      await pool.query(
+        'INSERT INTO user_saved_posts (userid, postid) VALUES ($1, $2)',
+        [userid, [postid]]
+      );
+
+      isSaved = true; // Since it's a new entry, the postid is now saved for the user
+    }
+
+    res.status(200).json({ message: 'Data added successfully', isSaved });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+//saved posts from user, job post
+app.get("/api/fetch_saved_posts/:userid", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { userid } = req.params;
+
+    const { rows } = await pool.query(`
+      SELECT job_posts.*
+      FROM job_posts
+      INNER JOIN user_saved_posts ON job_posts.id = ANY(user_saved_posts.postid)
+      WHERE user_saved_posts.userid = $1;
+    `, [userid]);
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+//search //token not required
+app.get("/api/search_talent", async (req, res) => {
+  try {
+    const { query } = req.query; // Get the search query from the request
+    // Define the search query
+    const searchQuery = `
+    SELECT id, name, email, bio FROM users WHERE (name ILIKE $1 OR email ILIKE $1 OR bio ILIKE $1) AND role = 'js'`;
+
+    // Execute the search query
+    const result = await pool.query(searchQuery, [`%${query}%`]);
+
+    // Send the search results as the API response
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error occurred:", err);
+    res.status(500).json({ error: "An error occurred" });
+  }
+});
+
+//bio update api
+// Define the route to update the user's bio
+app.patch('/api/users/:userid', async (req, res) => {
+  try {
+    const { bio } = req.body;
+    const { userid } = req.params;
+
+    // Update the user's bio in the database
+    const { rowCount } = await pool.query(
+      'UPDATE users SET bio = $1 WHERE id = $2',
+      [bio, userid]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ message: 'User bio updated successfully', updated:true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
 
 // app.listen(3000, () => {
 //     console.log("Server listening on port 3000");

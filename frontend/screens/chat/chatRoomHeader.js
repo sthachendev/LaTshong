@@ -5,8 +5,12 @@ import config from '../config';
 const ChatRoomHeader = ({ title, imageUrl }) => {
   return (
     <View style={styles.container}>
+      {imageUrl?.length > 0 ? 
       <Image source={{ uri: `${config.API_URL}/${imageUrl}` }} style={styles.image} />
-      <Text style={styles.title}>{title}</Text>
+      :
+      <Image source={require("../../assets/images/default.png")} style={styles.image} />
+      }
+      <Text style={styles.title} numberOfLines={1}>{title}</Text>
     </View>
   );
 };
@@ -21,6 +25,7 @@ const styles = StyleSheet.create({
     height: 40,
     marginRight: 10,
     borderRadius: 20,
+    borderColor:"lightgrey", borderWidth:1
   },
   title: {
     fontSize: 20,

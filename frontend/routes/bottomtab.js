@@ -1,20 +1,21 @@
 import React, { useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Ionicons from "react-native-vector-icons/Ionicons";
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setToken, clearToken, setRole, clearRole } from '../reducers'; 
+import { setToken, setRole } from '../reducers'; 
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import Home from '../screens/home/home';
 import Explore from "../screens/explore/explore";
 import Chat from "../screens/chat/chat";
 import Profile from "../screens/profile/profile";
+import EmployerSearch from "../screens/explore/employerSearch";
 
 import { DrawerToggleButton } from "@react-navigation/drawer";
 
 const Tab = createBottomTabNavigator();
 
-function BottomTab({ navigation }) {
+function BottomTab() {
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -46,30 +47,29 @@ function BottomTab({ navigation }) {
           let outlineIconName;
 
           if (route.name === "Home") {
-            iconName = focused ? "home-sharp" : "home-outline";
+            iconName='dashboard'
           } else if (route.name === "Explore") {
-            iconName = focused ? "search" : "search-outline";
+            if (role === 'em'){
+              iconName = 'search';
+            }else{
+              iconName = 'explore';
+            }
           } else if (route.name === "Chat") {
-            iconName = focused ? "chatbox-ellipses" : "chatbox-ellipses-outline";
+            iconName = 'chat';
           } else if (route.name === "Profile") {
-            iconName = focused ? "person" : "person-outline";
+            iconName = 'person';
           }
 
           return (
-            <Ionicons
+            <Icon
               name={iconName}
               size={size}
               color={color}
-              style={{ outline: !focused ? "auto" : "none" }}
             />
           );
         },
         tabBarActiveTintColor: "#1E319D",
         tabBarInactiveTintColor: "#A0A0A0",
-        headerTitleStyle:{
-          // color:'#1E319D',
-          // fontWeight:'bold'
-        },
         headerLeft: () => <DrawerToggleButton />,
       })}
     >
@@ -77,65 +77,51 @@ function BottomTab({ navigation }) {
         name="Home"
         component={Home}
         options={{
-          // title: role === "em" ? "Dashboard" : "Home",
           title: "Home",
-          // headerTitleStyle: {
-          //   // fontWeight: 'bold',
-          // },
-          // tabBarLabel: role === "em" ? "Dashboard" : "Home",
-          title: "Home",
+          title: "Dashboard",
           headerTitleAlign:'center',
-          // headerStyle: {
-          //   shadowColor: "black",
-          //   shadowOpacity: 0.25,
-          //   shadowOffset: {
-          //     width: 0,
-          //     height: 2,
-          //   },
-          //   shadowRadius: 4,
-          //   elevation: 5,
-          // },
         }}
       />
 
-      <Tab.Screen
+      {
+        role === 'em' ? 
+        <Tab.Screen
         name="Explore"
-        component={Explore}
+        component={EmployerSearch}
         options={{
           headerShown: false,
+          tabBarLabel:'Search'
         }}
       />
-
+      :
+      <Tab.Screen
+      name="Explore"
+      component={Explore}
+      options={{
+        headerShown: false,
+      }}
+    />
+      }
+      
       {token && (
         <>
           <Tab.Screen
             name="Chat"
             component={Chat}
-            options={({ navigation }) => ({
-              headerStyle: {},
+            options={{
               tabBarLabel: "Message",
               headerTitle: "Message",
               headerTitleAlign:'center',
-              // headerStyle: {
-              //   shadowColor: "black",
-              //   shadowOpacity: 0.25,
-              //   shadowOffset: {
-              //     width: 0,
-              //     height: 2,
-              //   },
-              //   shadowRadius: 4,
-              //   elevation: 5,
-              // },
-            })}
+            }}
           />
           <Tab.Screen
             name="Profile"
             component={Profile}
-            options={({ navigation }) => ({
+            options={{
               tabBarLabel: "Profile",
               headerShown: true,
               headerTitleAlign:'center',
-            })}
+            }}
           />
         </>
       )}

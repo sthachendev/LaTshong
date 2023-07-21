@@ -105,11 +105,17 @@ function setupSocket(server) {
   const fetchMessage = async (roomId) => {
     console.log('fetchMessage');
     try {
-      // Perform the database query
-      const result = await pool.query('SELECT * FROM messages WHERE room_id = $1', [roomId]);
-  
-      // Extract the data from the query result
-      const messages = result.rows;
+      const result = await pool.query(`
+        SELECT m.*, ad.file_name, ad.file_size, ad.file_uri
+        FROM messages AS m
+        LEFT JOIN attachment_details AS ad ON m.id = ad.message_id
+        WHERE m.room_id = $1
+        ORDER BY m.date ASC
+      `, [roomId]);
+
+
+    // Extract the data from the query result
+    const messages = result.rows;
   
       console.log(messages)
   

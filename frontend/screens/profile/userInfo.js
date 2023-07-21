@@ -1,29 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, Image, TouchableHighlight } from "react-native";
+import { View, Text, Button, Image, TouchableHighlight, StyleSheet } from "react-native";
 import axios from "axios";
 import config from "../config";
-import { capitalizeWords } from "../fn";
+import { capitalizeWords, getTimeDifference2 } from "../fn";
 import { TouchableOpacity } from "react-native";
 import ImageViewer from "../custom/ImageViewer";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { MaterialIcons } from "@expo/vector-icons";
-import * as ImagePicker from 'expo-image-picker';
 import { useSelector } from "react-redux";
 import jwtDecode from "jwt-decode";
+import * as ImagePicker from 'expo-image-picker';
+import Bio from "./bio";
 
-export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) => {
+export default UserInfo = ({userid, role, navigation, image, setImage, handleUpload, setIsModalVisible}) => {
 
-  const token = useSelector(state => state.token)
-  const current_userid = jwtDecode(token).userid;
+  const token = useSelector(state => state.token);
+  // const current_user_role = useSelector(state => state.role);
+  const current_userid = token ? jwtDecode(token).userid : null;
 
   const [userInfo, setUserInfo] = useState('');
 
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);//for imageviewer modal
   const [imageUri, setImageUri] = useState('');
 
   const handleImageClick = () => {
     setModalVisible(true);
   };
+  
   useEffect(() => {
     fetchUserInfo();
 
@@ -66,34 +69,46 @@ export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) 
 
   }
 
-  return (
-    <View style={{margin:0, marginTop:15, marginBottom:10}}>
-      {userInfo ? (
-        <View style={{ backgroundColor:'#fff', padding:10, 
-        // borderTopLeftRadius:15, borderTopRightRadius:15,
-        // borderColor:'#000', borderWidth:.25
-        }}>
-          <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
+  const [isModalVisible2, setIsModalVisible2] = useState(false);//bio set modal
+  const [desc, setDesc] = useState("");
 
-            <View style={{display:'flex', flexDirection:"row", justifyContent:"center",}} >
+  // if (!userInfo) return <Spinner/>
+
+  return (
+    <View style={{flex:1}}>
+        
+      <View style={{width:'100%', borderBottomRightRadius:10, borderBottomLeftRadius:10,
+       backgroundColor:'#7C8EA6', height:200, display:'flex', alignSelf:'center', position:'absolute', top:0}}
+       />
       
-          <View 
-           style={{width:"100%", height:120, backgroundColor:"lightblue", position:"absolute",
-           borderTopLeftRadius:15, borderTopRightRadius:15}}
-          />
-          
-          <TouchableOpacity onPress={()=>{ setImageUri(`${config.API_URL}/${userInfo[0].imageurl}`); handleImageClick();}} 
+      <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
+
+      {userInfo && (
+        <>
+          <View style={{ 
+          backgroundColor:'#fff', 
+          padding:10,  margin:20,
+          paddingVertical:20,
+          borderRadius:20,
+        // borderColor:'#000', borderWidth:.25
+        elevation:2
+        }}>
+
+          <View style={{display:'flex', flexDirection:"row", justifyContent:"center",}} >
+      
+          <TouchableOpacity onPress={()=>{userInfo[0].imageurl && setImageUri(`${config.API_URL}/${userInfo[0].imageurl}`); handleImageClick();}} 
           activeOpacity={1} 
           // style={{backgroundColor:'red'}}
           >
           {/* profile image */}
-          {image ? <Image source={{ uri: image }} 
-            style={{width:120, height:120, backgroundColor:"blue", borderRadius:60, borderColor:"#fff", borderWidth:3, marginTop:60}}
+          {userInfo[0].imageurl.length > 0 ? 
+             <Image  source={{ uri : `${config.API_URL}/${userInfo[0].imageurl}`}}  
+             style={{width:120, height:120, borderRadius:60, borderColor:"lightgrey", borderWidth:1,}}
             />
           :
-          <Image  source={{ uri : `${config.API_URL}/${userInfo[0].imageurl}`}}  
-          style={{width:120, height:120, backgroundColor:"blue", borderRadius:60, borderColor:"#fff", borderWidth:3, marginTop:60}}
-         />
+            <Image source={require("../../assets/images/default.png")} 
+            style={{width:120, height:120, borderRadius:60,  borderColor:"lightgrey", borderWidth:1, marginTop:20}}
+            />
           }
 
           {/* add profile pic btn  // show if profile is of current user*/}
@@ -109,44 +124,99 @@ export default UserInfo = ({userid, navigation, image, setImage, handleUpload}) 
           }
           </TouchableOpacity>
       
-        </View>
-        <View style={{flexDirection:"column",}}>
-          <Text style={{textAlign:"center", fontSize:20, marginLeft:15}}>{capitalizeWords(userInfo[0].name)}</Text>
-          <Text style={{color:"grey", fontSize:12, textAlign:'center'}}>~Verified Job Seeker</Text>
-          {/* <Text style={{textAlign:"center", fontSize:14, marginLeft:15, color:"grey"}}>asdasdasd{userInfo[0].email}</Text> */}
           </View>
-          <Text style={{textAlignVertical:"center", fontSize:14, color:"grey", padding:5, marginTop:10, textAlign:'center'}}>
-          Recent graduate from GCIT. Bsc. CS
-          </Text>
+
+          {/* user name employee and bio */}
+        <View style={{flexDirection:"column",}}>
+          <Text style={{textAlign:"center", fontSize:20, marginLeft:15, marginVertical:5, fontWeight:'bold'}}>
+            {capitalizeWords(userInfo[0].name)}</Text>
+          <Text style={{textAlign:"center", fontSize:14, marginLeft:15, color:"grey", marginVertical:5}}>asdasdasd{userInfo[0].email}</Text>
+          <Text style={{color:"grey", fontSize:12, textAlign:'center', marginVertical:5}}>Joined ~ {getTimeDifference2(userInfo[0].created_on)}</Text>
+          </View>
+
+        {userInfo && userid !== current_userid && //userinfo cards
+           <View style={{ flex:1, display:'flex', flexDirection:'row', justifyContent:'space-around'}}>
+       
+           <TouchableHighlight style={styles.btn} underlayColor='#F1F2F6' 
+           onPress={()=>{ navigation.navigate('ChatRoom', {touserid: userInfo[0].id, title: capitalizeWords(userInfo[0].name)})}}>
+              <Text style={{ marginLeft:10,  textAlign:'center' }}>Message</Text>
+            </TouchableHighlight>
+    
+           </View>
+        }
+
       </View>
 
-      ) : (
-        <Text>Loading user information...</Text>
-      )}
-    
-    {userInfo && userid !== current_userid &&
-      <Button title="Message" onPress={() => navigation.navigate('ChatRoom', {touserid: userid, title: capitalizeWords(userInfo[0].name) })} />
-    }
+      {/* bio */}
+      <TouchableOpacity style={{ backgroundColor:'#7E8CA7', padding:15, marginHorizontal:15, borderRadius:10, elevation:2}} 
+     activeOpacity={1}>
 
+        <Text style={{ color:"#fff", textAlign:'center',}}>
+        {userInfo[0].bio && userInfo[0].bio.trim() !== '' ?  userInfo[0].bio : 'No Bio.'}
+        </Text>
+
+        {userid === current_userid && 
+        <TouchableHighlight style={{borderColor:'rgba(30,49,157,0.7)', borderWidth:2, backgroundColor:'#fff',
+        position:"absolute", bottom:0, right:0, borderRadius:5, padding:3}}  onPress={()=>{setIsModalVisible2(true); setDesc(userInfo[0].bio)}} 
+          underlayColor='#F1F2F6'>
+        <MaterialIcons name="create" color='#1E319D'
+            size={20}
+          />
+        </TouchableHighlight>
+        }
+
+      </TouchableOpacity>
+        </>
+
+      )}
+      {/* set bio modal */}
+      <Bio isModalVisible={isModalVisible2} setIsModalVisible={setIsModalVisible2} fetchUserInfo={fetchUserInfo}
+      desc={desc} setDesc={setDesc}/>
 
     {/* add certificate btn */}
-    {userid === current_userid &&
-    <TouchableOpacity onPress={()=>navigation.navigate('ProfilePost', {userid})} activeOpacity={1}
-    style={{backgroundColor:"#fff", justifyContent:'space-between', flexDirection:"row",
-    paddingHorizontal:5, 
-    // borderColor:'grey', borderWidth:0.25,
-     marginTop:15}}>
-      <Text style={{textAlignVertical:"center", fontSize:14, padding:10, color:'grey'}}>
-        Add Certificates / Posts
-      </Text>
-      <Ionicons
-        name="add-circle-outline"
-        color='#1E319D'
-        size={30}
-        style={{alignSelf:"center"}}
-      />
-    </TouchableOpacity>
+    {userid === current_userid && role === 'js' &&
+      <TouchableOpacity 
+      // onPress={()=>navigation.navigate('ProfilePost', {userid})}
+      onPress={()=>setIsModalVisible(true)}
+      activeOpacity={1}
+      style={{paddingHorizontal:10,  justifyContent:'space-between', marginTop:20,backgroundColor:'#fff', marginBottom:5,
+      flexDirection:"row",}}>
+        <Text style={{fontSize:16, letterSpacing:1, padding:10}}>
+          Certificates
+        </Text>
+        <Ionicons
+          name="add-circle-outline"
+          color='#000'
+          size={30}
+          style={{alignSelf:'center'}}
+        />
+      </TouchableOpacity>
     }
+
+    { role === 'em' &&
+      <View 
+      style={{  justifyContent:'space-between', marginTop:20,backgroundColor:'#fff',
+      flexDirection:"row",}}>
+        <Text style={{fontSize:16, letterSpacing:1, padding:10, paddingLeft:15 }}>
+          Post
+        </Text>
+      </View>
+    }
+
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  btn:{
+    backgroundColor:'#F1F2F6',
+    paddingHorizontal:15,
+    paddingVertical:10,
+    borderColor:'grey',
+    borderWidth:0.25,
+    borderRadius:15,
+    flex:.6,
+    margin:10,
+    // elevation:1
+  }
+})
