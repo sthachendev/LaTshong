@@ -6,31 +6,41 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import jwtDecode from "jwt-decode";
 
-export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby }) => {
+export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby, postid, getFeedPost}) => {
     
     const token = useSelector(state=>state.token);
     const userid = token ? jwtDecode(token).userid : null;
     
     const handleReport = async () => {
         try {
-        const res = await axios.patch(`${config.API_URL}/api/users/${userid}`, {
+        const res = await axios.post(`${config.API_URL}/api/add_reportedby/${postid}/${userid}`,{}, {
         headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
             }
         });
-        if (res.data.updated){
-            fetchUserInfo();
-            setDesc('');
-            ToastAndroid.show("Updated", ToastAndroid.SHORT);
+        console.log(res.status)
+        if (res.status === 200){
+            ToastAndroid.show("Reported", ToastAndroid.SHORT);
             setIsModalVisible(false);
-        }
-      
-        console.log('Updated')
+        }       
         } catch (error) {
-        console.log(error);
+        console.log(error.response.data);
         }
     };
+
+    const handleDelete = () => {
+        axios.delete(`${config.API_URL}/api/delete_feed_post/${postid}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                }
+        }).then(res=>{
+            ToastAndroid.show("Deleted", ToastAndroid.SHORT);
+            setIsModalVisible(false);
+            getFeedPost();
+        }).catch(e=>{
+            console.log(e.response.data);
+        })
+    }
 
     return (
         <>
@@ -68,13 +78,14 @@ export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby }) 
 
                 {
                     postby === userid ?
-                    <TouchableHighlight style={styles.btn} underlayColor="#F1F2F6"  >
-                    <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20}}>Delete</Text>
+                    <TouchableHighlight style={styles.btn} underlayColor="#F1F2F6"
+                    onPress={handleDelete}>
+                    <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20, color:'red'}}>Delete Post</Text>
                     </TouchableHighlight>
                     :
                     <TouchableHighlight style={styles.btn} underlayColor="#F1F2F6"  
                     onPress={handleReport}>
-                    <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20}}>Report</Text>
+                    <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20, color:'red'}}>Report Post</Text>
                     </TouchableHighlight>
                 }
 
@@ -110,7 +121,7 @@ const styles = StyleSheet.create({
     },
     btn:{ 
     backgroundColor:'#fff',
-    borderColor:'grey',
+    borderColor:'red',
     borderWidth:0.25,
     borderRadius:5,
     marginVertical:15 }

@@ -4,24 +4,30 @@ import { memo } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import config from '../config';
 import { Video } from 'expo-av';
-// import VideoPlayer from '../custom/videoPlayer/VideoPlayer';
 import { capitalizeWords } from '../fn';
 import { TouchableOpacity } from 'react-native';
 import { useState } from 'react';
 import FeedPostsOption from './feedPostsOption';
+import ImageViewer from '../custom/ImageViewer';
+import Ionicons from "react-native-vector-icons/Ionicons";
 
-const FeedPosts = (({item, role, navigation}) => {
+const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
   const [isModalVisible2, setIsModalVisible2] = useState(false);//bio set modal
+
+  const [modalVisible, setModalVisible] = useState(false);//image viewer
 
   return(
   <View style={styles.itemContainer} >
 
-    <FeedPostsOption isModalVisible={isModalVisible2} setIsModalVisible={setIsModalVisible2} postby={item.postby}/>
+  <ImageViewer uri={`${config.API_URL}/${item.media_uri}`} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
+
+    <FeedPostsOption isModalVisible={isModalVisible2} setIsModalVisible={setIsModalVisible2} postby={item.postby} postid={item.id} 
+    getFeedPost={getFeedPost}/>
 
   <View style={{ paddingVertical:10}}>
     <View style={{display:"flex", flexDirection:'row', paddingTop:10, paddingHorizontal:15}}>
-      {item.imageurl !== null ? 
+      {item.imageurl !== null ? //profile image
       <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{width:40, height:40,  borderRadius: 25, borderColor:"lightgrey", borderWidth:1}} />
       :
       <Ionicons name="person-circle-outline" size={45} color="grey" />
@@ -58,11 +64,19 @@ const FeedPosts = (({item, role, navigation}) => {
 
     {item.media_type === 'i' &&
     <>
-        <Image
-          source={{ uri: `${config.API_URL}/${item.media_uri}` }}
-          style={{ width: '100%', height: 250, borderColor:"lightgrey", borderWidth:1  }}
-          resizeMode="cover" // This ensures the image fills the container without distorting its aspect ratio
-        />    
+    <TouchableOpacity onPress={()=>setModalVisible(true)} activeOpacity={1}>
+      <Image
+        source={{ uri: `${config.API_URL}/${item.media_uri}` }}
+        style={{ width: '100%', height: 250, borderColor:"lightgrey", borderWidth:1  }}
+        resizeMode="cover" // This ensures the image fills the container without distorting its aspect ratio
+      />    
+       <Ionicons
+          name="expand-outline"
+          color='lightgrey'
+          size={20}
+          style={{ position: "absolute", bottom: 15, right: 15 }}
+        />
+    </TouchableOpacity>
     </>}
     
     {item.media_type === 'v' &&

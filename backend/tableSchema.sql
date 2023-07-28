@@ -32,7 +32,6 @@ CREATE TABLE IF NOT EXISTS job_posts (
     status CHAR(1), ---o open, c close
     applicants INTEGER[] DEFAULT '{}',
     accepted_applicants INTEGER[] DEFAULT '{}'
-    -- images TEXT[] DEFAULT '{}'
 );
 
 -- chat_rooms table
@@ -41,9 +40,6 @@ CREATE TABLE IF NOT EXISTS chat_rooms (
     room_id UUID NOT NULL,
     user1 INTEGER NOT NULL,
     user2 INTEGER NOT NULL
-    -- ,
-    -- FOREIGN KEY (user1) REFERENCES users (id),
-    -- FOREIGN KEY (user2) REFERENCES users (id)
 );
 
 -- message table
@@ -57,6 +53,7 @@ CREATE TABLE IF NOT EXISTS messages (
     --a for attachement
     --i for image
     date TIMESTAMP NOT NULL
+    -- read BOOLEAN DEFAULT FALSE -- New column for tracking read status of the message
 );
 
 -- Creating the 'attachment_details' table
@@ -72,9 +69,7 @@ CREATE TABLE IF NOT EXISTS attachment_details (
 
 CREATE TABLE IF NOT EXISTS posts (
     id BIGSERIAL PRIMARY KEY,
-    -- _desc TEXT,
     images TEXT[] DEFAULT '{}',
-    -- media_type CHAR(1), --p for posts, c for certificates
     postby INTEGER NOT NULL,
     postdate TIMESTAMP
 );
@@ -85,7 +80,8 @@ CREATE TABLE IF NOT EXISTS feed_posts (
     media_uri TEXT[] DEFAULT '{}',
     media_type CHAR(1), --p pictures, v video
     postby INTEGER NOT NULL,--userid
-    postdate TIMESTAMP
+    postdate TIMESTAMP,
+    reportedby INTEGER[] DEFAULT '{}'
 );
 
 CREATE TABLE IF NOT EXISTS user_saved_posts (

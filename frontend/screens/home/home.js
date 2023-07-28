@@ -1,5 +1,4 @@
-import { View, Text, TouchableOpacity, TouchableHighlight, StyleSheet, FlatList, RefreshControl } from 'react-native';
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, RefreshControl } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useEffect, useState, useRef} from 'react';
@@ -8,8 +7,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
 import Posts from '../post/posts';
 import Spinner from '../custom/Spinner';
-// import { Ionicons } from '@expo/vector-icons';
-// import ActionButton from 'react-native-action-button';
 import { FAB } from 'react-native-paper';
 import ActionButton from './actionButton';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -24,14 +21,9 @@ export default Home = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
-  // const handlePostClick = () => {
-  //   navigation.navigate('Post');
-  // };
-
   const token = useSelector((state) => state.token);
   const role = useSelector((state) => state.role);
   const userid = token ? jwtDecode(token).userid : null;
-  // const userid = jwtDecode(token).userid;
   
   const [data, setData] = useState('');
   const [feedsData, setFeedsData] = useState('');
@@ -140,7 +132,6 @@ export default Home = () => {
 
   //change color of name n job title on press,
   const [selectedItem, setSelectedItem] = useState(null);
-
   const [jobTabSelected, setJobTabSelected] = useState(true);
 
   const [visible, setVisible] = useState(false);//action btn
@@ -166,32 +157,15 @@ export default Home = () => {
       <TouchableOpacity style={{ flexDirection:'row', borderBottomColor: jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:3,
        flex:1, padding:10, justifyContent:'center'}} 
       onPress={()=>setJobTabSelected(true)} activeOpacity={1}>
-          {/* <Ionicons name='folder-open-sharp' size={20} color='#000' style={{alignSelf:'center'}}/> */}
           <Icon name="work-outline" size={24} color={jobTabSelected ? '#1E319D' : 'grey'} />
-          {/* <Text style={{textAlign:'center', justifyContent:'center', fontWeight:'700', color: jobTabSelected ? '#1E319D' : 'grey',
-           fontSize:18}}>Job</Text> */}
         </TouchableOpacity> 
 
         <TouchableOpacity style={{ flexDirection:'row', borderBottomColor: !jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:3,
        flex:1, padding:10, justifyContent:'center'}}
         onPress={()=>setJobTabSelected(false)} activeOpacity={1}>
-          {/* <Ionicons name='grid-sharp' size={20} color='#000' style={{alignSelf:'center'}}/> */}
-          {/* <Text style={{textAlign:'center', justifyContent:'center', fontWeight:'700', color: !jobTabSelected ? '#1E319D' : 'grey',
-           fontSize:18}}>Feeds</Text> */}
           <Icon name="article" size={24} color={!jobTabSelected ? '#1E319D' : 'grey'} />
         </TouchableOpacity> 
       </View>
-     
-     {/* login btn show if not logged in */}
-     {/* {role === null && <>
-        <View style={{paddingVertical:20, backgroundColor:'#fff'}}>
-          <TouchableHighlight  style={{backgroundColor:"#1E319D", marginHorizontal:20, 
-          paddingVertical:10, paddingHorizontal:15, borderRadius:20, elevation:2}} underlayColor='#1E319D'
-          onPress={()=>navigation.navigate('Login')}>
-          <Text style={{color:"#fff", fontWeight:"500", textAlign:"center"}}>Log In</Text>
-          </TouchableHighlight>
-        </View>
-      </>} */}
       
       {//job posts
         jobTabSelected &&
@@ -221,7 +195,8 @@ export default Home = () => {
           <FlatList
             ref={flatListRef}
             data={feedsData}
-            renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} selectedItem={selectedItem} setSelectedItem={setSelectedItem}/>}
+            renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} 
+            selectedItem={selectedItem} setSelectedItem={setSelectedItem} getFeedPost={getFeedPost}/>}
             keyExtractor={(item) => item.id.toString()}
             maxToRenderPerBatch={3} // Adjust this value based on your needs
             ListEmptyComponent={()=>{
@@ -238,20 +213,6 @@ export default Home = () => {
             }
           />
       }
-
-    {/* Floating Add Post Option */}
-    {/* {role === "js" && 
-      <TouchableOpacity
-      style={styles.floatingPost}
-      onPress={()=>{
-        setIsModalVisible(true);
-        setVisible(false);
-      }}
-      activeOpacity={.8}
-    >
-      <MaterialIcons name="add" size={25} color="white" />
-    </TouchableOpacity>} */}
-    
 
     {role === 'em' && 
     <>
@@ -283,7 +244,6 @@ export default Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor:'#fff'
     backgroundColor:'rgba(30,49,157,0.1)'
   },
   floatingPost: {
@@ -301,8 +261,5 @@ const styles = StyleSheet.create({
       width: 0, // Horizontal offset
       height: 2, // Vertical offset
     },
-    tabBtn:{
-
-    }
   },
 });

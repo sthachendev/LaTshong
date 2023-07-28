@@ -188,7 +188,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
       <TouchableOpacity 
       onPress={()=>setIsModalVisible(true)}
       activeOpacity={1}
-      style={{paddingHorizontal:10,  justifyContent:'space-between', marginTop:20,backgroundColor:'#fff', marginBottom:5,
+      style={{paddingHorizontal:10,  justifyContent:'space-between', marginTop:20,backgroundColor:'#fff',
       flexDirection:"row",}}>
         <Text style={{fontSize:16, letterSpacing:1, padding:10}}>
           Certificates

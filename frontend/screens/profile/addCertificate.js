@@ -6,7 +6,7 @@ import config from "../config";
 import * as ImagePicker from 'expo-image-picker';
 import { MaterialIcons } from "@expo/vector-icons";
 
-export default AddCertificate = ({isModalVisible, setIsModalVisible, userid}) => {
+export default AddCertificate = ({isModalVisible, setIsModalVisible, userid, getPost}) => {
     
     const [image, setImage] = useState(null);
 
@@ -48,6 +48,7 @@ export default AddCertificate = ({isModalVisible, setIsModalVisible, userid}) =>
         setImage(null);
         ToastAndroid.show("Posted", ToastAndroid.SHORT);
         setIsModalVisible(false);
+        getPost();
 
         console.log('posted')
       } catch (error) {

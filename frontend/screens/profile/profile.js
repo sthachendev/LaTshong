@@ -2,7 +2,7 @@ import jwtDecode from 'jwt-decode';
 import { useSelector } from 'react-redux';
 import UserInfo from "./userInfo";
 import { useState, useEffect } from "react";
-import { FlatList, Text, View, ToastAndroid, Image } from "react-native";
+import { FlatList, Text, View, ToastAndroid, Image, Alert } from "react-native";
 import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
 import config from "../config";
@@ -11,7 +11,6 @@ import { TouchableOpacity } from "react-native";
 import Spinner from "../custom/Spinner";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import AddCertificate from './addCertificate';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import FeedPosts from "../post/feedPosts";
 
 export default Profile = ({navigation}) => {
@@ -106,15 +105,42 @@ export default Profile = ({navigation}) => {
     return unsubscribe;
   }, [navigation]);
 
-  const [jobTabSelected, setJobTabSelected] = useState(true);
-  
+  const handleDelete = (postid) => {
+    Alert.alert(
+      "Do you want to delete the post?",
+      "Once deleted, you can not undo it.",
+      [
+        // userid === postby_userid ? 
+          {
+              text: "Delete",
+              onPress: () => {
+                axios.delete(`${config.API_URL}/api/delete_post/${postid}`, {
+                  headers: {
+                      Authorization: `Bearer ${token}`,
+                      }
+              }).then(res=>{
+                  ToastAndroid.show("Deleted", ToastAndroid.SHORT);
+                  getPost();
+              }).catch(e=>{
+                  console.log(e.response.data);
+              })
+              },
+            },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
+  }
+
   if (!data && !feedsData) return <Spinner/>
 
 // // Render each item of the data array //posts //cetificates
 const renderItem = ({ item }) => {
   return (
-    <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 0, marginBottom: 5, flex: 1 }}>
-      {/* {item._desc && <Text style={{ paddingBottom: 10, color: 'grey' }}>{item._desc}qwe</Text>} */}
+    <View style={{ backgroundColor: '#fff', padding: 10, borderRadius: 0, flex: 1 }}>
       <TouchableOpacity onPress={() => { setImageUri(`${config.API_URL}/${item.images[0]}`); handleImageClick(); }} activeOpacity={1}>
         <Image
           source={{ uri: `${config.API_URL}/${item.images}` }}
@@ -124,8 +150,15 @@ const renderItem = ({ item }) => {
         <Ionicons
           name="expand-outline"
           color='lightgrey'
-          size={30}
+          size={20}
           style={{ position: "absolute", bottom: 15, right: 15 }}
+        />
+         <Ionicons
+          name="trash"
+          color='lightgrey'
+          size={20}
+          style={{ position: "absolute", bottom: 15, left: 15 }}
+          onPress={()=>handleDelete(item.id)}
         />
       </TouchableOpacity>
     </View>
@@ -141,7 +174,7 @@ const keyExtractor = (item) => item.id.toString();
     //  backgroundColor:'#fff'
     elevation:2
      }}>
-    <AddCertificate isModalVisible={isModalVisible} userid={userid} setIsModalVisible={setIsModalVisible}/>
+    <AddCertificate isModalVisible={isModalVisible} userid={userid} setIsModalVisible={setIsModalVisible} getPost={getPost}/>
 
     <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
 
@@ -187,7 +220,7 @@ const keyExtractor = (item) => item.id.toString();
     handleUpload={handleUpload} role={role}
     setIsModalVisible={setIsModalVisible} />}
       data={feedsData}
-      renderItem={({item})=><FeedPosts item={item} role={role} navigation={navigation}/>}
+      renderItem={({item})=><FeedPosts item={item} role={role} navigation={navigation} getFeedPost={getFeedPost}/>}
       keyExtractor={keyExtractor}
       showsHorizontalScrollIndicator={false}
       maxToRenderPerBatch={3} // Adjust this value based on your needs

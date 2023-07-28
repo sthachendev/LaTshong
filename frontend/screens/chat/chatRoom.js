@@ -95,6 +95,10 @@ export default ChatRoom = ({route, navigation}) => {
     };
   }, []);
 
+  // function markMessageAsRead(messageId) {
+  //   socket.emit('markMessageAsRead', { messageId });
+  // }
+
   const sendMessage = (message) => {
     // Emit the message event to the server
     console.log('send btn');
@@ -338,7 +342,8 @@ const saveAndroidFile = async (fileUri, fileName) => {
         !isSameDate(messageDate, new Date(messages[index + 1].date));
 
       return(
-        <View key={index}>
+        <View key={index} onFocus={() => markMessageAsRead(message.id)} // <-- Call markMessageAsRead when the user focuses on a message
+        >
 
         {isLastMessageOfDate && (
           <Text

@@ -95,6 +95,19 @@ function setupSocket(server) {
     
     // it is better to use post to upload file then multer, complicate on both client and sever side
     
+    // socket.on('markMessageAsRead', async (data) => {
+    //   const { messageId } = data;
+    //   console.log('true')
+    //   try {
+    //     const query = 'UPDATE messages SET read = TRUE WHERE id = $1';
+    //     const values = [messageId];
+    //     await pool.query(query, values);
+    //     console.log('Message marked as read:', messageId);
+    //   } catch (error) {
+    //     console.error('Error marking message as read:', error);
+    //   }
+    // });
+    
     // Clean up on client disconnect
     socket.on('disconnect', () => {
       console.log('A client disconnected.');

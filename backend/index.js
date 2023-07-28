@@ -222,9 +222,8 @@ app.post("/api/getOTP", async (req, res) => {
 //upload post //user profile cards // certificates
 app.patch('/api/post', upload, async (req, res) => {
   try {
-    const { description, postby } = req.body;
+    const { postby } = req.body;
 
-    const media_type = 'p';
     const postdate = new Date();
     console.log(req.body);
 
@@ -235,8 +234,8 @@ app.patch('/api/post', upload, async (req, res) => {
     // insert the post data into the database
     const { rows } = await pool.query(
       `INSERT INTO posts 
-      (_desc, postby, media_type, images, postdate) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [description, postby, media_type, filepaths, postdate]
+      (postby, images, postdate) VALUES ($1, $2, $3) RETURNING *`,
+      [postby, filepaths, postdate]
     );
 
     res.status(201).json(rows[0]);
@@ -964,6 +963,75 @@ app.patch('/api/users/:userid', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// API endpoint to add userid to reportedby array
+app.post("/api/add_reportedby/:postid/:userid", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { postid, userid } = req.params;
+
+    // Update the reportedby array by adding the new userid, but only if it doesn't exist in the array
+    const updateQuery = "UPDATE feed_posts SET reportedby = array_append(reportedby, $1) WHERE id = $2 AND NOT $1 = ANY (reportedby)";
+    const result = await pool.query(updateQuery, [userid, postid]);
+
+    if (result.rowCount === 0) {
+      // If no rows were updated, it means the userid already exists in the array
+      return res.status(200).json({ message: "User is already in the reportedby array." });
+    }
+
+    res.status(200).json({ message: "User added to reportedby array successfully." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while updating the reportedby array." });
+  }
+});
+
+//delete feed post
+app.delete("/api/delete_feed_post/:postid", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { postid } = req.params;
+
+    // Check if the post with the given ID exists
+    const checkQuery = "SELECT id FROM feed_posts WHERE id = $1";
+    const checkResult = await pool.query(checkQuery, [postid]);
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: "Post not found." });
+    }
+
+    // Delete the post with the given ID
+    const deleteQuery = "DELETE FROM feed_posts WHERE id = $1";
+    await pool.query(deleteQuery, [postid]);
+
+    res.status(200).json({ message: "Post deleted successfully." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while deleting the post." });
+  }
+});
+
+//delete user card post
+app.delete("/api/delete_post/:postid", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { postid } = req.params;
+
+    // Check if the post with the given ID exists
+    const checkQuery = "SELECT id FROM posts WHERE id = $1";
+    const checkResult = await pool.query(checkQuery, [postid]);
+
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: "Post not found." });
+    }
+
+    // Delete the post with the given ID
+    const deleteQuery = "DELETE FROM posts WHERE id = $1";
+    await pool.query(deleteQuery, [postid]);
+
+    res.status(200).json({ message: "Post deleted successfully." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while deleting the post." });
   }
 });
 
