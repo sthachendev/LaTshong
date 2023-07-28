@@ -177,8 +177,8 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: "soyecharo@outlook.com",
-    pass: "Password@@2020",
+    user: "soyecharo@outlook.com",//email
+    pass: "Password@@2020",//password
   },
 });
 
@@ -279,12 +279,13 @@ app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
     }
 });
 
-//all
+//all //required pagination
 app.get("/api/get_job_post", async (req, res) => {
   try {
     const { rows } = await pool.query(`SELECT job_posts.*, users.name, users.email, users.imageurl
       FROM job_posts
-      JOIN users ON job_posts.postBy = users.id;
+      JOIN users ON job_posts.postBy = users.id  
+      ORDER BY job_posts.postdate DESC;
     `);
     // console.log("rows", rows);
     res.status(200).json(rows);
@@ -314,7 +315,7 @@ app.get("/api/get_job_post/:id", async (req, res) => {
   }
 });
 
-//api to get all job posts posted by 
+//api to get all job posts posted by //required pagination but not nesessary
 
 //applicants {}
 app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
@@ -343,22 +344,7 @@ app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
   }
 });
 
-//mutiple user info for array of users
-// app.get("/api/get_user_info", authenticateTokenAPI, async (req, res) => {
-//   const { userArray } = req.query;
-
-//   console.log(userArray)
-
-//   try {
-//     const query = `SELECT id, name, imageurl FROM users WHERE id IN (${userArray.join(",")})`;
-//     const { rows } = await pool.query(query);
-//     res.json(rows);
-//   } catch (error) {
-//     console.log(error);
-//   }
-// });
-
-//same as above but takes multiple arrays
+//get_user_info_ for multiple arrays (users)
 app.get("/api/get_user_info_", authenticateTokenAPI, async (req, res) => {
   const { applicants, acceptedApplicants } = req.query;
   
@@ -398,7 +384,8 @@ app.get("/api/get_user_info/:id", authenticateTokenAPI, async (req, res) => {
   }
 })
 
-app.post("/api/employer_post", (req, res) => {
+// post
+app.post("/api/employer_post", (req, res) => {//token required
   upload(req, res, async (err) => {
     if (err) {
       // An error occurred when uploading
@@ -516,7 +503,7 @@ app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
   }
 });
 
-//update user password using userid
+//update user password using userid & curretn password required //token required
 app.put("/api/updatePassword/:userid", async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -554,7 +541,33 @@ app.put("/api/updatePassword/:userid", async (req, res) => {
   }
 });
 
-//update user profile
+// PUT request to update password without requiring the current password
+app.put("/api/updatePassword", async (req, res) => {
+  try {
+    const { password, email } = req.body;
+    console.log(email)
+    // Check if the user exists in the database
+  const user = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+    console.log('helo', user.rows)
+    if (user.rows.length === 0) {
+      return res.status(404).json({ msg: "User not found!" });
+    }
+
+    // Hash the new passworda
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Update the password in the database
+    await pool.query("UPDATE users SET password = $1 WHERE email = $2", [hashedPassword, email]);
+
+    res.json({ msg: "Password updated successfully!" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+//update user profile //token required
 app.patch('/api/updateProfile', upload, async (req, res) => {
   try {
     const { userid } = req.body;
@@ -717,7 +730,7 @@ app.get("/api/search_job", async (req, res) => {
   }
 });
 
-//update user profile
+//update user profile //token required
 app.patch('/api/upload_attachement', upload, async (req, res) => {
   try {
     const { roomId, userid } = req.body;
@@ -783,7 +796,7 @@ app.patch('/api/upload_attachement', upload, async (req, res) => {
 
 //api to delte posts // profile posts
 
-//feed_post
+//feed_post  //token required
 app.patch('/api/feed_post', upload, async (req, res) => {
   try {//| _desc | media_uri | media_type | postby | postdate
     const { _desc, postby, media_type,  } = req.body;
@@ -809,7 +822,7 @@ app.patch('/api/feed_post', upload, async (req, res) => {
   }
 });
 
-// Get all feed posts in a specific order
+// Get all feed posts in a specific order //required pagination
 app.get('/api/feed_posts', async (req, res) => {
   try {
     // Fetch feed posts from the database, joined with user information, ordered by postdate in descending order (latest first)
@@ -931,7 +944,7 @@ app.get("/api/search_talent", async (req, res) => {
 });
 
 //bio update api
-// Define the route to update the user's bio
+// Define the route to update the user's bio //token required
 app.patch('/api/users/:userid', async (req, res) => {
   try {
     const { bio } = req.body;

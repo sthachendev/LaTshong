@@ -102,9 +102,18 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
           >
           {/* profile image */}
           {userInfo[0].imageurl.length > 0 ? 
-             <Image  source={{ uri : `${config.API_URL}/${userInfo[0].imageurl}`}}  
+          <>
+          { image ? 
+            <Image  source={{ uri : image }}  
+            style={{width:120, height:120, borderRadius:60, borderColor:"lightgrey", borderWidth:1,}}
+           />
+           :
+           <Image  source={{ uri : `${config.API_URL}/${userInfo[0].imageurl}`}}  
              style={{width:120, height:120, borderRadius:60, borderColor:"lightgrey", borderWidth:1,}}
             />
+          }
+         
+          </>
           :
             <Image source={require("../../assets/images/default.png")} 
             style={{width:120, height:120, borderRadius:60,  borderColor:"lightgrey", borderWidth:1, marginTop:20}}
@@ -152,12 +161,13 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
      activeOpacity={1}>
 
         <Text style={{ color:"#fff", textAlign:'center',}}>
-        {userInfo[0].bio && userInfo[0].bio.trim() !== '' ?  userInfo[0].bio : 'No Bio.'}
+        {userInfo[0].bio ?  userInfo[0].bio : 'No Bio.'}
         </Text>
 
         {userid === current_userid && 
         <TouchableHighlight style={{borderColor:'rgba(30,49,157,0.7)', borderWidth:2, backgroundColor:'#fff',
-        position:"absolute", bottom:0, right:0, borderRadius:5, padding:3}}  onPress={()=>{setIsModalVisible2(true); setDesc(userInfo[0].bio)}} 
+        position:"absolute", bottom:0, right:0, borderRadius:5, padding:3}}  
+        onPress={()=>{setIsModalVisible2(true); userInfo[0].bio && setDesc(userInfo[0].bio)}} 
           underlayColor='#F1F2F6'>
         <MaterialIcons name="create" color='#1E319D'
             size={20}
@@ -176,7 +186,6 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
     {/* add certificate btn */}
     {userid === current_userid && role === 'js' &&
       <TouchableOpacity 
-      // onPress={()=>navigation.navigate('ProfilePost', {userid})}
       onPress={()=>setIsModalVisible(true)}
       activeOpacity={1}
       style={{paddingHorizontal:10,  justifyContent:'space-between', marginTop:20,backgroundColor:'#fff', marginBottom:5,

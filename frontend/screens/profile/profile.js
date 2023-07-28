@@ -136,7 +136,8 @@ const renderItem = ({ item }) => {
 const keyExtractor = (item) => item.id.toString();
 
   return(
-    <View style={{flex:1,
+    <View style={{
+      // flex:1,
     //  backgroundColor:'#fff'
     elevation:2
      }}>

@@ -1,26 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { Image, TouchableOpacity, View, StyleSheet } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
+import { Image, TouchableOpacity, View, StyleSheet, ToastAndroid } from "react-native";
 import { TextInput ,Text } from "react-native-paper";
-import { useDispatch } from 'react-redux';
-import { setToken, setRole } from '../../reducers'; 
 import config from '../config';
 import axios from "axios";
-import jwtDecode from 'jwt-decode';
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { TouchableHighlight } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { ScrollView } from "react-native";
+import { ActivityIndicator } from "react-native";
 
 export default function ForgotPassword({navigation}) {
   const [email, setEmail] = useState("");
+  
   const [password, setPassword] = useState("");
-  const [hide, setHide] = useState(true);
-  const [isPasswordSecure, setIsPasswordSecure] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [validOtp, setValidOtp] = useState('');
+  const [hide, setHide] = useState(false);
+  const [isPasswordSecure, setIsPasswordSecure] = useState(true);
 
   const [message, setMessage] = useState("");
 
-  const dispatch = useDispatch();
+  const [otp, setOtp] = useState("");
+
+  const [loading, setLoading] = useState(false);
+
   const isFocused = useIsFocused();
 
   useEffect(()=>{
@@ -28,37 +32,23 @@ export default function ForgotPassword({navigation}) {
       setMessage("");
       setEmail("");
       setPassword("");
+      setConfirmPassword("");
     }
   }, [navigation,isFocused])
 
-  const handleLogin = async() => {
-   if(email.trim() !== "" && password.trim() !== ""){
-    try {
-      const response = await axios.post(`${config.API_URL}/api/login`, {
-        email:email.trim(),
-        password,
-      });
-      console.log(response.data);
-
-      console.log(jwtDecode(response.data.token).role)
-      dispatch(setToken(response.data.token));
-      dispatch(setRole(jwtDecode(response.data.token).role))
-
-      await AsyncStorage.setItem("token", response.data.token);
-      await AsyncStorage.setItem("role", jwtDecode(response.data.token).role);
-
-      navigation.navigate('Home');
-      
-    }catch (error) {
-      if (error.response && error.response.status === 401) {
-        console.log(error.response.data.message);
-        setMessage(error.response.data.message)
-      } else {
-        console.log(error.message);
-      }
-    }
+  const handleRequestOTP = async() => {
+   if(email.trim() !== ""){
+    setLoading(true);
+    axios.post(`${config.API_URL}/api/getOTP`, { email })
+    .then(res=>{
+      console.log(res.data.otp)
+      setValidOtp(res.data.otp)
+      setLoading(false);
+    })
+    .catch(e=>console.log(e))
    }else{
-    setMessage("Enter both email & password!");
+    setMessage("Enter an email!");
+    setLoading(false);
    }
   };
  
@@ -71,6 +61,34 @@ export default function ForgotPassword({navigation}) {
       setIsPasswordSecure(true)
     }
   }
+
+  const handleUpdatePassword = () => {
+
+    if (password !== "" && password === confirmPassword) {
+      
+      console.log('email',email)
+
+      axios.put(`${config.API_URL}/api/updatePassword`, {password, email})
+      .then(res =>{
+        ToastAndroid.show('Password updated!', ToastAndroid.SHORT);
+        console.log(res.data)
+        setPassword('');
+        setConfirmPassword('');
+          // Add a 2-second delay before redirecting to the Login page
+          setTimeout(() => {
+            navigation.navigate('Login');
+          }, 2000); // 2000 milliseconds = 2 seconds
+        })
+      .catch(e=>{
+        setMessage(e.response.data.msg)
+      })
+    }else if (password !== confirmPassword) {
+      setMessage("Password doesn't match!");
+    }else if (password.trim() === '' || password.trim() === '') {
+      setMessage("Enter the required fields!");
+    }
+  };
+
   return (
     <ScrollView style={{backgroundColor:'#fff', flex:1}}>
 
@@ -104,9 +122,11 @@ export default function ForgotPassword({navigation}) {
       }}>Forgot Password</Text>
 
     <View style={{marginTop:30, marginBottom:20}}>
-      <Text style={{
-        color:'grey'
-        }}>Enter an email associated with your LaTshong account</Text>
+      <Text style={{color:'grey'}}>
+        { !validOtp && 'Enter an email associated with your LaTshong account'}
+        { validOtp && validOtp !== otp && `Enter the OTP sent to ${email}`}
+        { validOtp.trim() !== '' && validOtp === otp && 'Enter a new password for your account'}
+        </Text>
       </View>  
 
         {message !== "" && message && 
@@ -117,16 +137,23 @@ export default function ForgotPassword({navigation}) {
         </View>
         </>}
 
-       <TextInput
-          mode="outlined"
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          onFocus={()=>setMessage("")}
-          style={{fontSize:14}}
-          theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
-        />
-          {/* <TextInput
+      {
+        !validOtp && //hide email input if otp received from backend
+        <TextInput
+        mode="outlined"
+        label="Email"
+        value={email}
+        onChangeText={(t)=>setEmail(t.trim())}
+        onFocus={()=>setMessage("")}
+        style={{fontSize:14}}
+        theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
+      />
+      }
+
+      {/* if user otp and valid otp matches show password inputs */}
+      { validOtp === otp && validOtp && validOtp !== '' && 
+        <>
+          <TextInput
             mode="outlined"
             label="Password"
             value={password}
@@ -135,15 +162,59 @@ export default function ForgotPassword({navigation}) {
             secureTextEntry={isPasswordSecure}
             right={<TextInput.Icon icon={hide ? 'eye' : 'eye-off'}
             onPress={handleShowPassword}/>}
-            style={{fontSize:14, marginTop:30}}
+            style={{fontSize:14, marginTop:10}}
             theme={{ colors: { placeholder: '#000', text: '#000',
             primary: '#4942E4',underlineColor:'transparent', background:'#fff',
             outline:"lightgrey"}}}
-          /> */}
+          />
+          <TextInput
+            mode="outlined"
+            label=" Confirm Password"
+            value={confirmPassword}
+            onFocus={()=>setMessage("")}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={isPasswordSecure}
+            right={<TextInput.Icon icon={hide ? 'eye' : 'eye-off'}
+            onPress={handleShowPassword}/>}
+            style={{fontSize:14, marginTop:10}}
+            theme={{ colors: { placeholder: '#000', text: '#000',
+            primary: '#4942E4',underlineColor:'transparent', background:'#fff',
+            outline:"lightgrey"}}}
+          />
+        </>
+      }
 
-          <TouchableHighlight style={styles.button} onPress={handleLogin} underlayColor='#1E319D'>
-            <Text style={styles.buttonText}>Request OTP</Text>
-          </TouchableHighlight>
+      {/* if otp is sent from the server */}
+      { validOtp && validOtp !== otp && 
+        <TextInput
+          mode="outlined"
+          label="One Time Password"
+          value={otp}
+          onChangeText={setOtp}
+          onFocus={()=>setMessage("")}
+          style={{fontSize:14,}}
+          theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
+          />
+      }
+
+      {
+        !otp &&
+        <TouchableHighlight style={styles.button} onPress={handleRequestOTP} underlayColor='#1E319D'>
+          {
+            loading ? 
+            <ActivityIndicator size='small' color="#fff" /> 
+            :
+          <Text style={styles.buttonText}>Request OTP</Text>
+        }
+        </TouchableHighlight>
+      }
+
+      {
+        validOtp !== '' && validOtp === otp && 
+        <TouchableHighlight style={styles.button} onPress={handleUpdatePassword} underlayColor='#1E319D'>
+          <Text style={styles.buttonText}>Confrim</Text>
+        </TouchableHighlight>
+      }
 
     <View style={{flexDirection:'row', marginTop:70, justifyContent:'center', marginBottom:10}}>
       <Text style={{fontWeight:'300'}}>Don't have a account?</Text>

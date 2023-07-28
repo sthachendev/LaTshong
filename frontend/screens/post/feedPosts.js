@@ -1,4 +1,4 @@
-import { View, Text, TouchableHighlight, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { capitalizeFirstLetterOfParagraphs, getTimeDifference2} from '../fn';
 import { memo } from 'react';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -7,12 +7,18 @@ import { Video } from 'expo-av';
 // import VideoPlayer from '../custom/videoPlayer/VideoPlayer';
 import { capitalizeWords } from '../fn';
 import { TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import FeedPostsOption from './feedPostsOption';
 
 const FeedPosts = (({item, role, navigation}) => {
 
+  const [isModalVisible2, setIsModalVisible2] = useState(false);//bio set modal
+
   return(
-  <View style={styles.itemContainer} underlayColor="#fff">
-    
+  <View style={styles.itemContainer} >
+
+    <FeedPostsOption isModalVisible={isModalVisible2} setIsModalVisible={setIsModalVisible2} postby={item.postby}/>
+
   <View style={{ paddingVertical:10}}>
     <View style={{display:"flex", flexDirection:'row', paddingTop:10, paddingHorizontal:15}}>
       {item.imageurl !== null ? 
@@ -20,18 +26,35 @@ const FeedPosts = (({item, role, navigation}) => {
       :
       <Ionicons name="person-circle-outline" size={45} color="grey" />
       }
-      <TouchableOpacity activeOpacity={0.9}
-      onPress={()=>{role ? navigation.navigate('ViewProfile', { userid: item.postby}) : navigation.navigate('Login')}}>
-      <Text style={{marginLeft:10, textAlignVertical:'center', fontWeight:'500',
-       color: "#404040", fontSize:14}}>{capitalizeWords(item.name)}</Text>
+      <View style={{flex:1}}>
+
+      <View style={{ display:'flex', flexDirection:'row', justifyContent:'space-between', flex:1}}>
+
+        <TouchableOpacity activeOpacity={0.9}
+          onPress={()=>{role ? navigation.navigate('ViewProfile', { userid: item.postby}) : navigation.navigate('Login')}}>
+        <Text style={{marginLeft:10, textAlignVertical:'center', fontWeight:'500', marginRight:20,
+        color: "#404040", fontSize:14}} numberOfLines={1}>{capitalizeWords(item.name)}</Text>
+        </TouchableOpacity>
+     
+        <TouchableOpacity activeOpacity={0.9}
+           onPress={()=>{ role ? setIsModalVisible2(true) : navigation.navigate('Login')}}>
+       <Icon name='more-vert' size={20} color='grey'/>
+        </TouchableOpacity>
+
+      </View>
+
         <Text style={{color:"grey", fontSize:12, textAlignVertical:'center', marginLeft:10}}>{getTimeDifference2(item.postdate)}</Text>
-      </TouchableOpacity>
+      </View>
 
     </View>
-  
+  {
+    item._desc && item._desc.trim() !== '' ?
     <Text style={{  color: "#404040", textAlign:'justify', marginVertical:10, paddingHorizontal:15 }}>
-      {capitalizeFirstLetterOfParagraphs(item._desc)}
-    </Text>
+    {capitalizeFirstLetterOfParagraphs(item._desc)}
+  </Text>
+  :
+  <View style={{marginTop: 10}}/>
+  }
 
     {item.media_type === 'i' &&
     <>
