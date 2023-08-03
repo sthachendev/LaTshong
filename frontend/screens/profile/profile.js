@@ -29,6 +29,8 @@ export default Profile = ({navigation}) => {
   const [data, setData] = useState([]);
   const [feedsData, setFeedsData] = useState('');
 
+  const [loading, setLoading] = useState(false);
+
   const isFocused = useIsFocused();
  
   useEffect(()=>{
@@ -43,13 +45,15 @@ export default Profile = ({navigation}) => {
 
   const getPost = async() => {
     try {
+      setLoading(true);
       const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`,{
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         }
       });
-      setData(res.data)
+      setData(res.data);
+      setLoading(false);
       // console.log(res.data);
     } catch (error) {
       console.error(error)
@@ -58,9 +62,11 @@ export default Profile = ({navigation}) => {
 
   const getFeedPost = async() => {
     try {
+      setLoading(true);
       const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}`);
       console.log('getFeedPost', res.data);
       setFeedsData(res.data)
+      setLoading(false);
     } catch (error) {
       console.error(error)
     }
@@ -135,7 +141,7 @@ export default Profile = ({navigation}) => {
     );
   }
 
-  if (!data && !feedsData) return <Spinner/>
+  if (loading) return <Spinner/>
 
 // // Render each item of the data array //posts //cetificates
 const renderItem = ({ item }) => {

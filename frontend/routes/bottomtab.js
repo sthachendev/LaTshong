@@ -12,6 +12,9 @@ import Profile from "../screens/profile/profile";
 import EmployerSearch from "../screens/explore/employerSearch";
 
 import { DrawerToggleButton } from "@react-navigation/drawer";
+import adminHome from "../screens/admin/adminHome";
+import contentManagement from "../screens/admin/contentManagement";
+import userManagement from "../screens/admin/userManagement";
 
 const Tab = createBottomTabNavigator();
 
@@ -58,6 +61,10 @@ function BottomTab() {
             iconName = 'chat';
           } else if (route.name === "Profile") {
             iconName = 'person';
+          } else if (route.name === "UserManagement") {
+            iconName = 'people';
+          }else if (route.name === "ContentManagement") {
+            iconName = 'folder';
           }
 
           return (
@@ -73,18 +80,48 @@ function BottomTab() {
         headerLeft: () => <DrawerToggleButton />,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={Home}
-        options={{
-          title: "Home",
-          title: "Dashboard",
-          headerTitleAlign:'center',
-        }}
-      />
+    {role === 'admin' &&//admin home
+       <>
+        <Tab.Screen
+          name="Home"
+          component={adminHome}
+          options={{
+            title: "Admin Dashboard",
+            headerTitleAlign:'center',
+          }}
+        />
+        <Tab.Screen
+          name="UserManagement"
+          component={userManagement}
+          options={{
+            title: "User Management",
+            headerTitleAlign:'center',
+          }}
+        />
+       <Tab.Screen
+          name="ContentManagement"
+          component={contentManagement}
+          options={{
+            title: "Content Management",
+            headerTitleAlign:'center',
+          }}
+        />
+       </>
+    }
+     
+     {role !== 'admin' && //home
+       <Tab.Screen
+       name="Home"
+       component={Home}
+       options={{
+         title: "Dashboard",
+         headerTitleAlign:'center',
+       }}
+     />
+     }
 
-      {
-        role === 'em' ? 
+      {//em explore
+        role === 'em' && 
         <Tab.Screen
         name="Explore"
         component={EmployerSearch}
@@ -93,17 +130,21 @@ function BottomTab() {
           tabBarLabel:'Search'
         }}
       />
-      :
+      }
+
+      {//js explore
+        role !== 'admin' && role !== 'em' && 
       <Tab.Screen
-      name="Explore"
-      component={Explore}
-      options={{
-        headerShown: false,
-      }}
-    />
+        name="Explore"
+        component={Explore}
+        options={{
+          headerShown: false,
+        }}
+      />
       }
       
-      {token && (
+      {/* message and profile tab */}
+      {token && role !== 'admin' && (
         <>
           <Tab.Screen
             name="Chat"

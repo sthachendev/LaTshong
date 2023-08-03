@@ -1,8 +1,12 @@
 import React from 'react';
 import { View, Image, Text, StyleSheet } from 'react-native';
 import config from '../config';
+import { TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-const ChatRoomHeader = ({ title, imageUrl }) => {
+const ChatRoomHeader = ({ title, imageUrl, touserid }) => {
+
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
       {imageUrl?.length > 0 ? 
@@ -10,7 +14,9 @@ const ChatRoomHeader = ({ title, imageUrl }) => {
       :
       <Image source={require("../../assets/images/default.png")} style={styles.image} />
       }
+      <TouchableOpacity onPress={()=>navigation.navigate('ViewProfile', { userid: touserid })} activeOpacity={1}>
       <Text style={styles.title} numberOfLines={1}>{title}</Text>
+      </TouchableOpacity>
     </View>
   );
 };

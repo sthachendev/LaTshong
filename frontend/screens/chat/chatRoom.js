@@ -26,7 +26,7 @@ export default ChatRoom = ({route, navigation}) => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerTitle: () => <Header title={route.params.title} imageUrl={imageurl} />,
+      headerTitle: () => <Header title={route.params.title} imageUrl={imageurl} touserid={touserid} />,
     });
   }, [navigation, route.params.title, imageurl]);
   // Create the Socket.IO connection

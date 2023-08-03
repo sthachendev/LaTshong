@@ -7,13 +7,9 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import BottomTab from './bottomtab';
 import { DrawerActions } from '@react-navigation/native';
 import jwtDecode from 'jwt-decode';
-// import config from '../screens/config';
 import { capitalizeWords } from '../screens/fn';
 import { TouchableHighlight } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-// import { useState } from 'react';
-// import { useEffect } from 'react';
-// import axios from 'axios';
 
 const Drawer = createDrawerNavigator();
 
@@ -22,35 +18,9 @@ export default function DrawerNav({ navigation }) {
 
   const token = useSelector((state)=> state.token);
   const userid = token ? jwtDecode(token).userid : null;
-  // const imageurl = token ? jwtDecode(token).imageurl : null;
   const username = token ? jwtDecode(token).username : null;
 
-  // const [imageurl, setImageurl] = useState('');
-
-  // const fetchUserInfo = async () => {
-  //   try {
-  //     const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         Authorization: `Bearer ${token}`,
-  //       }
-  //     });
-  //     setImageurl(response.data[0].imageurl);
-  //   console.log(response.data,'response');
-
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-
-  // useEffect(()=>{
-  //  if(token)
-  //  fetchUserInfo();
-  // },[])
-
   const role = useSelector(state => state.role);
-  // const userid = jwtDecode(token).userid;// this giving a getter problem
-  // console.log('userid',userid)
 
   const handleLogout = () => {
     navigation.dispatch(DrawerActions.closeDrawer());
@@ -83,13 +53,14 @@ export default function DrawerNav({ navigation }) {
           
           {token !== null && token && username &&
             <TouchableOpacity style={{display:'flex', flexDirection:'row'}} activeOpacity={1}
-             onPress={() => navigation.navigate('Profile')}>
+              onPress={() => navigation.navigate('Profile')}>
               {/* <Image source={{ uri: `${config.API_URL}/${imageurl}` }} style={{width:50, height:50, borderRadius:25}} /> */}
                 <View style={{marginLeft:20}}>
                   <Text style={{fontWeight:'500',}}>{capitalizeWords(username)}</Text>
                   <Text style={{color:'grey'}}>
                   {role === 'em' && 'Employer'}
                   {role === 'js' && 'Job Seeker'}
+                  {role === 'admin' && 'Admin'}
                   </Text>
                 </View>
             </TouchableOpacity>
@@ -98,61 +69,63 @@ export default function DrawerNav({ navigation }) {
           <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
         
           {token === null && (
-          <DrawerItem
-            label="Login"
-            onPress={() => {
-              navigation.navigate('Login');
-              navigation.dispatch(DrawerActions.closeDrawer());
-            }}
-            icon={({ color, size }) => (
-              <Icon
-                name="person"
-                color={color}
-                size={size}
-              />
-            )}
-          />
-        )}
-
         <DrawerItem
-          label="Dashboard"
-          onPress={() => navigation.navigate('Home')}
+          label="Login"
+          onPress={() => {
+            navigation.navigate('Login');
+            navigation.dispatch(DrawerActions.closeDrawer());
+          }}
           icon={({ color, size }) => (
             <Icon
-              name="dashboard"
+              name="person"
               color={color}
               size={size}
             />
           )}
         />
-        <DrawerItem
-          label="Explore"
-          onPress={() => navigation.navigate('Explore')}
-          icon={({ color, size }) => (
-            <Icon
-              name="explore"
-              color={color}
-              size={size}
-            />
           )}
-        />
 
-        {token !== null && token && (
-          <>
+          {role !== 'admin' && 
+            <>
             <DrawerItem
-             label="Message"
-             onPress={() => navigation.navigate('Chat')}
-             icon={({ color, size }) => (
-               <Icon
-                 name="chat"
-                 color={color}
-                 size={size}
-               />
-             )}
-           />
+              label="Dashboard"
+              onPress={() => navigation.navigate('Home')}
+              icon={({ color, size }) => (
+                <Icon
+                  name="dashboard"
+                  color={color}
+                  size={size}/>
+              )}
+            />
+            <DrawerItem
+              label="Explore"
+              onPress={() => navigation.navigate('Explore')}
+              icon={({ color, size }) => (
+                <Icon
+                  name="explore"
+                  color={color}
+                  size={size}/>
+              )}
+            />
+            </>
+          }
 
-          </>
-          )}
+          {token !== null && token && role !=='admin' && (
+            <>
+              <DrawerItem
+                label="Message"
+                onPress={() => navigation.navigate('Chat')}
+                icon={({ color, size }) => (
+                  <Icon
+                    name="chat"
+                    color={color}
+                    size={size}
+                  />
+                )}
+              />
+
+            </>
+            )}
 
           {role === 'js' && 
             <DrawerItem
@@ -167,11 +140,12 @@ export default function DrawerNav({ navigation }) {
             )}
           />
           }
+          {/* for employer job posts */}
 
-          <View style={{alignContent: 'center', marginVertical: 20,
-          borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
+          {token !== null && token && role !=='admin' && (
+            <>
+            <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
 
-          {token !== null && token && (
             <DrawerItem
               label="Settings"
               onPress={() => {
@@ -186,30 +160,31 @@ export default function DrawerNav({ navigation }) {
                 />
               )}
             />
+            <DrawerItem
+              label="Help & Support"
+              onPress={() => {
+                navigation.navigate('Support');
+                navigation.dispatch(DrawerActions.closeDrawer());
+              }}
+              icon={({ color, size }) => (
+                <Icon
+                  name="help"
+                  color={color}
+                  size={size}
+                />
+              )}
+            />
+            </>
           )}
-          <DrawerItem
-            label="Help & Support"
-            onPress={() => {
-              navigation.navigate('Support');
-              navigation.dispatch(DrawerActions.closeDrawer());
-            }}
-            icon={({ color, size }) => (
-              <Icon
-                name="help"
-                color={color}
-                size={size}
-              />
-            )}
-          />
 
           {/* Spacer */}
           <View style={{ flex: 1 }} />
-         
+            
         
         {token !== null && token && (
           <View style={{alignContent: 'center', justifyContent:'center', flexDirection:'row', marginBottom:20 }}>
           <TouchableHighlight onPress={handleLogout} style={{flexDirection:'row', padding:10, borderRadius:25, paddingHorizontal:20}}
-           underlayColor='rgba(49, 105, 210, 0.5)'>
+            underlayColor='rgba(49, 105, 210, 0.5)'>
           <>
           <Ionicons
             name="power"
@@ -221,12 +196,11 @@ export default function DrawerNav({ navigation }) {
           </TouchableHighlight>
           </View>
           )}
-          {/* <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"lightgrey"}}/> */}
 
           <Text style={{ textAlign:"center", marginBottom:20, color:'grey' }}>Version 1.0.0</Text>
-          
+            
         </View>
-      </DrawerContentScrollView>
+    </DrawerContentScrollView>
     );
   };
 

@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import jwtDecode from "jwt-decode";
 import * as ImagePicker from 'expo-image-picker';
 import Bio from "./bio";
+import Spinner from '../custom/Spinner'
 
 export default UserInfo = ({userid, role, navigation, image, setImage, handleUpload, setIsModalVisible}) => {
 
@@ -22,6 +23,8 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
 
   const [modalVisible, setModalVisible] = useState(false);//for imageviewer modal
   const [imageUri, setImageUri] = useState('');
+
+  const [loading, setLoading] = useState(true);
 
   const handleImageClick = () => {
     setModalVisible(true);
@@ -38,6 +41,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
 
   const fetchUserInfo = async () => {
     try {
+      setLoading(true)
       const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
         headers: {
           'Content-Type': 'application/json',
@@ -45,6 +49,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
         }
       });
       setUserInfo(response.data);
+      setLoading(false)
     console.log(response.data,'response');
 
     } catch (error) {
@@ -72,7 +77,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
   const [isModalVisible2, setIsModalVisible2] = useState(false);//bio set modal
   const [desc, setDesc] = useState("");
 
-  // if (!userInfo) return <Spinner/>
+  if (loading) return <Spinner/>
 
   return (
     <View style={{flex:1}}>
@@ -139,7 +144,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
         <View style={{flexDirection:"column",}}>
           <Text style={{textAlign:"center", fontSize:20, marginLeft:15, marginVertical:5, fontWeight:'bold'}}>
             {capitalizeWords(userInfo[0].name)}</Text>
-          <Text style={{textAlign:"center", fontSize:14, marginLeft:15, color:"grey", marginVertical:5}}>asdasdasd{userInfo[0].email}</Text>
+          <Text style={{textAlign:"center", fontSize:14, marginLeft:15, color:"grey", marginVertical:5}}>{userInfo[0].email}</Text>
           <Text style={{color:"grey", fontSize:12, textAlign:'center', marginVertical:5}}>Joined ~ {getTimeDifference2(userInfo[0].created_on)}</Text>
           </View>
 
@@ -184,22 +189,24 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
       desc={desc} setDesc={setDesc}/>
 
     {/* add certificate btn */}
-    {userid === current_userid && role === 'js' &&
-      <TouchableOpacity 
-      onPress={()=>setIsModalVisible(true)}
-      activeOpacity={1}
-      style={{paddingHorizontal:10,  justifyContent:'space-between', marginTop:20,backgroundColor:'#fff',
-      flexDirection:"row",}}>
-        <Text style={{fontSize:16, letterSpacing:1, padding:10}}>
-          Certificates
-        </Text>
-        <Ionicons
-          name="add-circle-outline"
-          color='#000'
-          size={30}
-          style={{alignSelf:'center'}}
-        />
-      </TouchableOpacity>
+    {role === 'js' &&
+       <TouchableOpacity 
+       activeOpacity={1}
+       style={{paddingHorizontal:10,  justifyContent:'space-between', marginTop:20,backgroundColor:'#fff',
+       flexDirection:"row",}}>
+         <Text style={{fontSize:16, letterSpacing:1, padding:10}}>
+           Certificates
+         </Text>
+         {userid === current_userid && role === 'js' &&
+         <Ionicons
+           name="add-circle-outline"
+           color='#000'
+           size={30}
+           style={{alignSelf:'center'}}
+           onPress={()=>setIsModalVisible(true)}
+         />
+       }
+       </TouchableOpacity>
     }
 
     { role === 'em' &&

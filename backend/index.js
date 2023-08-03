@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('./db');
 const upload = require('./multerConfig');
 const setupSocket = require('./socketConfig');
+const path = require('path'); // Add this line to import the 'path' module
 
 // Secret key for signing JWT
 const secretKey = 'latshong123';
@@ -1032,6 +1033,136 @@ app.delete("/api/delete_post/:postid", authenticateTokenAPI, async (req, res) =>
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "An error occurred while deleting the post." });
+  }
+});
+
+//admin dashboard
+app.get('/api/dashboard',authenticateTokenAPI, async (req, res) => {
+  try {
+    const userCountQuery = 'SELECT role, COUNT(*) FROM users GROUP BY role';
+    const totalUserCountQuery = 'SELECT COUNT(*) FROM users';
+    const feedPostsCountQuery = 'SELECT COUNT(*) FROM feed_posts';
+    const jobPostsCountQuery = 'SELECT COUNT(*) FROM job_posts';
+    const databaseSizeQuery = 'SELECT pg_size_pretty(pg_database_size(current_database())) AS database_size';
+
+    const [userCountResult, totalUserCountResult, feedPostsCountResult, jobPostsCountResult, databaseSizeResult] = await Promise.all([
+      pool.query(userCountQuery),
+      pool.query(totalUserCountQuery),
+      pool.query(feedPostsCountQuery),
+      pool.query(jobPostsCountQuery),
+      pool.query(databaseSizeQuery),
+    ]);
+
+    const userCountByRole = {};
+    userCountResult.rows.forEach((row) => {
+      userCountByRole[row.role] = parseInt(row.count);
+    });
+
+    const totalUserCount = parseInt(totalUserCountResult.rows[0].count);
+    const feedPostsCount = parseInt(feedPostsCountResult.rows[0].count);
+    const jobPostsCount = parseInt(jobPostsCountResult.rows[0].count);
+    const databaseSize = databaseSizeResult.rows[0].database_size;
+
+    const uploadsFolderPath = path.join(__dirname, 'uploads'); // Replace 'uploads' with the actual folder name
+    const mediaSize = getMediaSizeSync(uploadsFolderPath);
+
+    const dashboardData = {
+      userCountByRole,
+      totalUserCount,
+      feedPostsCount,
+      jobPostsCount,
+      databaseSize,
+      mediaSize,
+    };
+
+    res.json(dashboardData);
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//get media size
+function getMediaSizeSync(folderPath) {
+  try {
+    const files = fs.readdirSync(folderPath);
+    let totalSize = 0;
+    files.forEach((file) => {
+      const filePath = path.join(folderPath, file);
+      const stats = fs.statSync(filePath);
+      totalSize += stats.size;
+    });
+    return totalSize;
+  } catch (error) {
+    console.error('Error calculating media size:', error);
+    return 0;
+  }
+}
+
+// get all user info
+app.get("/api/get_all_users", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT * FROM users WHERE role = $1 OR role = $2", ['js', 'em']);
+
+    res.json(rows);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Add the route to delete a user by ID
+app.delete("/api/delete_user/:id", authenticateTokenAPI, async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const result = await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//api to update cid of the users table 
+//api to update name of the users table 
+// API to update cid of the users table
+app.put("/api/update_cid/:id", authenticateTokenAPI, async (req, res) => {
+  const userId = req.params.id;
+  const { cid } = req.body;
+
+  try {
+    const result = await pool.query("UPDATE users SET cid = $1 WHERE id = $2", [cid, userId]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "User's cid updated successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// API to update name of the users table
+app.put("/api/update_name/:id", authenticateTokenAPI, async (req, res) => {
+  const userId = req.params.id;
+  const { name } = req.body;
+
+  try {
+    const result = await pool.query("UPDATE users SET name = $1 WHERE id = $2", [name, userId]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.json({ message: "User's name updated successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

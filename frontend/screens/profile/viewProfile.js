@@ -24,6 +24,7 @@ export default ViewProfile = ({route, navigation}) => {
 
   const [data, setData] = useState([]);
   const [feedsData, setFeedsData] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const [role, setRole] = useState('');//fetch and set role
 
@@ -38,6 +39,7 @@ export default ViewProfile = ({route, navigation}) => {
 
   const fetchUserInfo = async () => {
     try {
+      setLoading(true)
       const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
         headers: {
           'Content-Type': 'application/json',
@@ -45,6 +47,7 @@ export default ViewProfile = ({route, navigation}) => {
         }
       });
       setRole(response.data[0].role);
+      setLoading(false)
     console.log(response.data,'response');
 
     } catch (error) {
@@ -66,6 +69,7 @@ export default ViewProfile = ({route, navigation}) => {
 
   const getPost = async() => {
     try {
+      setLoading(true)
       const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`,{
         headers: {
           'Content-Type': 'application/json',
@@ -73,6 +77,7 @@ export default ViewProfile = ({route, navigation}) => {
         }
       });
       setData(res.data)
+      setLoading(false)
       // console.log(res.data);
     } catch (error) {
       console.error(error)
@@ -81,9 +86,11 @@ export default ViewProfile = ({route, navigation}) => {
 
   const getFeedPost = async() => {
     try {
+      setLoading(true)
       const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}`);
       console.log('getFeedPost', res.data);
       setFeedsData(res.data)
+      setLoading(false)
     } catch (error) {
       console.error(error)
     }
@@ -93,7 +100,7 @@ export default ViewProfile = ({route, navigation}) => {
     setModalVisible(true);
   };
 
-  if (!data && !feedsData) return <Spinner/>
+  if (loading) return <Spinner/>
 
 // // Render each item of the data array //posts //cetificates
 const renderItem = ({ item }) => {
