@@ -16,14 +16,15 @@ import { getTimeDifference2, capitalizeWords } from "../fn";
 import UserInfo from "./UserInfo";
 import { TouchableOpacity } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const ContentManagement = () => {
+const UserManagement = () => {
   const token = useSelector((state) => state.token);
 
   const [userData, setUserData] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("all"); // Default to showing all users
-  const [filteredUsers, setFilteredUsers] = useState([]); // Store filtered users
+  const [fliteredPost, setFliteredPost] = useState([]); // Store filtered users
 
   const isFocused = useIsFocused();
 
@@ -35,18 +36,18 @@ const ContentManagement = () => {
   useEffect(() => {
     // Filter the user data when the filter or searchText changes
     const filteredData = userData.filter(
-      (user) =>
-        (filter === "all" || user.role === filter) &&
-        (user?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          user?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+      (post) =>
+        (filter === "all" || post.posttype === filter) &&
+        (post?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+        post?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
           user?.cid?.toLowerCase().includes(searchText.toLowerCase()))
     );
-    setFilteredUsers(filteredData);
+    setFliteredPost(filteredData);
   }, [userData, filter, searchText]);
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`${config.API_URL}/api/get_all_users`, {
+      const response = await axios.get(`${config.API_URL}/api/reported_posts`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -62,12 +63,12 @@ const ContentManagement = () => {
     setSearchText(text);
   };
 
-  const handleFilterJobSeeker = () => {
-    setFilter("js");
+  const handleFilterJobPost = () => {
+    setFilter("job_post");
   };
 
-  const handleFilterEmployer = () => {
-    setFilter("em");
+  const handleFilterFeedPost = () => {
+    setFilter("feed_post");
   };
 
   const handleFilterAll = () => {
@@ -80,7 +81,7 @@ const ContentManagement = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-    <UserInfo  isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} user={user} fetchUserData={fetchUserData}/>
+    <UserInfo  isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} user={user} setUser={setUser} fetchUserData={fetchUserData}/>
 
       <View style={styles.searchBarContainer}>
         <TextInput
@@ -95,11 +96,11 @@ const ContentManagement = () => {
         <TouchableHighlight style={styles.filterButton} onPress={handleFilterAll} underlayColor="grey">
           <Text style={styles.filterButtonText}>All</Text>
         </TouchableHighlight>
-        <TouchableHighlight style={styles.filterButton} onPress={handleFilterJobSeeker} underlayColor="grey">
-          <Text style={styles.filterButtonText}>Job Seeker</Text>
+        <TouchableHighlight style={styles.filterButton} onPress={handleFilterJobPost} underlayColor="grey">
+          <Text style={styles.filterButtonText}>Job Posts</Text>
         </TouchableHighlight>
-        <TouchableHighlight style={styles.filterButton} onPress={handleFilterEmployer} underlayColor="grey">
-          <Text style={styles.filterButtonText}>Employer</Text>
+        <TouchableHighlight style={styles.filterButton} onPress={handleFilterFeedPost} underlayColor="grey">
+          <Text style={styles.filterButtonText}>Feed Posts</Text>
         </TouchableHighlight>
       </View>
 
@@ -113,21 +114,21 @@ const ContentManagement = () => {
           <View style={{ flex:0.8, paddingVertical: 3 }}>
             <Text style={styles.table_head}>Sl No</Text>
           </View>
-         
+
           <View style={{ flex:3, paddingVertical: 3 }}>
-            <Text style={styles.table_head}>Post By</Text>
+            <Text style={styles.table_head}>Post by User name & email</Text>
           </View>
 
           <View style={{ flex:1, paddingVertical: 3 }}>
-            <Text style={styles.table_head}>Report Count</Text>
+            <Text style={[styles.table_head, {textAlign:'center'}]}>Post Type</Text>
           </View>
-               
+
         </View>
       </View>
 
       <FlatList
-        data={filteredUsers} // Render the filtered users
-        keyExtractor={(item) => item.id}
+        data={fliteredPost} // Render the filtered users
+        keyExtractor={(item, index) => index}
         renderItem={({ item, index }) => {
           return (
             <View style={{ paddingHorizontal: 10 }}>
@@ -135,15 +136,20 @@ const ContentManagement = () => {
                 <View style={{ flex:0.8 }}>
                   <Text style={[styles.table_data, {textAlignVertical:'center', flex:1}]}>{index+1}</Text>
                 </View>
-               
+            
                 <View style={{ flex:3}}>
                   <Text style={[styles.table_data, { fontWeight: 'bold',}]}>{capitalizeWords(item.name)}</Text>
                   <Text style={styles.table_data}>{item.email}</Text>
                 </View>
 
-                <View style={{ flex:1}}>
-                <Text style={[styles.table_data, {textAlign:"center", textAlignVertical:'center', flex:1}]}>123</Text>
+                <View style={{ flex:1, justifyContent:'center'}}>
+                  {/* profile image */}
+                  <Text style={[styles.table_data, {textAlign:'center', paddingLeft:5}]}>
+                  {item.posttype == 'job_post' && 'Job Post'}
+                  {item.posttype == 'feed_post' && 'Feed Post'}
+                  </Text>
                 </View>
+
               </TouchableOpacity>
             </View>
           );
@@ -226,4 +232,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ContentManagement;
+export default UserManagement;

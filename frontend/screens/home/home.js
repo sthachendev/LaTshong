@@ -42,23 +42,67 @@ export default Home = () => {
 
   const getJobPost = async() => {
     try {
-      const res = await axios.get(`${config.API_URL}/api/get_job_post`);
-      console.log('getJobPost', res.data);
-      setData(res.data)
+      if (role === 'em') {
+        const res = await axios.get(`${config.API_URL}/api/get_job_post/${userid}`);
+        console.log('getJobPost', res.data);
+        setData(res.data)
+      }else{
+        const res = await axios.get(`${config.API_URL}/api/get_job_post`);
+        console.log('getJobPost', res.data);
+        setData(res.data)
+      }
+    
     } catch (error) {
       console.error(error)
     }
   }
 
   const getFeedPost = async() => {
+    setLoading(true);
     try {
-      const res = await axios.get(`${config.API_URL}/api/feed_posts`);
-      // console.log('getFeedPost', res.data);
-      setFeedsData(res.data)
+      const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
+        params: { page, pageSize: 10 }, // Adjust pageSize based on your needs
+      });
+      if (res.data.length > 0) {
+        setPage(page + 1);
+        setFeedsData([...feedsData, ...res.data]);
+      }
     } catch (error) {
-      console.error(error)
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   }
+
+const [page, setPage] = useState(1);
+const [loading, setLoading] = useState(false);
+
+const loadMorePosts = async () => {
+  if (loading) return;
+
+  setLoading(true);
+  try {
+    const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
+      params: { page, pageSize: 10 }, // Adjust pageSize based on your needs
+    });
+    if (res.data.length > 0) {
+      setPage(page + 1);
+      setFeedsData([...feedsData, ...res.data]);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleScrollLoadMore = (event) => {
+  const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+  const isNearEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+  if (isNearEnd) {
+    loadMorePosts();
+  }
+};
 
   const onRefresh = async () => {
     setRefreshing(true); // Set refreshing to true to show the loader
@@ -183,7 +227,7 @@ export default Home = () => {
             getItemLayout={(data, index) => (
               {length: 500, offset: 500 * index, index}
             )}
-            onScroll={handleScroll} // Add onScroll event to track the scroll position
+            onScroll={(event)=>{handleScroll(event);handleScrollLoadMore(event);}} // Add onScroll event to track the scroll position
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }

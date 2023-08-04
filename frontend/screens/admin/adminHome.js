@@ -9,6 +9,7 @@ import { ScrollView } from "react-native";
 import { useSelector } from "react-redux";
 import { ActivityIndicator } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
+import Spinner from '../custom/Spinner';
 
 const AdminHome = () => {
 
@@ -39,7 +40,7 @@ const AdminHome = () => {
         });
     };
 
-    if (!data) return <ActivityIndicator/>
+    if (!data) return <Spinner/>
 
     return (
     <ScrollView style={styles.container}>

@@ -4,13 +4,12 @@ import axios from "axios";
 import config from "../config";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-
 import { capitalizeWords, getTimeDifference2 } from "../fn";
 import { TextInput } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 
-export default UserInfo = ({isModalVisible, setIsModalVisible, user, fetchUserData}) => {//current user role
+export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fetchUserData}) => {//current user role
     
     const token = useSelector(state=>state.token);
 
@@ -71,14 +70,29 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, fetchUserDa
       setCid(user.cid);
     }, [user.name, user.cid]); 
 
-    const handleSave = (userid) =>{
-      axios.put(`${config.API_URL}/api/update_name/${userid}`,{name:name}, {
-        headers: {
+    const updateUserField = (userid, field, value, token) => {
+      axios
+        .put(`${config.API_URL}/api/update_${field}/${userid}`, { [field]: value }, {
+          headers: {
             Authorization: `Bearer ${token}`,
-            }
-        }).then((res)=>console.log(res.data))
-        .catch((e)=>console.log(e))
-    }
+          }
+        })
+        .then((res) => {
+          console.log(res.data);
+          setUser((prevUser) => ({ ...prevUser, [field]: value }));
+          ToastAndroid.show("Updated", ToastAndroid.SHORT);
+        })
+        .catch((e) => console.log(e));
+    };
+    
+    const handleSave = (userid) => {
+      if (name !== user.name) {
+        updateUserField(userid, "name", name, token);
+      } else if (cid !== user.cid) {
+        updateUserField(userid, "cid", cid, token);
+      }
+    };
+
     return (
         <>
         <Modal visible={isModalVisible} onRequestClose={()=>setIsModalVisible(false)} transparent={true} animationType="slide">
@@ -107,7 +121,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, fetchUserDa
             <View style={styles.buttonContainer2}>
                 <View/>
                 <Text style={styles.buttonText2}>User Information</Text>
-                <TouchableOpacity onPress={()=>{setIsModalVisible(false);}}>
+                <TouchableOpacity onPress={()=>{setIsModalVisible(false);fetchUserData();}}>
                 <MaterialIcons name="close" size={24} color="black" />
             </TouchableOpacity>
 
@@ -125,7 +139,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, fetchUserDa
             </View>}
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             {/* profile image */}
-            <View style={{ alignItems:'center', padding:15}}>
+            <View style={{ alignItems:'center', padding:15, marginTop:10}}>
             {user.imageurl && user.imageurl.length > 0 ? 
             <Image  source={{ uri : `${config.API_URL}/${user.imageurl}`}}  
             style={{width:100, height:100, borderRadius:50, borderColor:"lightgrey", borderWidth:1,}}
@@ -137,13 +151,12 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, fetchUserDa
             }
             </View>
           
-              {/* <Text style={{fontWeight:'bold', padding:10}}>{user.name && capitalizeWords(user.name)}</Text> */}
               <TextInput
               mode="outlined"
               label="Name"
               value={name}
               onChangeText={setName}
-              style={{fontSize:14}}
+              style={{fontSize:14, marginTop:5}}
               theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
               multiline={true}
               blurOnSubmit={true}
@@ -206,7 +219,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, fetchUserDa
               disabled
               />
 
-            <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(255,0,0,.7)', 
+            <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(255,0,0,.7)', marginVertical:10,
             width:'100%', borderWidth:0.25, borderRadius:25}} 
               underlayColor='rgba(255,0,0,.1)'  
               onPress={()=>handleDelete(user.id)}

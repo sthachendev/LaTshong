@@ -316,6 +316,25 @@ app.get("/api/get_job_post/:id", async (req, res) => {
 });
 
 //api to get all job posts posted by //required pagination but not nesessary
+app.get("/api/get_job_post/:userid", async (req, res) => {
+  try {
+    const { userid } = req.params;
+
+    const { rows } = await pool.query(
+      `SELECT job_posts.*, users.name, users.email, users.imageurl
+      FROM job_posts
+      JOIN users ON job_posts.postBy = users.id
+      WHERE job_posts.postBy = $1`,
+      [userid]
+    );
+
+    // console.log("rows", rows);
+    res.status(200).json(rows);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while fetching the job posts." });
+  }
+});
 
 //applicants {}
 app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
@@ -823,15 +842,40 @@ app.patch('/api/feed_post', upload, async (req, res) => {
 });
 
 // Get all feed posts in a specific order //required pagination
+// app.get('/api/feed_posts', async (_req, res) => {
+//   try {
+//     // Fetch feed posts from the database, joined with user information, ordered by postdate in descending order (latest first)
+//     const { rows } = await pool.query(`
+//       SELECT feed_posts.*, users.name, users.imageurl
+//       FROM feed_posts
+//       INNER JOIN users ON feed_posts.postby = users.id
+//       ORDER BY feed_posts.postdate DESC
+//     `);
+
+//     res.status(200).json(rows);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// });
+
 app.get('/api/feed_posts', async (req, res) => {
   try {
+    const { page, pageSize } = req.query;
+    const pageNumber = parseInt(page, 10) || 1;
+    const itemsPerPage = parseInt(pageSize, 10) || 10;
+
+    // Calculate the offset based on the requested page and page size
+    const offset = (pageNumber - 1) * itemsPerPage;
+
     // Fetch feed posts from the database, joined with user information, ordered by postdate in descending order (latest first)
     const { rows } = await pool.query(`
       SELECT feed_posts.*, users.name, users.imageurl
       FROM feed_posts
       INNER JOIN users ON feed_posts.postby = users.id
       ORDER BY feed_posts.postdate DESC
-    `);
+      LIMIT $1 OFFSET $2
+    `, [itemsPerPage, offset]);
 
     res.status(200).json(rows);
   } catch (err) {
@@ -967,8 +1011,8 @@ app.patch('/api/users/:userid', async (req, res) => {
   }
 });
 
-// API endpoint to add userid to reportedby array
-app.post("/api/add_reportedby/:postid/:userid", authenticateTokenAPI, async (req, res) => {
+// API endpoint to add userid to reportedby array //feed posts
+app.post("/api/add_reportedby_feed_post/:postid/:userid", authenticateTokenAPI, async (req, res) => {
   try {
     const { postid, userid } = req.params;
 
@@ -1163,6 +1207,61 @@ app.put("/api/update_name/:id", authenticateTokenAPI, async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+//api to get reported feeds posts
+// API endpoint to fetch all posts with reportby //feed posts
+
+// Get reported feed posts and job posts from the database, joined with user information
+app.get('/api/reported_posts', async (req, res) => {
+  try {
+    // Fetch reported feed posts from the database, joined with user information
+    const { rows: reportedFeedPosts } = await pool.query(`
+      SELECT feed_posts.*, users.name, users.email, users.imageurl, 'feed_post' AS posttype
+      FROM feed_posts
+      INNER JOIN users ON feed_posts.postby = users.id
+      WHERE ARRAY_LENGTH(feed_posts.reportedby, 1) > 0
+      ORDER BY feed_posts.postdate DESC
+    `);
+
+    // Fetch reported job posts from the database, joined with user information
+    const { rows: reportedJobPosts } = await pool.query(`
+      SELECT job_posts.*, users.name, users.email, users.imageurl, 'job_post' AS posttype
+      FROM job_posts
+      INNER JOIN users ON job_posts.postby = users.id
+      WHERE ARRAY_LENGTH(job_posts.reportedby, 1) > 0
+      ORDER BY job_posts.postdate DESC
+    `);
+
+    // Combine both sets of reported posts
+    const reportedPosts = [...reportedFeedPosts, ...reportedJobPosts];
+
+    res.status(200).json(reportedPosts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+// API endpoint to add userid to reportedby array //job feeds
+app.post("/api/add_reportedby_job_post/:postid/:userid", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { postid, userid } = req.params;
+
+    // Update the reportedby array by adding the new userid, but only if it doesn't exist in the array
+    const updateQuery = "UPDATE job_posts SET reportedby = array_append(reportedby, $1) WHERE id = $2 AND NOT $1 = ANY (reportedby)";
+    const result = await pool.query(updateQuery, [userid, postid]);
+
+    if (result.rowCount === 0) {
+      // If no rows were updated, it means the userid already exists in the array
+      return res.status(200).json({ message: "User is already in the reportedby array." });
+    }
+
+    res.status(200).json({ message: "User added to reportedby array successfully." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while updating the reportedby array." });
   }
 });
 

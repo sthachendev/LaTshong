@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS job_posts (
     location JSON, 
     status CHAR(1), ---o open, c close
     applicants INTEGER[] DEFAULT '{}',
-    accepted_applicants INTEGER[] DEFAULT '{}'
+    accepted_applicants INTEGER[] DEFAULT '{}',
+    reportedby INTEGER[] DEFAULT '{}'
 );
 
 -- chat_rooms table

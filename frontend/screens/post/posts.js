@@ -50,7 +50,8 @@ const Posts = (({item, role, navigation, selectedItem, setSelectedItem}) => {
      { token && <>
         <TouchableHighlight style={{color:"grey", fontSize:13, padding:3, borderColor:'rgba(30,49,157,0.3)', borderWidth:2, borderRadius:20}} 
         onPress={()=>handlePostSave(item.id)} 
-        underlayColor='rgba(49, 105, 210, 0.5)'>
+        // underlayColor='rgba(49, 105, 210, 0.5)'
+        underlayColor="#F1F2F6">
         <Icon name="bookmark-outline" size={24} color="rgba(30,49,157,0.7)" />
         </TouchableHighlight>
      </>}

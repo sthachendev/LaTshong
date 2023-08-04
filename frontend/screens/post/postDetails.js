@@ -337,6 +337,23 @@ const handleMessage = (touserid, tousername) => {
     .catch(e=>console.log(e))
   }
 
+  const handleReport = async (postid) => {
+    console.log(postid)
+    try {
+    const res = await axios.post(`${config.API_URL}/api/add_reportedby_job_post/${postid}/${userid}`,{}, {
+    headers: {
+        Authorization: `Bearer ${token}`,
+        }
+    });
+    console.log(res.status)
+    if (res.status === 200){
+        ToastAndroid.show("Post Reported", ToastAndroid.SHORT);
+    }       
+    } catch (error) {
+    console.log(error.response.data);
+    }
+  };
+
   if (loading) {
     return <Spinner />;
   }
@@ -370,7 +387,6 @@ const handleMessage = (touserid, tousername) => {
         <View>
         <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
         <Text style={{marginLeft:10, color:"grey", fontSize:12}}>{data[0].email}</Text>
-        {/* <Text style={{marginLeft:10, color:"grey", fontSize:12, textAlignVertical:'center'}}>~Verified Employer</Text> */}
         </View>
 
       </View>
@@ -378,18 +394,9 @@ const handleMessage = (touserid, tousername) => {
       {/* job details */}
       <View style={styles.container}>
 
-        {/* <View style={styles.tableRow}>
-          <Text style={styles.headerCell}>Job Title</Text>
-          <Text style={styles.cell}>{capitalizeWords(data[0].job_title)}</Text>
-        </View> */}
-
         <Text style={{padding:10, fontWeight:'bold'}}>{capitalizeWords(data[0].job_title)}</Text>
         <Text style={{padding:10, paddingTop:0, color:'#404040'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
 
-        {/* <View style={styles.tableRow}>
-          <Text style={styles.headerCell}>Description</Text>
-          <Text style={styles.cell}>{data[0].job_description}</Text>
-        </View> */}
         <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Requirements</Text>
           <Text style={styles.cell}>{capitalizeFirstLetterOfParagraphs(data[0].job_requirements)}</Text>
@@ -423,52 +430,56 @@ const handleMessage = (touserid, tousername) => {
       </View>
 
      <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
-     <Text style={{color:'grey'}}>Total Applicant: {data[0].applicants.length}</Text>
-
-      { token && <>
-        <TouchableHighlight style={{color:"grey", fontSize:13, padding:3, borderColor:'rgba(30,49,157,0.3)', borderWidth:2, borderRadius:20}} 
-        onPress={()=>handlePostSave(data[0].id)} 
-        underlayColor='rgba(49, 105, 210, 0.5)'>
-        <Icon name="bookmark-outline" size={24} color="rgba(30,49,157,0.7)" />
-        </TouchableHighlight>
-      </>}
-
+     <Text style={{fontSize:12, color:'#404040', paddingLeft:15}}>Total Applicant: {data[0].applicants.length}</Text>
      </View>
       </View>
 
-        {/* bottom buttons */}
-        <View style={{ width:'100%', marginVertical:10,
-        display:"flex", flexDirection:"row", padding:10, 
+      <View style={{ width:'100%',
+        display:"flex", flexDirection:"row", padding:10, paddingVertical:15, marginTop:10,
         justifyContent: role !== 'em' ? "space-around": "flex-end"}}>
           {role !== 'em' &&
             <>
-            <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'grey',borderWidth:0.25, flex:.3, borderRadius:25 }} underlayColor="#F1F2F6"  
+            <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(30,49,157,0.7)',borderWidth:0.25, flex:.45, borderRadius:25 }} underlayColor="#F1F2F6"  
             onPress={()=>navigation.navigate('ViewProfile', { userid: data[0].postby })}
             >
-              <Text style={{ paddingVertical:10,  textAlign:"center", color:'grey' }}>
+              <Text style={{ paddingVertical:10,  textAlign:"center", color:'rgba(30,49,157,0.7)' }}>
                 View Profile
               </Text>
             </TouchableHighlight>
         
-            <TouchableHighlight style={{borderColor:'grey',borderWidth:0.25, flex:.3, borderRadius:25}} underlayColor="#F1F2F6"  
+            <TouchableHighlight style={{borderColor:'rgba(30,49,157,0.7)',borderWidth:0.25, flex:.45, borderRadius:25}} underlayColor="#F1F2F6"  
             onPress={()=>handleMessage(data[0].postby, data[0].name)}
             >
-              <Text style={{ paddingVertical:10,  textAlign:"center", color:'grey' }}>
+              <Text style={{ paddingVertical:10,  textAlign:"center", color:'rgba(30,49,157,0.7)' }}>
                 {/* <MaterialIcons name="mail" size={20} color="lightgrey" /> */}
                 Message
               </Text>
             </TouchableHighlight>
 
-            <TouchableHighlight style={{ borderColor:'grey',borderWidth:0.25, flex:.3, borderRadius:25, backgroundColor:'#1E319D'}} underlayColor="#1E319D"  
-            onPress={()=>handleApply(id)}>
-              <Text style={{ paddingVertical:10,  textAlign:"center", color:'#fff' }}>
-              {isApply ? 'Applied': 'Apply'}
-              </Text>
-            </TouchableHighlight>
             </>
             }
 
-          {
+        </View> 
+
+        {/* report btn */}
+        <View style={{ width:'100%', 
+        display:"flex", flexDirection:"row", padding:15, paddingVertical:10,
+        justifyContent: role !== 'em' ? "space-around": "flex-end"}}>
+          {role !== 'em' &&
+            <TouchableHighlight style={{ backgroundColor:'#fff', flex:1, borderRadius:5, display:'flex', flexDirection:'row'
+          ,paddingVertical:10, paddingHorizontal:10,}} underlayColor="#F1F2F6"  
+            onPress={()=>token ? handleReport(data[0].id) : navigation.navigate('Login')}
+            >
+              <>
+              <Icon name="report" size={20} color="rgba(30,49,157,0.7)" style={{}}/>
+              <Text style={{ paddingHorizontal:5,  color:'rgba(30,49,157,0.7)', }}>
+                Flag as Inappropriate
+              </Text>
+              </>
+            </TouchableHighlight>
+            }
+
+          {//role em buttons close and delete btn
             role === 'em' &&
              <>
               <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:"rgba(0,0,0,1)",
@@ -495,39 +506,40 @@ const handleMessage = (touserid, tousername) => {
              </>
           } 
           
-        </View>    
+        </View>   
+
           </>
         )}
 
-        {/* menu bar */}
-        {
-          role !== 'js' && role === 'em' &&
-          (
-            <>
-              <View style={{backgroundColor:"#fff", borderTopWidth:.5, borderColor:"lightgrey"}}>
-              <Text style={{fontSize:18, letterSpacing:1, padding:10}}>Applicants</Text>
-              </View>
+      {/* menu bar */}
+      {
+        role !== 'js' && role === 'em' &&
+        (
+          <>
+            <View style={{backgroundColor:"#fff", borderTopWidth:.5, borderColor:"lightgrey"}}>
+            <Text style={{fontSize:18, letterSpacing:1, padding:10}}>Applicants</Text>
+            </View>
 
-              <View style={{backgroundColor:"lightgrey", display:"flex", flexDirection:"row", padding:10}}>
-              
-              <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'p' ? '#fff' : 'lightgrey',
-              }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("p")}>
-                <Text style={styles.btnText}>
-                Pending
-                </Text>
-              </TouchableHighlight>
-              <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'a' ? '#fff' : 'lightgrey',
-              }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("a")}>
-                <Text style={styles.btnText}>
-                Selected
-                </Text>
-              </TouchableHighlight>
-             
-              </View>
-              <Text style={{color:"grey", paddingHorizontal:10, fontSize:12}}>*Applicant will not be notified when you select an applicant.</Text>
-            </>
-          )
-        }
+            <View style={{backgroundColor:"lightgrey", display:"flex", flexDirection:"row", padding:10}}>
+            
+            <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'p' ? '#fff' : 'lightgrey',
+            }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("p")}>
+              <Text style={styles.btnText}>
+              Pending
+              </Text>
+            </TouchableHighlight>
+            <TouchableHighlight style={[styles.btn, { backgroundColor: selectedOption === 'a' ? '#fff' : 'lightgrey',
+            }]} underlayColor="#F1F2F6" onPress={() => handleOptionSelect("a")}>
+              <Text style={styles.btnText}>
+              Selected
+              </Text>
+            </TouchableHighlight>
+            
+            </View>
+            <Text style={{color:"grey", paddingHorizontal:10, fontSize:12}}>*Applicant will not be notified when you select an applicant.</Text>
+          </>
+        )
+      }
        
       </>
     );
@@ -575,14 +587,13 @@ const handleMessage = (touserid, tousername) => {
 
   return (
     <>   
-  {/* user applied list */}
       <View style={{backgroundColor:"#fff", flex:1
     }}>
       <FlatList
         ref={flatListRef}
         data={usersData} // Pass the usersData as the data for the FlatList
         ListHeaderComponent={PostDetailsInfo}
-        ListFooterComponent={()=>{return(<View style={{margin:10}}></View>)}}
+        // ListFooterComponent={()=>{return(<View style={{margin:10}}></View>)}}
         renderItem={renderUserItem} // Use the renderUserItem function to render each item
         ListEmptyComponent={()=>{
           return(
@@ -601,6 +612,27 @@ const handleMessage = (touserid, tousername) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         />
+
+        {/* bottom buttons --- view profile message and apply btn*/}
+        {role !== 'em' &&
+        <View style={{ width:'100%', borderColor:'rgba(30,49,157,0.7)', borderWidth:0.25,
+        display:"flex", flexDirection:"row", padding:10, paddingVertical:15,
+        justifyContent: role !== 'em' ? "space-around": "flex-end"}}>
+            <TouchableHighlight style={{ borderColor:'grey',borderWidth:0.25, flex:.9, borderRadius:25, backgroundColor:'#1E319D'}} underlayColor="#1E319D"  
+            onPress={()=>handleApply(id)}>
+              <Text style={{ paddingVertical:10, textAlign:"center", color:'#fff', }}>
+              {isApply ? 'Applied': 'Apply Now'}
+              </Text>
+            </TouchableHighlight>
+            <TouchableHighlight style={{color:"grey", borderColor:'rgba(30,49,157,0.3)', borderWidth:2, borderRadius:25,}} 
+            onPress={()=>handlePostSave(data[0].id)} 
+            // underlayColor='rgba(49, 105, 210, 0.5)'
+            underlayColor="#F1F2F6">
+            <Icon name="bookmark-outline" size={20} color="rgba(30,49,157,0.7)" style={{padding:10}}/>
+            </TouchableHighlight>
+        </View> 
+        }
+
       </View>
     </>
   );

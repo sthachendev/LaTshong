@@ -81,7 +81,7 @@ const UserManagement = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-    <UserInfo  isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} user={user} fetchUserData={fetchUserData}/>
+    <UserInfo  isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} user={user} setUser={setUser} fetchUserData={fetchUserData}/>
 
       <View style={styles.searchBarContainer}>
         <TextInput
