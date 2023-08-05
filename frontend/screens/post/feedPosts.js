@@ -99,7 +99,6 @@ const styles = StyleSheet.create({
     itemContainer: {
       backgroundColor: '#fff',
       borderColor:"lightgrey", borderWidth:1,
-      // margin:10,x
       marginBottom:5,
       // borderRadius: 5,
       // marginBottom:0,

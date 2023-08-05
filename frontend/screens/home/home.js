@@ -43,7 +43,7 @@ export default Home = () => {
   const getJobPost = async() => {
     try {
       if (role === 'em') {
-        const res = await axios.get(`${config.API_URL}/api/get_job_post/${userid}`);
+        const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`);
         console.log('getJobPost', res.data);
         setData(res.data)
       }else{

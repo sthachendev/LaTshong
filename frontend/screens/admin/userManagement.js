@@ -12,11 +12,11 @@ import {
 import axios from "axios";
 import { useSelector } from "react-redux";
 import config from "../config";
-import { getTimeDifference2, capitalizeWords } from "../fn";
+import { capitalizeWords } from "../fn";
 import UserInfo from "./UserInfo";
 import { TouchableOpacity } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Spinner from "../custom/Spinner";
 
 const UserManagement = () => {
   const token = useSelector((state) => state.token);
@@ -25,6 +25,8 @@ const UserManagement = () => {
   const [searchText, setSearchText] = useState("");
   const [filter, setFilter] = useState("all"); // Default to showing all users
   const [filteredUsers, setFilteredUsers] = useState([]); // Store filtered users
+  
+  const [loading, setLoading] = useState(false);
 
   const isFocused = useIsFocused();
 
@@ -47,6 +49,7 @@ const UserManagement = () => {
 
   const fetchUserData = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${config.API_URL}/api/get_all_users`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,6 +57,7 @@ const UserManagement = () => {
       });
       setUserData(response.data);
       console.log(response.data);
+      setLoading(false);
     } catch (error) {
       console.log(error.response.data);
     }
@@ -78,6 +82,8 @@ const UserManagement = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const [user, setUser] = useState('');
+
+  if (loading) return(<Spinner/>)
 
   return (
     <SafeAreaView style={styles.container}>

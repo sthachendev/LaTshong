@@ -13,10 +13,10 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import config from "../config";
 import { getTimeDifference2, capitalizeWords } from "../fn";
-import UserInfo from "./UserInfo";
+import PostInfo from "./PostInfo";
 import { TouchableOpacity } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Spinner from "../custom/Spinner";
 
 const UserManagement = () => {
   const token = useSelector((state) => state.token);
@@ -26,27 +26,30 @@ const UserManagement = () => {
   const [filter, setFilter] = useState("all"); // Default to showing all users
   const [fliteredPost, setFliteredPost] = useState([]); // Store filtered users
 
+  const [loading, setLoading] = useState(false);
+
   const isFocused = useIsFocused();
 
   useEffect(() => {
     if (isFocused)
-    fetchUserData();
+    fetchData();
   }, [isFocused]);
 
   useEffect(() => {
-    // Filter the user data when the filter or searchText changes
+    // Filter the post data when the filter or searchText changes
     const filteredData = userData.filter(
       (post) =>
         (filter === "all" || post.posttype === filter) &&
         (post?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
         post?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
-          user?.cid?.toLowerCase().includes(searchText.toLowerCase()))
+        post?.cid?.toLowerCase().includes(searchText.toLowerCase()))
     );
     setFliteredPost(filteredData);
   }, [userData, filter, searchText]);
 
-  const fetchUserData = async () => {
+  const fetchData = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(`${config.API_URL}/api/reported_posts`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -54,6 +57,7 @@ const UserManagement = () => {
       });
       setUserData(response.data);
       console.log(response.data);
+      setLoading(false);
     } catch (error) {
       console.log(error.response.data);
     }
@@ -77,11 +81,13 @@ const UserManagement = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const [user, setUser] = useState('');
+  const [post, setPost] = useState('');
+
+  if (loading) return(<Spinner/>)
 
   return (
     <SafeAreaView style={styles.container}>
-    <UserInfo  isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} user={user} setUser={setUser} fetchUserData={fetchUserData}/>
+    <PostInfo  isModalVisible={isModalVisible} setIsModalVisible={setIsModalVisible} post={post} setPost={setPost} fetchData={fetchData}/>
 
       <View style={styles.searchBarContainer}>
         <TextInput
@@ -100,7 +106,7 @@ const UserManagement = () => {
           <Text style={styles.filterButtonText}>Job Posts</Text>
         </TouchableHighlight>
         <TouchableHighlight style={styles.filterButton} onPress={handleFilterFeedPost} underlayColor="grey">
-          <Text style={styles.filterButtonText}>Feed Posts</Text>
+        <Text style={styles.filterButtonText}>Feed Posts</Text>
         </TouchableHighlight>
       </View>
 
@@ -116,11 +122,12 @@ const UserManagement = () => {
           </View>
 
           <View style={{ flex:3, paddingVertical: 3 }}>
-            <Text style={styles.table_head}>Post by User name & email</Text>
+            <Text style={styles.table_head}>Post by Username & email</Text>
           </View>
 
           <View style={{ flex:1, paddingVertical: 3 }}>
-            <Text style={[styles.table_head, {textAlign:'center'}]}>Post Type</Text>
+          {/* <Text style={[styles.table_head, {textAlign:'center'}]}>Post Type</Text> */}
+          <Text style={[styles.table_head, {textAlign:'center'}]}>Report Count</Text>
           </View>
 
         </View>
@@ -132,7 +139,7 @@ const UserManagement = () => {
         renderItem={({ item, index }) => {
           return (
             <View style={{ paddingHorizontal: 10 }}>
-              <TouchableOpacity style={styles.table_body_single_row} activeOpacity={1} onPress={()=>{setIsModalVisible(true),setUser(item)}}>
+              <TouchableOpacity style={styles.table_body_single_row} activeOpacity={1} onPress={()=>{setIsModalVisible(true),setPost(item)}}>
                 <View style={{ flex:0.8 }}>
                   <Text style={[styles.table_data, {textAlignVertical:'center', flex:1}]}>{index+1}</Text>
                 </View>
@@ -143,11 +150,10 @@ const UserManagement = () => {
                 </View>
 
                 <View style={{ flex:1, justifyContent:'center'}}>
-                  {/* profile image */}
-                  <Text style={[styles.table_data, {textAlign:'center', paddingLeft:5}]}>
-                  {item.posttype == 'job_post' && 'Job Post'}
-                  {item.posttype == 'feed_post' && 'Feed Post'}
-                  </Text>
+                <Text style={[styles.table_data, {textAlign:'center', paddingLeft:5}]}>
+                  {item.reportedby.length}
+                </Text>
+
                 </View>
 
               </TouchableOpacity>

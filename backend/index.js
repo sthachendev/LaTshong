@@ -316,7 +316,7 @@ app.get("/api/get_job_post/:id", async (req, res) => {
 });
 
 //api to get all job posts posted by //required pagination but not nesessary
-app.get("/api/get_job_post/:userid", async (req, res) => {
+app.get("/api/get_all_job_posted_by_userid/:userid", async (req, res) => {
   try {
     const { userid } = req.params;
 
@@ -859,6 +859,7 @@ app.patch('/api/feed_post', upload, async (req, res) => {
 //   }
 // });
 
+//get all feed posts
 app.get('/api/feed_posts', async (req, res) => {
   try {
     const { page, pageSize } = req.query;
@@ -884,7 +885,31 @@ app.get('/api/feed_posts', async (req, res) => {
   }
 });
 
-// Get all feed posts by a specific user in a specific order
+//get feed post single
+app.get("/api/get_feed_post/:id", async (req, res) => {//postid
+  try {
+    const id = req.params.id;
+
+    // Fetch the specific feed post using the post ID from the database, joined with user information
+    const { rows } = await pool.query(
+      `
+      SELECT feed_posts.*, users.name, users.imageurl
+      FROM feed_posts
+      INNER JOIN users ON feed_posts.postby = users.id
+      WHERE feed_posts.id = $1
+    `,
+      [id]
+    );
+
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+
+
+// Get all feed posts by a specific user in a specific order //see if this is used
 app.get('/api/feed_posts/:userid', async (req, res) => {
   try {
     const { userid } = req.params;
@@ -1218,7 +1243,7 @@ app.get('/api/reported_posts', async (req, res) => {
   try {
     // Fetch reported feed posts from the database, joined with user information
     const { rows: reportedFeedPosts } = await pool.query(`
-      SELECT feed_posts.*, users.name, users.email, users.imageurl, 'feed_post' AS posttype
+      SELECT feed_posts.id, feed_posts.reportedby, users.name, users.email, 'feed_post' AS posttype
       FROM feed_posts
       INNER JOIN users ON feed_posts.postby = users.id
       WHERE ARRAY_LENGTH(feed_posts.reportedby, 1) > 0
@@ -1227,7 +1252,7 @@ app.get('/api/reported_posts', async (req, res) => {
 
     // Fetch reported job posts from the database, joined with user information
     const { rows: reportedJobPosts } = await pool.query(`
-      SELECT job_posts.*, users.name, users.email, users.imageurl, 'job_post' AS posttype
+      SELECT job_posts.id, job_posts.reportedby, users.name, users.email, 'job_post' AS posttype
       FROM job_posts
       INNER JOIN users ON job_posts.postby = users.id
       WHERE ARRAY_LENGTH(job_posts.reportedby, 1) > 0

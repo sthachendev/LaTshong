@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { View, Text, TouchableHighlight, StyleSheet, Alert,
+import { View, Text, TouchableHighlight, StyleSheet, Alert, Dimensions,
  FlatList, Image, ToastAndroid, RefreshControl } from "react-native";
 import axios from "axios";
 import config from "../config";
@@ -7,7 +7,6 @@ import { capitalizeFirstLetterOfParagraphs, capitalizeWords, getTimeDifference, 
 import jwtDecode from "jwt-decode";
 import { useSelector } from "react-redux";
 import Spinner from "../custom/Spinner";
-import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
@@ -27,7 +26,6 @@ export default PostDetails = ({ route, navigation }) => {
 
   const token = useSelector((state)=>state.token);
   const userid = token ? jwtDecode(token).userid : null;
-
 
   useEffect(() => {
     console.log('userid',id);
@@ -55,8 +53,9 @@ export default PostDetails = ({ route, navigation }) => {
 const getJobPost = async () => {
   try {//post id
     setLoading(true);
-    const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);//no need to add token
-    setData(res.data);
+      const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);//no need to add token
+      setData(res.data);
+   
     setLoading(false);
     // console.log(res.data[0].postby);
     const applicants = res.data[0].applicants;
@@ -354,6 +353,8 @@ const handleMessage = (touserid, tousername) => {
     }
   };
 
+  const SCREEN_WIDTH = Dimensions.get('window').width;
+
   if (loading) {
     return <Spinner />;
   }
@@ -395,7 +396,7 @@ const handleMessage = (touserid, tousername) => {
       <View style={styles.container}>
 
         <Text style={{padding:10, fontWeight:'bold'}}>{capitalizeWords(data[0].job_title)}</Text>
-        <Text style={{padding:10, paddingTop:0, color:'#404040'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
+        <Text style={{padding:10, paddingTop:0, color:'#404040', textAlign:'justify'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
 
         <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Requirements</Text>
@@ -552,33 +553,34 @@ const handleMessage = (touserid, tousername) => {
         <TouchableHighlight style={styles.itemContainer}  underlayColor="#F1F2F6" 
         onPress={()=>navigation.navigate('ViewProfile', { userid: item.id })}>
           <View style={{padding:10}}>
-        <View style={{display:"flex", flexDirection:"row", flex:1}}>
 
-        {item.imageurl.length > 0 ? (
-          <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{ width: 40, height: 40, borderRadius: 25 }} />
-        ) : (
-          <Image source={require("../../assets/images/default.png")} style={{ width: 40, height: 40, borderRadius: 25 }} />
-        )}
+       
+<View style={{ display: "flex", flexDirection: "row", flex: 1, justifyContent: 'space-between' }}>
+  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    {item.imageurl.length > 0 ? (
+      <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{ width: 40, height: 40, borderRadius: 5 }} />
+    ) : (
+      <Image source={require("../../assets/images/default.png")} style={{ width: 40, height: 40, borderRadius: 5 }} />
+    )}
 
-          {/* <View> */}
-          <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14, textAlignVertical:'center'}}>{capitalizeWords(item.name)}</Text>
-          {/* <Text style={{color:"grey", marginLeft:5, fontSize:12, textAlignVertical:'bottom'}}>{item.email}</Text> */}
-          {/* </View> */}
+    <Text style={{ paddingLeft:5, fontWeight: "500", fontSize: 14, textAlignVertical: 'center', maxWidth: SCREEN_WIDTH - 120 }}
+      numberOfLines={1} ellipsizeMode='tail'>
+      {capitalizeWords(item.name)}
+    </Text>
+  </View>
 
-            <>
-               <TouchableHighlight
-              style={[styles.btn2, { position: 'absolute', top: 0, right: 0 }]}
-              underlayColor="#F1F2F6"
-              onPress={() => handleUserSelect(item.id)}
-            >
-              <Text style={[styles.btnText, { color: 'grey' }]}>
-              {selectedOption === 'p' && 'Select'}
-              {selectedOption === 'a' && 'Un-select'}
-              </Text>
-            </TouchableHighlight>
-            </>
+  <TouchableHighlight
+    style={[styles.btn2]}
+    underlayColor="#F1F2F6"
+    onPress={() => handleUserSelect(item.id)}
+  >
+    <Text style={[styles.btnText, { color: 'rgba(30,49,157,0.7)' }]}>
+      {selectedOption === 'p' && 'Select'}
+      {selectedOption === 'a' && 'De-select'}
+    </Text>
+  </TouchableHighlight>
+</View>
 
-        </View>
         
       </View>
         </TouchableHighlight>
@@ -587,13 +589,13 @@ const handleMessage = (touserid, tousername) => {
 
   return (
     <>   
-      <View style={{backgroundColor:"#fff", flex:1
+      <View style={{backgroundColor:"#fff", flex:1,
     }}>
       <FlatList
+      showsVerticalScrollIndicator={false}
         ref={flatListRef}
         data={usersData} // Pass the usersData as the data for the FlatList
         ListHeaderComponent={PostDetailsInfo}
-        // ListFooterComponent={()=>{return(<View style={{margin:10}}></View>)}}
         renderItem={renderUserItem} // Use the renderUserItem function to render each item
         ListEmptyComponent={()=>{
           return(
@@ -645,11 +647,11 @@ const styles = StyleSheet.create({
     marginHorizontal:2.5,
     },
     btn2:{ 
-    borderColor:'#000',
+    borderColor:'rgba(30,49,157,0.7)',
     borderWidth:0.25, 
-    borderRadius:25, 
-    marginHorizontal:5,
-    paddingHorizontal:20
+    borderRadius:5, 
+    // marginHorizontal:5,
+    paddingHorizontal:10,
     },
     btnText:{
     paddingVertical:10,  
@@ -661,7 +663,6 @@ const styles = StyleSheet.create({
     marginVertical:20,
     marginHorizontal:10,
     borderRadius: 5,
-    marginBottom:0,
     borderWidth:.25,
     borderColor:"grey"
   },

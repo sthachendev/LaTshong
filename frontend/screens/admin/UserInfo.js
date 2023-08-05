@@ -219,6 +219,8 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
               disabled
               />
 
+            </ScrollView>
+
             <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(255,0,0,.7)', marginVertical:10,
             width:'100%', borderWidth:0.25, borderRadius:25}} 
               underlayColor='rgba(255,0,0,.1)'  
@@ -229,7 +231,6 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
                 Delete Account
                 </Text>
               </TouchableHighlight>
-            </ScrollView>
 
         </View>
 

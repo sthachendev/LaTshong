@@ -7,7 +7,6 @@ import { getFileSize } from "../fn";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { ScrollView } from "react-native";
 import { useSelector } from "react-redux";
-import { ActivityIndicator } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import Spinner from '../custom/Spinner';
 
@@ -16,6 +15,7 @@ const AdminHome = () => {
     const token = useSelector(state => state.token);
 
     const [data, setData] = useState({});
+    const [loading, setLoading] = useState(false);
 
     const isFocused = useIsFocused();
 
@@ -25,6 +25,7 @@ const AdminHome = () => {
     }, [isFocused]);
 
     const getUserData = () => {
+      setLoading(true);
     axios
         .get(`${config.API_URL}/api/dashboard`, {
         headers: {
@@ -34,13 +35,14 @@ const AdminHome = () => {
         .then((res) => {
         console.log(res.data);
         setData(res.data); // Update the state with the data received from the API
+        setLoading(false);
         })
         .catch((e) => {
         console.log(e.response.data);
         });
     };
 
-    if (!data) return <Spinner/>
+    if (loading) return <Spinner/>
 
     return (
     <ScrollView style={styles.container}>
