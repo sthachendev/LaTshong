@@ -1,5 +1,3 @@
--- tableSchema.sql
-
 -- users table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
@@ -15,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     created_on TIMESTAMP NOT NULL
 );
 
+-- job_posts table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS job_posts (
     id BIGSERIAL PRIMARY KEY,
     job_title VARCHAR(255),
@@ -25,68 +24,69 @@ CREATE TABLE IF NOT EXISTS job_posts (
     job_salary VARCHAR(255),
     location_ VARCHAR(255),
     remark TEXT,
-    postby INTEGER NOT NULL,
-    postdate TIMESTAMP, --
-    closedate TIMESTAMP, --
+    postby INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    postdate TIMESTAMP,
+    closedate TIMESTAMP,
     location JSON, 
-    status CHAR(1), ---o open, c close
+    status CHAR(1),---o open, c close
     applicants INTEGER[] DEFAULT '{}',
     accepted_applicants INTEGER[] DEFAULT '{}',
     reportedby INTEGER[] DEFAULT '{}'
 );
 
--- chat_rooms table
+-- chat_rooms table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS chat_rooms (
     id SERIAL PRIMARY KEY,
     room_id UUID NOT NULL,
-    user1 INTEGER NOT NULL,
-    user2 INTEGER NOT NULL
+    user1 INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user2 INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
--- message table
+-- message table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS messages (
     id BIGSERIAL PRIMARY KEY,
     room_id UUID NOT NULL,
-    userid INTEGER NOT NULL,
+    userid INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     message TEXT NOT NULL,
     message_type CHAR(1) DEFAULT 't',--- t text, a attachment applications, mp3, mp4, (video/ audio)
     --t for text
     --a for attachement
     --i for image
     date TIMESTAMP NOT NULL
-    -- read BOOLEAN DEFAULT FALSE -- New column for tracking read status of the message
 );
 
--- Creating the 'attachment_details' table
+-- Creating the 'attachment_details' table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS attachment_details (
     id BIGSERIAL PRIMARY KEY,
     file_name TEXT NOT NULL,
     file_size BIGINT NOT NULL,
     file_uri TEXT NOT NULL,
     file_type VARCHAR(255),
-    message_id BIGINT NOT NULL,
-    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
+    message_id BIGINT NOT NULL REFERENCES messages(id) ON DELETE CASCADE
 );
 
+-- posts table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS posts (
     id BIGSERIAL PRIMARY KEY,
     images TEXT[] DEFAULT '{}',
-    postby INTEGER NOT NULL,
+    postby INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     postdate TIMESTAMP
 );
 
+-- feed_posts table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS feed_posts (
     id BIGSERIAL PRIMARY KEY,
     _desc TEXT,
     media_uri TEXT[] DEFAULT '{}',
-    media_type CHAR(1), --p pictures, v video
-    postby INTEGER NOT NULL,--userid
+    media_type CHAR(1), ---p pictures v video
+    postby INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     postdate TIMESTAMP,
     reportedby INTEGER[] DEFAULT '{}'
 );
 
+-- user_saved_posts table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS user_saved_posts (
     id SERIAL PRIMARY KEY,
     postid INTEGER[] DEFAULT '{}',
-    userid INTEGER NOT NULL
+    userid INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );

@@ -13,7 +13,7 @@ export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby, po
     
     const handleReport = async () => {
         try {
-        const res = await axios.post(`${config.API_URL}/api/add_reportedby_job_post/${postid}/${userid}`,{}, {
+        const res = await axios.post(`${config.API_URL}/api/add_reportedby_feed_post/${postid}/${userid}`,{}, {
         headers: {
             Authorization: `Bearer ${token}`,
             }

@@ -2,7 +2,7 @@ import jwtDecode from 'jwt-decode';
 import { useSelector } from 'react-redux';
 import UserInfo from "./userInfo";
 import { useState, useEffect } from "react";
-import { FlatList, Text, View, ToastAndroid, Image, Alert } from "react-native";
+import { FlatList, Text, View, ToastAndroid, Image, Alert, ActivityIndicator } from "react-native";
 import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
 import config from "../config";
@@ -24,19 +24,22 @@ export default Profile = ({navigation}) => {
 
   const [image, setImage] = useState(null);
 
-  console.log(userid);
-
   const [data, setData] = useState([]);
   const [feedsData, setFeedsData] = useState('');
 
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [feedLoading, setFeedLoading] = useState(false);
 
   const isFocused = useIsFocused();
  
   useEffect(()=>{
     if(isFocused){
-      getPost();
-      getFeedPost();
+      if (role === 'em') {
+        getFeedPost();
+      } else if (role === 'js'){
+        getPost();
+      }
     }
     return () => {
      setData('');
@@ -60,17 +63,43 @@ export default Profile = ({navigation}) => {
     }
   }
 
-  const getFeedPost = async() => {
+  const getFeedPost = async () => {
     try {
-      setLoading(true);
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}`);
-      console.log('getFeedPost', res.data);
-      setFeedsData(res.data)
-      setLoading(false);
+      setFeedLoading(true);
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}`, {
+        params: { page: 1, pageSize: 5 },
+      });
+      if (res.data.length > 0) {
+        setPage(2); // Set page to 2 since we already fetched the first page
+        setFeedsData(res.data); // Set feedsData with the fetched data (no need to concatenate)
+      } else {
+        setFeedsData([]); // If no data received, set an empty array
+      }
     } catch (error) {
-      console.error(error)
+      console.error(error);
+    } finally {
+      setFeedLoading(false);
     }
-  }
+  };
+
+  const loadMorePosts = async () => {
+    if (feedLoading) return;
+
+    setFeedLoading(true);
+    try {
+      const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
+        params: { page: page + 1, pageSize: 5 },
+      });
+      if (res.data.length > 0) {
+        setPage(page + 1);
+        setFeedsData((prevData) => [...prevData, ...res.data]); // Concatenate new data with previous data
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setFeedLoading(false);
+    }
+  };
 
   //upload image //profile image
   const handleUpload = async () => {
@@ -216,7 +245,6 @@ const keyExtractor = (item) => item.id.toString();
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       showsHorizontalScrollIndicator={false}
-      maxToRenderPerBatch={3} // Adjust this value based on your needs
     />
     }
      {role === 'em' && 
@@ -225,14 +253,16 @@ const keyExtractor = (item) => item.id.toString();
     ListHeaderComponent={()=>  <UserInfo userid={userid} navigation={navigation} image={image} setImage={setImage} 
     handleUpload={handleUpload} role={role}
     setIsModalVisible={setIsModalVisible} />}
-      data={feedsData}
-      renderItem={({item})=><FeedPosts item={item} role={role} navigation={navigation} getFeedPost={getFeedPost}/>}
-      keyExtractor={keyExtractor}
-      showsHorizontalScrollIndicator={false}
-      maxToRenderPerBatch={3} // Adjust this value based on your needs
-      // ListFooterComponent={() => {
-      //   role === 'em' && <UserFeedPosts data={feedsData} role={role} navigation={navigation} />
-      // }}
+    data={feedsData}
+    renderItem={({item})=><FeedPosts item={item} role={role} navigation={navigation} getFeedPost={getFeedPost}/>}
+    keyExtractor={keyExtractor}
+    showsHorizontalScrollIndicator={false}
+    maxToRenderPerBatch={5} // Adjust this value based on your needs
+    onEndReached={loadMorePosts} // Call loadMorePosts when the user scrolls near the end
+    onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
+    ListFooterComponent={<>
+      {feedLoading && <ActivityIndicator size='small' color='#1E319D'/>}
+      </>}
     />
     }
     </View>

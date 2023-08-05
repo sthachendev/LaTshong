@@ -7,12 +7,15 @@ import jwtDecode from "jwt-decode";
 import { capitalizeWords, getTimeDifference, getTimeDifference2 } from "../fn";
 import { TouchableHighlight } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
+import Spinner from "../custom/Spinner";
 
 const Chat = ({navigation}) => {
   const [chatRooms, setChatRooms] = useState([]);
 
   const token = useSelector((state) => state.token)
   const id = jwtDecode(token).userid;
+
+  const [loading, setLoading] = useState(false);
 
   const isFocused = useIsFocused();
 
@@ -27,6 +30,7 @@ const Chat = ({navigation}) => {
 
   const fetchChatRooms = async () => {
     try {//userid id
+      setLoading(true);
       const response = await axios.get(`${config.API_URL}/api/chat_rooms/${id}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -34,11 +38,14 @@ const Chat = ({navigation}) => {
         }
       });
       setChatRooms(response.data);
-      console.log(response.data);
+      if (response.data) setLoading(false);
+      // console.log(response.data);
     } catch (error) {
       console.error(error);
     }
   };
+
+  if (loading) return <Spinner/>
 
   return (
     <View style={{flex:1, backgroundColor:'#fff'}}>

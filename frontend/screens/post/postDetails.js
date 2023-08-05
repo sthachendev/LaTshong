@@ -27,6 +27,8 @@ export default PostDetails = ({ route, navigation }) => {
   const token = useSelector((state)=>state.token);
   const userid = token ? jwtDecode(token).userid : null;
 
+  const [postStatus, setPostStatus] = useState(true);
+
   useEffect(() => {
     console.log('userid',id);
     if(id)
@@ -55,7 +57,7 @@ const getJobPost = async () => {
     setLoading(true);
       const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);//no need to add token
       setData(res.data);
-   
+      setPostStatus(res.data[0].status);
     setLoading(false);
     // console.log(res.data[0].postby);
     const applicants = res.data[0].applicants;
@@ -82,15 +84,14 @@ const getJobPost = async () => {
       setUserData(applicants2);
       setApplicants(applicants2);
       setAcceptedApplicants(acceptedApplicants2);
-
-      console.log(applicants2,'applicants2')
-      console.log(acceptedApplicants2,'acceptedApplicants2')
-
-      setLoading(false);
+      // console.log(applicants2,'applicants2')
+      // console.log(acceptedApplicants2,'acceptedApplicants2')
     }
 
   } catch (error) {
     console.error(error);
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -380,9 +381,9 @@ const handleMessage = (touserid, tousername) => {
       <View style={{display:"flex", flexDirection:"row",}}>
 
         {data[0].imageurl !== null ? 
-        <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25}} />
+        <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25, borderColor:"lightgrey", borderWidth:1,}} />
         :
-        <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20}}/>
+        <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20, borderColor:"lightgrey", borderWidth:1}}/>
         }
 
         <View>
@@ -441,7 +442,7 @@ const handleMessage = (touserid, tousername) => {
           {role !== 'em' &&
             <>
             <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(30,49,157,0.7)',borderWidth:0.25, flex:.45, borderRadius:25 }} underlayColor="#F1F2F6"  
-            onPress={()=>navigation.navigate('ViewProfile', { userid: data[0].postby })}
+            onPress={()=>{token ? navigation.navigate('ViewProfile', { userid: data[0].postby }) : navigation.navigate('Login')}}
             >
               <Text style={{ paddingVertical:10,  textAlign:"center", color:'rgba(30,49,157,0.7)' }}>
                 View Profile
@@ -621,13 +622,13 @@ const handleMessage = (touserid, tousername) => {
         display:"flex", flexDirection:"row", padding:10, paddingVertical:15,
         justifyContent: role !== 'em' ? "space-around": "flex-end"}}>
             <TouchableHighlight style={{ borderColor:'grey',borderWidth:0.25, flex:.9, borderRadius:25, backgroundColor:'#1E319D'}} underlayColor="#1E319D"  
-            onPress={()=>handleApply(id)}>
+            onPress={()=>{postStatus === 'o' && handleApply(id)}}>
               <Text style={{ paddingVertical:10, textAlign:"center", color:'#fff', }}>
               {isApply ? 'Applied': 'Apply Now'}
               </Text>
             </TouchableHighlight>
             <TouchableHighlight style={{color:"grey", borderColor:'rgba(30,49,157,0.3)', borderWidth:2, borderRadius:25,}} 
-            onPress={()=>handlePostSave(data[0].id)} 
+            onPress={()=>{token ? handlePostSave(data[0].id) : navigation.navigate('Login')}} 
             // underlayColor='rgba(49, 105, 210, 0.5)'
             underlayColor="#F1F2F6">
             <Icon name="bookmark-outline" size={20} color="rgba(30,49,157,0.7)" style={{padding:10}}/>

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, RefreshControl } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useEffect, useState, useRef} from 'react';
@@ -28,6 +28,12 @@ export default Home = () => {
   const [data, setData] = useState('');
   const [feedsData, setFeedsData] = useState('');
   
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);  
+  
+  const [JobPostPage, setJobPostPage] = useState(1);
+  const [JobPostLoading, setJobPostLoading] = useState(false);
+
   useEffect(()=>{
     if(isFocused){
       getJobPost();
@@ -44,12 +50,21 @@ export default Home = () => {
     try {
       if (role === 'em') {
         const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`);
-        console.log('getJobPost', res.data);
+        // console.log('getJobPost', res.data);
         setData(res.data)
       }else{
-        const res = await axios.get(`${config.API_URL}/api/get_job_post`);
-        console.log('getJobPost', res.data);
-        setData(res.data)
+        setJobPostLoading(true);
+        const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
+          params: { page: 1, pageSize: 5 },});
+        // console.log('getJobPost', res.data);
+        setData(res.data);
+        if (res.data.length > 0) {
+          setJobPostPage(2); // Set page to 2 since we already fetched the first page
+          setData(res.data); // Set feedsData with the fetched data (no need to concatenate)
+        } else {
+          setFeedsData([]); // If no data received, set an empty array
+        }
+        if (res.data) setJobPostLoading(false);
       }
     
     } catch (error) {
@@ -57,44 +72,44 @@ export default Home = () => {
     }
   }
 
-  const getFeedPost = async() => {
-    setLoading(true);
+  const getFeedPost = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-        params: { page, pageSize: 10 }, // Adjust pageSize based on your needs
+        params: { page: 1, pageSize: 5 },
       });
       if (res.data.length > 0) {
-        setPage(page + 1);
-        setFeedsData([...feedsData, ...res.data]);
+        setPage(2); // Set page to 2 since we already fetched the first page
+        setFeedsData(res.data); // Set feedsData with the fetched data (no need to concatenate)
+      } else {
+        setFeedsData([]); // If no data received, set an empty array
       }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-const [page, setPage] = useState(1);
-const [loading, setLoading] = useState(false);
+  const loadMorePosts = async () => {
+    if (loading) return;
 
-const loadMorePosts = async () => {
-  if (loading) return;
-
-  setLoading(true);
-  try {
-    const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-      params: { page, pageSize: 10 }, // Adjust pageSize based on your needs
-    });
-    if (res.data.length > 0) {
-      setPage(page + 1);
-      setFeedsData([...feedsData, ...res.data]);
+    setLoading(true);
+    try {
+      const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
+        params: { page: page + 1, pageSize: 5 },
+      });
+      if (res.data.length > 0) {
+        setPage(page + 1);
+        setFeedsData((prevData) => [...prevData, ...res.data]); // Concatenate new data with previous data
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
 
 const handleScrollLoadMore = (event) => {
   const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
@@ -242,7 +257,7 @@ const handleScrollLoadMore = (event) => {
             renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} 
             selectedItem={selectedItem} setSelectedItem={setSelectedItem} getFeedPost={getFeedPost}/>}
             keyExtractor={(item) => item.id.toString()}
-            maxToRenderPerBatch={3} // Adjust this value based on your needs
+            maxToRenderPerBatch={5} // Adjust this value based on your needs
             ListEmptyComponent={()=>{
               return(
                 <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No posts</Text>
@@ -252,9 +267,14 @@ const handleScrollLoadMore = (event) => {
               {length: 500, offset: 500 * index, index}
             )}
             onScroll={handleScroll} // Add onScroll event to track the scroll position
+            onEndReached={loadMorePosts} // Call loadMorePosts when the user scrolls near the end
+            onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
+            ListFooterComponent={<>
+            {loading && <ActivityIndicator size='small' color='#1E319D'/>}
+            </>}
           />
       }
 

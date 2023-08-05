@@ -11,12 +11,16 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { TouchableHighlight } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { ScrollView } from "react-native";
+import { ActivityIndicator } from "react-native";
+import Spinner from "../custom/Spinner";
 
 export default function Login({navigation}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [hide, setHide] = useState(false);
   const [isPasswordSecure, setIsPasswordSecure] = useState(true);
+
+  const [loading, setLoading] = useState(false);
 
   const [message, setMessage] = useState("");
 
@@ -33,13 +37,14 @@ export default function Login({navigation}) {
 
   const handleLogin = async() => {
    if(email.trim() !== "" && password.trim() !== ""){
+    setLoading(true);
     try {
       const response = await axios.post(`${config.API_URL}/api/login`, {
         email:email.trim(),
         password,
       });
       console.log(response.data);
-
+      if (response.data) setLoading(false);
       console.log(jwtDecode(response.data.token).role)
       dispatch(setToken(response.data.token));
       dispatch(setRole(jwtDecode(response.data.token).role))
@@ -71,6 +76,9 @@ export default function Login({navigation}) {
       setIsPasswordSecure(true)
     }
   }
+
+  // if(loading) return <Spinner/>
+
   return (
     <ScrollView style={{backgroundColor:'#fff', flex:1}}>
 
@@ -164,7 +172,7 @@ export default function Login({navigation}) {
           </View>
 
           <TouchableHighlight style={styles.button} onPress={handleLogin} underlayColor='#1E319D'>
-            <Text style={styles.buttonText}>Login</Text>
+            <Text style={styles.buttonText}>{loading ? <ActivityIndicator size='small' color="#fff" /> : 'Log In'}</Text>
           </TouchableHighlight>
 
     <View style={{flexDirection:'row', marginTop:70, justifyContent:'center', marginBottom:10}}>

@@ -1,6 +1,6 @@
 import { Text, View, Modal, TouchableWithoutFeedback, TouchableHighlight, Image, StyleSheet,
-    ToastAndroid, TouchableOpacity, TextInput} from "react-native";
-import { useState } from "react";
+    ToastAndroid, TouchableOpacity, TextInput, ActivityIndicator} from "react-native";
+import { useState} from "react";
 import axios from "axios";
 import config from "../config";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -16,6 +16,8 @@ export default FeedPost = ({isModalVisible, setIsModalVisible, userid, getFeedPo
   const [desc, setDesc] = useState("");
 
   const [modalVisible, setModalVisible] = useState(false);//image viewer
+
+  const [isPosting, setIsPosting] = useState(false);
 
   const pickImage = async () => {
     try {
@@ -52,8 +54,11 @@ export default FeedPost = ({isModalVisible, setIsModalVisible, userid, getFeedPo
     }
   };
   
+  const [uploadProgress, setUploadProgress] = useState(0);
+
   const handlePost = async () => {
     try {//id | _desc | media_uri | media_type | postby | postdate
+      setIsPosting(true);
       const formData = new FormData();
       formData.append('postby', userid);
       formData.append('_desc', desc);
@@ -76,6 +81,10 @@ export default FeedPost = ({isModalVisible, setIsModalVisible, userid, getFeedPo
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent) => {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(progress);
+        },
       });
       getFeedPost();
       setMedia(null);
@@ -85,6 +94,9 @@ export default FeedPost = ({isModalVisible, setIsModalVisible, userid, getFeedPo
       console.log('posted')
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsPosting(false);
+      setUploadProgress(0);
     }
   };
 
@@ -97,6 +109,15 @@ export default FeedPost = ({isModalVisible, setIsModalVisible, userid, getFeedPo
             height: "100%", 
             elevation:2
         }}>
+
+      {isPosting && (
+        <Modal transparent={true}>
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+            <ActivityIndicator size="large" color="#0000ff" />
+            <Text>Uploading: {uploadProgress}%</Text>
+          </View>
+        </Modal>
+      )}
         {media && media.mimeType.startsWith('image/') &&
       <ImageViewer uri={media.uri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>}
 

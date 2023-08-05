@@ -43,8 +43,8 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
 
   const handleDelete = (postid) => {
     Alert.alert(
-      "Do you want to delete the user?",
-      "User will be permanently deleted.",
+      "Do you want to delete the post?",
+      "Post will be permanently deleted.",
       [
           {
               text: 'Delete',
@@ -62,22 +62,47 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
   }
   
   const deletePost = async (postid) => {
-      try {
-      const res = await axios.delete(`${config.API_URL}/api/delete_user/${postid}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+        console.log(post.posttype);
+
+        if (post.posttype === 'feed_post') {
+          try {
+          const res = await axios.delete(`${config.API_URL}/api/delete_feed_post/${postid}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            }
+          });
+        
+            console.log(res.status)
+            if (res.status === 200) {
+              fetchData();
+              setIsModalVisible(false);
+              setPost('');
+              ToastAndroid.show("Post Deleted", ToastAndroid.SHORT);
+            }
+          } catch (error) {
+          console.log(error);
+          }
+        }else if (post.posttype === 'job_post') {
+          try {
+            const id = postid;
+            const res = await axios.delete(`${config.API_URL}/api/delete_job_post/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              }
+            });
+          
+            console.log(res.status)
+            if (res.status === 200) {
+              fetchData();
+              setIsModalVisible(false);
+              setPost('');
+              ToastAndroid.show("Post Deleted", ToastAndroid.SHORT);
+            }
+            } catch (error) {
+            console.log(error);
+            }
         }
-      });
      
-      console.log(res.status)
-      if (res.status == 200){
-          fetchData();
-          setIsModalVisible(false)
-          ToastAndroid.show("User Deleted", ToastAndroid.SHORT);
-      }
-      } catch (error) {
-      console.log(error);
-      }
   };
 
   const [modalVisible, setModalVisible] = useState(false);//image viewer
@@ -195,8 +220,8 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
 
         <View style={{display:'flex', flexDirection:'row', justifyContent:'flex-end', marginBottom:5}}>
           <Text style={{color:"grey", fontSize:12, textAlignVertical:'center', marginLeft:5}}>
-            {data[0].status == 'o' && 'Open ~ '}{data[0].status == 'o' && getTimeDifference(data[0].postdate)}
-            {data[0].status == 'c' && 'Closed ~ '}{data[0].status == 'c' && getTimeDifference(data[0].closedate)}</Text>
+            {data[0]?.status == 'o' && 'Open ~ '}{data[0]?.status == 'o' && getTimeDifference(data[0]?.postdate)}
+            {data[0]?.status == 'c' && 'Closed ~ '}{data[0]?.status == 'c' && getTimeDifference(data[0]?.closedate)}</Text>
             
         </View>
       

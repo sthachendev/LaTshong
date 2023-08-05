@@ -25,12 +25,12 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
     <FeedPostsOption isModalVisible={isModalVisible2} setIsModalVisible={setIsModalVisible2} postby={item.postby} postid={item.id} 
     getFeedPost={getFeedPost}/>
 
-  <View style={{ paddingVertical:10}}>
-    <View style={{display:"flex", flexDirection:'row', paddingTop:10, paddingHorizontal:15}}>
+  <View style={{ paddingTop:10}}>
+    <View style={{display:"flex", flexDirection:'row', paddingHorizontal:15}}>
       {item.imageurl !== null ? //profile image
       <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{width:40, height:40,  borderRadius: 25, borderColor:"lightgrey", borderWidth:1}} />
       :
-      <Ionicons name="person-circle-outline" size={45} color="grey" />
+      <Image source={require("../../assets/images/default.png")} style={{width:50, height:50, borderRadius:25, borderColor:"lightgrey", borderWidth:1}} />
       }
       <View style={{flex:1}}>
 
@@ -62,12 +62,12 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
   <View style={{marginTop: 10}}/>
   }
 
-    {item.media_type === 'i' &&
+    {item.media_type === 'i' && // i image
     <>
     <TouchableOpacity onPress={()=>setModalVisible(true)} activeOpacity={1}>
       <Image
         source={{ uri: `${config.API_URL}/${item.media_uri}` }}
-        style={{ width: '100%', height: 250, borderColor:"lightgrey", borderWidth:1  }}
+        style={{ width: '100%', height: 250 }}
         resizeMode="cover" // This ensures the image fills the container without distorting its aspect ratio
       />    
        <Ionicons
@@ -79,7 +79,7 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
     </TouchableOpacity>
     </>}
     
-    {item.media_type === 'v' &&
+    {item.media_type === 'v' && // v --video
     <>
         {/* <VideoPlayer  videoUri={`${config.API_URL}/${item.media_uri}`} /> */}
         <Video
@@ -98,10 +98,10 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 const styles = StyleSheet.create({
     itemContainer: {
       backgroundColor: '#fff',
-      borderColor:"lightgrey", borderWidth:1,
-      marginBottom:5,
+      // borderColor:"lightgrey", borderWidth:1,
+      paddingBottom:10,
       // borderRadius: 5,
-      // marginBottom:0,
+      marginBottom:5,
       // borderColor:'rgba(49, 105, 210, 0.5)',
       // borderBottomWidth:0.5,
       // elevation: 2, // Add elevation for shadow effect (Android)

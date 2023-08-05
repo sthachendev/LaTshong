@@ -859,7 +859,7 @@ app.patch('/api/feed_post', upload, async (req, res) => {
 //   }
 // });
 
-//get all feed posts
+//get all feed posts //pagination //home.js
 app.get('/api/feed_posts', async (req, res) => {
   try {
     const { page, pageSize } = req.query;
@@ -908,20 +908,22 @@ app.get("/api/get_feed_post/:id", async (req, res) => {//postid
   }
 });
 
-
-// Get all feed posts by a specific user in a specific order //see if this is used
+// Get all feed posts by a specific user in a specific order with pagination // user profile
 app.get('/api/feed_posts/:userid', async (req, res) => {
   try {
     const { userid } = req.params;
+    const { page = 1, pageSize = 5 } = req.query;
+    const offset = (page - 1) * pageSize;
 
-    // Fetch feed posts from the database, joined with user information, filtered by userid, and ordered by postdate in descending order (latest first)
+    // Fetch feed posts from the database, joined with user information, filtered by userid, ordered by postdate in descending order (latest first), and apply pagination
     const { rows } = await pool.query(`
       SELECT feed_posts.*, users.name, users.imageurl
       FROM feed_posts
       INNER JOIN users ON feed_posts.postby = users.id
       WHERE feed_posts.postby = $1
       ORDER BY feed_posts.postdate DESC
-    `, [userid]);
+      LIMIT $2 OFFSET $3
+    `, [userid, pageSize, offset]);
 
     res.status(200).json(rows);
   } catch (err) {
@@ -929,6 +931,7 @@ app.get('/api/feed_posts/:userid', async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
+
 
 // API endpoint to add data to the user_saved_posts table //token
 app.post('/api/user_saved_post', authenticateTokenAPI, async (req, res) => {
@@ -1289,6 +1292,7 @@ app.post("/api/add_reportedby_job_post/:postid/:userid", authenticateTokenAPI, a
     res.status(500).json({ error: "An error occurred while updating the reportedby array." });
   }
 });
+
 
 // app.listen(3000, () => {
 //     console.log("Server listening on port 3000");
