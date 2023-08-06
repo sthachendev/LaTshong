@@ -62,7 +62,7 @@ export default Home = () => {
           setJobPostPage(2); // Set page to 2 since we already fetched the first page
           setData(res.data); // Set feedsData with the fetched data (no need to concatenate)
         } else {
-          setFeedsData([]); // If no data received, set an empty array
+          setData([]); // If no data received, set an empty array
         }
         if (res.data) setJobPostLoading(false);
       }
@@ -110,13 +110,39 @@ export default Home = () => {
     }
   };
 
-
 const handleScrollLoadMore = (event) => {
   const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
   const isNearEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
   if (isNearEnd) {
     loadMorePosts();
   }
+};
+
+const loadMoreJobPosts = async () => {
+  if (loading) return;
+
+  setLoading(true);
+  try {
+    const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
+      params: { page: page + 1, pageSize: 5 },
+    });
+    if (res.data.length > 0) {
+      setPage(page + 1);
+      setFeedsData((prevData) => [...prevData, ...res.data]); // Concatenate new data with previous data
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleScrollLoadMoreJobPosts = (event) => {
+const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+const isNearEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
+if (isNearEnd) {
+  loadMoreJobPosts();
+}
 };
 
   const onRefresh = async () => {
