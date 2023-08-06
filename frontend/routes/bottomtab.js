@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setToken, setRole } from '../reducers'; 
+import { setToken, setRole, setUnreadCount, clearUnreadCount } from '../reducers'; 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import Home from '../screens/home/home';
@@ -15,6 +15,10 @@ import { DrawerToggleButton } from "@react-navigation/drawer";
 import adminHome from "../screens/admin/adminHome";
 import contentManagement from "../screens/admin/contentManagement";
 import userManagement from "../screens/admin/userManagement";
+import createSocket from "../screens/socketConfig";
+import jwtDecode from "jwt-decode";
+import config from "../screens/config";
+import axios from "axios";
 
 const Tab = createBottomTabNavigator();
 
@@ -36,10 +40,32 @@ function BottomTab() {
     };
   
     getToken();
+
   }, [dispatch]);
   
   const token = useSelector((state) => state.token);
   const role = useSelector((state) => state.role);
+  const userid = token ? jwtDecode(token).userid : null;
+
+  const unread_count = useSelector((state) => state.unread_count)
+
+  const getUnreadCount = () => {
+    console.log(userid)
+    axios.get(`${config.API_URL}/api/unread_count/${userid}`)
+    .then(res=>{
+      console.log(res.data)
+      if (res.data.unreadCount > 0 ) {
+        dispatch(setUnreadCount(true))
+      } else { 
+        dispatch(setUnreadCount(null))
+      }
+    })
+    .catch(e=>console.log(e))
+  }
+
+  useEffect(() => {
+    getUnreadCount()
+  }, [userid]);
 
   return (
     <Tab.Navigator
@@ -153,6 +179,17 @@ function BottomTab() {
               tabBarLabel: "Message",
               headerTitle: "Message",
               headerTitleAlign:'center',
+              tabBarBadge: unread_count,
+              tabBarBadgeStyle: {
+                minWidth: 12,
+                maxHeight: 12,
+                borderRadius: 6,
+                fontSize: 10,
+                lineHeight: 13,
+                alignSelf: undefined,
+                borderColor:'#fff',
+                borderWidth:2
+              },
             }}
           />
           <Tab.Screen

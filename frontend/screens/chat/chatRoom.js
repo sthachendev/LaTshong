@@ -2,7 +2,7 @@ import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ToastAndroid } from 'react-native';
 import io from 'socket.io-client';
 import config from '../config';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
 import Icon from "react-native-vector-icons/Ionicons";
 import { isToday, isSameDate, getTime, getFileSize } from '../fn';
@@ -16,6 +16,8 @@ import ImageViewer from '../custom/ImageViewer';
 import { ProgressBar } from 'react-native-paper';
 import * as Sharing from 'expo-sharing';
 const { StorageAccessFramework } = FileSystem;
+import createSocket from '../socketConfig';
+import { clearUnreadCount, setUnreadCount } from '../../reducers';
 
 export default ChatRoom = ({route, navigation}) => {
 
@@ -30,11 +32,15 @@ export default ChatRoom = ({route, navigation}) => {
     });
   }, [navigation, route.params.title, imageurl]);
   // Create the Socket.IO connection
-  const socket = io(config.API_URL, {
-    auth: {
-    token: token, // Set the actual token retrieved from Redux
-    },
-    });
+  // const socket = io(config.API_URL, {
+  //   auth: {
+  //   token: token, // Set the actual token retrieved from Redux
+  //   },
+  //   });
+
+  const dispatch = useDispatch();
+
+  const socket = createSocket(token);
 
   //user input
   const [message, setMessage] = useState('');
@@ -44,20 +50,39 @@ export default ChatRoom = ({route, navigation}) => {
     
   useEffect(() => {
     // Connect to Socket.IO when the component mounts
-    socket.connect();
+    // socket.connect();
     //send uid to check for chat room id
     socket.emit('joinChat', { user1:userid, user2:touserid});
 
     // Listen for the 'roomJoined' event to receive the room ID from the backend
     socket.on('roomJoined', (data) => {
         const { roomId } = data;
-        // console.log(`Joined chat room with room ID: ${roomId}`);
+        console.log(`Joined chat room with room ID: ${roomId}`);
         setRoomId(roomId); // Update the component state with the room ID
-      });
+        
+      socket.emit('markRoomMessagesAsRead', { roomId, userid });
+      socket.emit('UnReadMessage', { userid });
+      console.log(`Joined chat room with room ID: ${roomId}`);
+    });
+
+    
+    socket.on('UnReadMessageResult', (data) => {
+
+      console.log(data);
+      if (data > 0) {
+      // setUnreadMessages(true);
+      dispatch(setUnreadCount(true))
+      console.log('unread msg')
+      } else {
+      // setUnreadMessages(null);
+      dispatch(clearUnreadCount())
+      console.log('all read msg')
+      }
+    });
 
       socket.on('fetchMessages', (data) => {
         const { messages} = data;
-        console.log(messages,'messages')
+        // console.log(messages,'messages')
         setMessages(messages.reverse());
         // scrollToBottom();
       });    
@@ -94,10 +119,6 @@ export default ChatRoom = ({route, navigation}) => {
       // Example: socket.off('eventFromServer', handleEventFromServer);
     };
   }, []);
-
-  // function markMessageAsRead(messageId) {
-  //   socket.emit('markMessageAsRead', { messageId });
-  // }
 
   const sendMessage = (message) => {
     // Emit the message event to the server
@@ -262,7 +283,6 @@ const saveAndroidFile = async (fileUri, fileName) => {
     }
   };
 
-
   if (!messages) return <Spinner/>
 
   return (
@@ -386,7 +406,7 @@ const saveAndroidFile = async (fileUri, fileName) => {
       :
       <TouchableOpacity
         style={{
-          backgroundColor: msg.userid === userid ? '#373B58' : '#F0F0F0',
+          backgroundColor: msg.userid === userid ? 'rgba(30,49,157,0.7)' : '#F0F0F0',
           borderRadius: 20,
           borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
           borderBottomRightRadius: msg.userid === userid ? 0 : 20,

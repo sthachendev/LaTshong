@@ -78,10 +78,21 @@ const Chat = ({navigation}) => {
               </Text>
 
               <View style={{flex:1, flexDirection:'row', justifyContent:'space-between'}}>
-                <Text style={{ fontSize:12, paddingLeft:10, textAlignVertical:'center', color:'grey', paddingTop:5}}>
-                {item.message_by_userid === id ? 'Message Sent' : 'Message Recieved'}
+                <View style={{flexDirection:'row', paddingTop:5}}>
+                <Text style={{ fontSize:12, paddingLeft:10, textAlignVertical:'center', color:'grey',}}>
+                {item.message_by_userid === id ? 'Message Sent' : 'Message Recieved '}
                 </Text>
-                <Text style={{textAlign:'right', textAlignVertical:'bottom', fontSize:12, color:'grey'}}>{getTimeDifference2(item.date)}</Text>
+                {
+                  item.message_by_userid !== id && item.unread_count>0 &&  
+                  <Text style={{   backgroundColor: 'rgba(30,49,157,0.7)', fontSize:12, color:'#fff',
+                    borderRadius: 50, width: 20, height: 20, textAlign:'center', textAlignVertical:'center'}}>
+                    { item.unread_count}
+                  </Text>
+                }
+               
+                </View>
+
+         <Text style={{textAlign:'right', textAlignVertical:'bottom', fontSize:12, color:'grey'}}>{getTimeDifference2(item.date)}</Text>
               </View>
              
             </View>

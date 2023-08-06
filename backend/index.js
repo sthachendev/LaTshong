@@ -479,9 +479,10 @@ app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
 
     const roomIds = chatRooms.map((room) => room.room_id);
     const messagesQuery = `
-      SELECT DISTINCT ON (room_id) *
+      SELECT DISTINCT ON (room_id) *,
+        COUNT(*) FILTER (WHERE unread = true) OVER (PARTITION BY room_id) AS unread_count
       FROM messages
-      WHERE room_id::text = ANY($1)
+      WHERE room_id = ANY($1)
       ORDER BY room_id, date DESC;
     `;
     const messagesValues = [roomIds];
@@ -504,6 +505,7 @@ app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
         message_type: latestMessage ? latestMessage.message_type : null,
         date: latestMessage ? latestMessage.date : null,
         message_by_userid: latestMessage ? latestMessage.userid : null,
+        unread_count: latestMessage ? latestMessage.unread_count : 0,
       };
     });
 
@@ -1293,6 +1295,32 @@ app.post("/api/add_reportedby_job_post/:postid/:userid", authenticateTokenAPI, a
   }
 });
 
+//api to sent the unread count 
+app.get('/api/unread_count/:userid', async (req, res) => {
+  try {
+    const {userid} = req.params; // Assuming you get the 'userid' from the query parameters
+    console.log('userid', userid)
+    const chatRoomsQuery = `
+      SELECT chat_rooms.room_id,
+        COUNT(*) FILTER (WHERE messages.unread = true) AS unread_count
+      FROM chat_rooms
+      INNER JOIN messages ON chat_rooms.room_id = messages.room_id
+      WHERE (chat_rooms.user1 = $1 OR chat_rooms.user2 = $1) AND messages.userid <> $1
+      GROUP BY chat_rooms.room_id;
+    `;
+    const chatRoomsValues = [userid];
+    const { rows } = await pool.query(chatRoomsQuery, chatRoomsValues);
+
+    // Calculate the total unread count for the user
+    const unreadCount = rows.reduce((total, row) => total + row.unread_count, 0);
+
+    // Return the total unread count as JSON response
+    res.json({ unreadCount });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while processing the request.' });
+  }
+});
 
 // app.listen(3000, () => {
 //     console.log("Server listening on port 3000");

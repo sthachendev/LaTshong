@@ -3,6 +3,7 @@ import { View, Image, Text, StyleSheet } from 'react-native';
 import config from '../config';
 import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { showFirstWord } from '../fn';
 
 const ChatRoomHeader = ({ title, imageUrl, touserid }) => {
 
@@ -15,7 +16,7 @@ const ChatRoomHeader = ({ title, imageUrl, touserid }) => {
       <Image source={require("../../assets/images/default.png")} style={styles.image} />
       }
       <TouchableOpacity onPress={()=>navigation.navigate('ViewProfile', { userid: touserid })} activeOpacity={1}>
-      <Text style={styles.title} numberOfLines={1}>{title}</Text>
+      <Text style={styles.title} numberOfLines={1}>{showFirstWord(title)}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -29,13 +30,14 @@ const styles = StyleSheet.create({
   image: {
     width: 40, // Adjust the width and height according to your needs
     height: 40,
-    marginRight: 10,
+
     borderRadius: 20,
     borderColor:"lightgrey", borderWidth:1
   },
   title: {
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '500',    
+    paddingLeft: 10,
   },
 });
 

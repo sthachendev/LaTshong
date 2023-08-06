@@ -229,3 +229,14 @@ export function removeBrackets(str) {
 
   return str;
 }
+
+//show first name // chat header
+export function showFirstWord(str) {
+  if (!str || typeof str !== 'string' || str.trim().length === 0) {
+    return null; // Return null if the input is not a non-empty string
+  }
+
+  const firstWord = str.trim().split(' ')[0];
+  const capitalizedFirstWord = firstWord.charAt(0).toUpperCase() + firstWord.slice(1).toLowerCase();
+  return capitalizedFirstWord;
+}

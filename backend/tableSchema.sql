@@ -52,7 +52,8 @@ CREATE TABLE IF NOT EXISTS messages (
     --t for text
     --a for attachement
     --i for image
-    date TIMESTAMP NOT NULL
+    date TIMESTAMP NOT NULL,
+    unread BOOLEAN NOT NULL DEFAULT TRUE -- Set the default value as true to indicate unread messages
 );
 
 -- Creating the 'attachment_details' table with ON DELETE CASCADE

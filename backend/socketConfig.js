@@ -94,20 +94,41 @@ function setupSocket(server) {
     });
     
     // it is better to use post to upload file then multer, complicate on both client and sever side
+
+    // Listen for the 'UnReadMessage' event from the client
+    socket.on('UnReadMessage', async (data) => {
+      const { userid } = data;
+     // Fetch the updated unread count after marking messages as read
+     const unreadCount = await fetchUnreadMessageCount(userid);
+
+     socket.emit('UnReadMessageResult', unreadCount);
+       console.log(unreadCount);
+    });
+
     
-    // socket.on('markMessageAsRead', async (data) => {
-    //   const { messageId } = data;
-    //   console.log('true')
-    //   try {
-    //     const query = 'UPDATE messages SET read = TRUE WHERE id = $1';
-    //     const values = [messageId];
-    //     await pool.query(query, values);
-    //     console.log('Message marked as read:', messageId);
-    //   } catch (error) {
-    //     console.error('Error marking message as read:', error);
-    //   }
-    // });
-    
+     // Event to mark all messages in a room as read
+     socket.on('markRoomMessagesAsRead', async (data) => {
+      const { roomId, userid } = data;
+      try {
+        // Update the "unread" status of all messages in the room with the given roomId
+        // and where the userid is not equal to the specified userid and is also in chat_rooms.
+        await pool.query(
+          'UPDATE messages SET unread = FALSE WHERE room_id = $1 AND userid != $2 AND (userid = (SELECT user1 FROM chat_rooms WHERE room_id = $1) OR userid = (SELECT user2 FROM chat_rooms WHERE room_id = $1))',
+          [roomId, userid]
+        );
+        console.log('All messages in room marked as read:', roomId);
+
+        // // // Fetch the updated unread count after marking messages as read
+        // const unreadCount = await fetchUnreadMessageCount(userid);
+
+        // socket.emit('UnReadMessageResult', unreadCount);
+        //   console.log(unreadCount);
+          
+      } catch (error) {
+        console.error('Error marking messages as read:', error);
+      }
+    });
+
     // Clean up on client disconnect
     socket.on('disconnect', () => {
       console.log('A client disconnected.');
@@ -136,6 +157,29 @@ function setupSocket(server) {
     } catch (error) {
       console.error('Error occurred while fetching data from the database:', error);
       throw error;
+    }
+  };
+
+  const fetchUnreadMessageCount = async (userid) => {
+    try {
+      const chatRoomsQuery = `
+        SELECT chat_rooms.room_id,
+          COUNT(*) FILTER (WHERE messages.unread = true) AS unread_count
+        FROM chat_rooms
+        INNER JOIN messages ON chat_rooms.room_id = messages.room_id
+        WHERE (chat_rooms.user1 = $1 OR chat_rooms.user2 = $1) AND messages.userid <> $1
+        GROUP BY chat_rooms.room_id;
+      `;
+      const chatRoomsValues = [userid];
+      const { rows } = await pool.query(chatRoomsQuery, chatRoomsValues);
+
+      // Calculate the total unread count for the user
+      const totalUnreadCount = rows.reduce((total, row) => total + row.unread_count, 0);
+
+      return totalUnreadCount;
+    } catch (error) {
+      console.log(error);
+      return 0;
     }
   };
 
