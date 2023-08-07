@@ -282,16 +282,18 @@ app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
 //all //required pagination
 app.get("/api/get_job_post", async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Get the requested page number (default to 1 if not provided)
-    const itemsPerPage = parseInt(req.query.limit) || 10; // Number of items to show per page (default to 10 if not provided)
-
-    const offset = (page - 1) * itemsPerPage;
+    const { page, pageSize } = req.query;
+    const pageNumber = parseInt(page, 10) || 1;
+    const itemsPerPage = parseInt(pageSize, 10) || 10;
+    // const page = parseInt(req.query.page) || 1; // Get the requested page number (default to 1 if not provided)
+    // const itemsPerPage = parseInt(req.query.limit) || 10; // Number of items to show per page (default to 10 if not provided)
+     console.log(pageNumber)
+    const offset = (pageNumber - 1) * itemsPerPage;
     const query = `SELECT job_posts.*, users.name, users.email, users.imageurl
                    FROM job_posts
                    JOIN users ON job_posts.postBy = users.id  
                    ORDER BY job_posts.postdate DESC
                    LIMIT $1 OFFSET $2;`;
-
     const { rows } = await pool.query(query, [itemsPerPage, offset]);
     res.status(200).json(rows);
   } catch (error) {
@@ -299,7 +301,6 @@ app.get("/api/get_job_post", async (req, res) => {
     res.status(500).json({ error: "An error occurred while fetching job posts." });
   }
 });
-
 
 //particular post by post id //this doesnt require token user user have to view w/o login
 app.get("/api/get_job_post/:id", async (req, res) => {

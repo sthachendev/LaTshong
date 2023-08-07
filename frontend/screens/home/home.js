@@ -32,7 +32,6 @@ export default Home = () => {
   const [loading, setLoading] = useState(false);  
   
   const [JobPostPage, setJobPostPage] = useState(1);
-  const [JobPostLoading, setJobPostLoading] = useState(false);
 
   useEffect(()=>{
     if(isFocused){
@@ -46,32 +45,53 @@ export default Home = () => {
     
   },[isFocused])
 
-  const getJobPost = async() => {
+  const getJobPost = async () => {
     try {
       if (role === 'em') {
+        setLoading(true);
         const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`);
-        // console.log('getJobPost', res.data);
-        setData(res.data)
-      }else{
-        setJobPostLoading(true);
-        const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
-          params: { page: 1, pageSize: 5 },});
-        // console.log('getJobPost', res.data);
         setData(res.data);
+        if (res.data) setLoading(false);
+      } else {
+        setLoading(true);
+        const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
+          params: { page: 1, pageSize: 10 },
+        });
         if (res.data.length > 0) {
           setJobPostPage(2); // Set page to 2 since we already fetched the first page
           setData(res.data); // Set feedsData with the fetched data (no need to concatenate)
         } else {
           setData([]); // If no data received, set an empty array
         }
-        if (res.data) setJobPostLoading(false);
+        // if (res.data) setLoading(false);
       }
-    
     } catch (error) {
-      console.error(error)
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-  }
-
+  };
+  
+  const loadMoreJobPosts = async () => {
+    if (loading) return;
+  
+    setLoading(true);
+    console.log(JobPostPage)
+    try {
+      const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
+        params: { page: JobPostPage + 1, pageSize: 5 },
+      });
+      if (res.data.length > 0) {
+        setJobPostPage(JobPostPage + 1);
+        setData((prevData) => [...prevData, ...res.data]);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+ };
+  
   const getFeedPost = async () => {
     try {
       setLoading(true);
@@ -93,15 +113,15 @@ export default Home = () => {
 
   const loadMorePosts = async () => {
     if (loading) return;
-
+  
     setLoading(true);
     try {
       const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
         params: { page: page + 1, pageSize: 5 },
       });
       if (res.data.length > 0) {
-        setPage(page + 1);
-        setFeedsData((prevData) => [...prevData, ...res.data]); // Concatenate new data with previous data
+        setPage(page + 1); // Update page state instead of JobPostPage
+        setFeedsData((prevData) => [...prevData, ...res.data]);
       }
     } catch (error) {
       console.error(error);
@@ -109,41 +129,7 @@ export default Home = () => {
       setLoading(false);
     }
   };
-
-const handleScrollLoadMore = (event) => {
-  const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-  const isNearEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
-  if (isNearEnd) {
-    loadMorePosts();
-  }
-};
-
-const loadMoreJobPosts = async () => {
-  if (loading) return;
-
-  setLoading(true);
-  try {
-    const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-      params: { page: page + 1, pageSize: 5 },
-    });
-    if (res.data.length > 0) {
-      setPage(page + 1);
-      setFeedsData((prevData) => [...prevData, ...res.data]); // Concatenate new data with previous data
-    }
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleScrollLoadMoreJobPosts = (event) => {
-const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-const isNearEnd = layoutMeasurement.height + contentOffset.y >= contentSize.height - 100;
-if (isNearEnd) {
-  loadMoreJobPosts();
-}
-};
+  
 
   const onRefresh = async () => {
     setRefreshing(true); // Set refreshing to true to show the loader
@@ -159,12 +145,13 @@ if (isNearEnd) {
 
   //this to retain the faltlist position when scrolling 
   const flatListRef = useRef(null);
-  const [scrollOffset, setScrollOffset] = useState(0);
+  
+  // const [scrollOffset, setScrollOffset] = useState(0);
 
-  const handleScroll = (event) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    setScrollOffset(offsetY);
-  };
+  // const handleScroll = (event) => {
+  //   const offsetY = event.nativeEvent.contentOffset.y;
+  //   setScrollOffset(offsetY);
+  // };
   
   useEffect(() => {
     if (isFocused) {
@@ -237,16 +224,14 @@ if (isNearEnd) {
     <FeedPost isModalVisible={isModalVisible} userid={userid} setIsModalVisible={setIsModalVisible} getFeedPost={getFeedPost}/>
 
     {/* top tab btn */}
-      <View style={{display:'flex', flexDirection:'row', width:'100%', justifyContent:'space-evenly', backgroundColor:'#F1F2F6'}}>
+      <View style={styles.topTabBtnContainer}>
         
-      <TouchableOpacity style={{ flexDirection:'row', borderBottomColor: jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:3,
-       flex:1, padding:10, justifyContent:'center'}} 
+      <TouchableOpacity style={[styles.topTabBtn, {borderBottomColor: jobTabSelected ? '#1E319D' : '#F1F2F6',}]} 
       onPress={()=>setJobTabSelected(true)} activeOpacity={1}>
           <Icon name="work-outline" size={24} color={jobTabSelected ? '#1E319D' : 'grey'} />
         </TouchableOpacity> 
 
-        <TouchableOpacity style={{ flexDirection:'row', borderBottomColor: !jobTabSelected ? '#1E319D' : '#F1F2F6', borderBottomWidth:3,
-       flex:1, padding:10, justifyContent:'center'}}
+        <TouchableOpacity style={[styles.topTabBtn, {borderBottomColor: !jobTabSelected ? '#1E319D' : '#F1F2F6',}]}
         onPress={()=>setJobTabSelected(false)} activeOpacity={1}>
           <Icon name="article" size={24} color={!jobTabSelected ? '#1E319D' : 'grey'} />
         </TouchableOpacity> 
@@ -258,7 +243,7 @@ if (isNearEnd) {
             ref={flatListRef}
             data={data}
             renderItem={({ item }) => <Posts item={item} role={role} navigation={navigation} selectedItem={selectedItem} setSelectedItem={setSelectedItem}/>}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item, index) => index.toString()}
             maxToRenderPerBatch={3} // Adjust this value based on your needs
             ListEmptyComponent={()=>{
               return(
@@ -268,17 +253,23 @@ if (isNearEnd) {
             getItemLayout={(data, index) => (
               {length: 500, offset: 500 * index, index}
             )}
-            onScroll={(event)=>{handleScroll(event);handleScrollLoadMore(event);}} // Add onScroll event to track the scroll position
+            // onScroll={(event)=>{handleScroll(event);}} // Add onScroll event to track the scroll position
+            onEndReached={data.length >= 5 && !loading ? loadMoreJobPosts : null} // Call loadMoreJobPosts only when there are more posts to load and not already loading
+            // onEndReached={loadMoreJobPosts} // Call loadMorePosts when the user scrolls near the end
+            onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
+            ListFooterComponent={<>
+              {loading && <ActivityIndicator size='small' color='#1E319D'/>}
+            </>}
           />
       }
 
       {//news feeds posts
         !jobTabSelected &&
           <FlatList
-            ref={flatListRef}
+            // ref={flatListRef}
             data={feedsData}
             renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} 
             selectedItem={selectedItem} setSelectedItem={setSelectedItem} getFeedPost={getFeedPost}/>}
@@ -292,7 +283,7 @@ if (isNearEnd) {
             getItemLayout={(data, index) => (
               {length: 500, offset: 500 * index, index}
             )}
-            onScroll={handleScroll} // Add onScroll event to track the scroll position
+            // onScroll={handleScroll} // Add onScroll event to track the scroll position
             onEndReached={loadMorePosts} // Call loadMorePosts when the user scrolls near the end
             onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
             refreshControl={
@@ -306,7 +297,7 @@ if (isNearEnd) {
 
     {role === 'em' && 
     <>
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={styles.floatingBtnContainer}>
       <FAB
         style={{ position: 'absolute', bottom: 16, right: 15, backgroundColor:'#1E319D', borderRadius:40}}
         icon={visible ? 'close' : 'plus'}
@@ -351,5 +342,24 @@ const styles = StyleSheet.create({
       width: 0, // Horizontal offset
       height: 2, // Vertical offset
     },
+  },  
+  topTabBtnContainer: {
+    display:'flex',
+    flexDirection:'row',
+    width:'100%',
+    justifyContent:'space-evenly',
+    backgroundColor:'#F1F2F6',
+  },
+  floatingBtnContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topTabBtn: {
+    flexDirection:'row',
+    borderBottomWidth:3,
+    flex:1,
+    padding:10,
+    justifyContent:'center',
   },
 });
