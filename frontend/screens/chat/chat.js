@@ -14,6 +14,7 @@ const Chat = ({navigation}) => {
 
   const token = useSelector((state) => state.token)
   const id = jwtDecode(token).userid;
+  console.log(id)
 
   const [loading, setLoading] = useState(false);
 
@@ -33,7 +34,6 @@ const Chat = ({navigation}) => {
       setLoading(true);
       const response = await axios.get(`${config.API_URL}/api/chat_rooms/${id}`, {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         }
       });
@@ -57,8 +57,8 @@ const Chat = ({navigation}) => {
         return(
           <TouchableHighlight key={item.id} 
           onPress={() => navigation.navigate('ChatRoom', 
-          {touserid: item.user1 !== id ? item.user1 : item.user2, 
-            title: item.user1 !== id ? capitalizeWords(item.user1_name) : capitalizeWords(item.user2_name),
+          {touserid: item.user1 != id ? item.user1 : item.user2, 
+            title: item.user1 != id ? capitalizeWords(item.user1_name) : capitalizeWords(item.user2_name),
             imageurl: item.other_user_imageurl
           })}
           underlayColor="#F1F2F6" 
@@ -74,16 +74,17 @@ const Chat = ({navigation}) => {
             }
             <View style={{flexDirection:'column', flex:1}}>
               <Text style={{fontWeight:"bold", fontSize:15, paddingLeft:10, textAlignVertical:'top'}}>
-              {item.user1 !== id ? capitalizeWords(item.user1_name) : capitalizeWords(item.user2_name)}
+              {item.user1 != id ? capitalizeWords(item.user1_name) : capitalizeWords(item.user2_name)}
+              {console.log(id,'current users',typeof(id))}
               </Text>
 
               <View style={{flex:1, flexDirection:'row', justifyContent:'space-between'}}>
                 <View style={{flexDirection:'row', paddingTop:5}}>
                 <Text style={{ fontSize:12, paddingLeft:10, textAlignVertical:'center', color:'grey',}}>
-                {item.message_by_userid === id ? 'Message Sent' : 'Message Recieved '}
+                {item.message_by_userid == id ? 'Message Sent' : 'Message Recieved '}
                 </Text>
                 {
-                  item.message_by_userid !== id && item.unread_count>0 &&  
+                  item.message_by_userid != id && item.unread_count>0 &&  
                   <Text style={{   backgroundColor: 'rgba(30,49,157,0.7)', fontSize:12, color:'#fff',
                     borderRadius: 50, width: 20, height: 20, textAlign:'center', textAlignVertical:'center'}}>
                     { item.unread_count}
@@ -98,7 +99,10 @@ const Chat = ({navigation}) => {
             </View>
           </View>
 
-          {/* <Text>Chat Room ID: {item.room_id}</Text> */}
+{/* <Text>Chat Room ID: {item.room_id}</Text> 
+<Text>user1: {typeof(item.user1)} user1name: {item.user1_name} user2=id{console.log(item.user1 == id)}</Text>
+<Text>user1: {typeof(item.user2)}</Text>
+<Text>user1: {typeof(id)}</Text> */}
           </>
 
           </TouchableHighlight>

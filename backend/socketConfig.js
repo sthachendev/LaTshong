@@ -87,7 +87,6 @@ function setupSocket(server) {
           console.log('Message added successfully');
           // Emit the newly added message to all clients in the room
           io.to(roomId).emit('messageAdded', { id, userid, roomId, message, message_type:'t', date });
-  
         }
       });
      
@@ -105,7 +104,6 @@ function setupSocket(server) {
        console.log(unreadCount);
     });
 
-    
      // Event to mark all messages in a room as read
      socket.on('markRoomMessagesAsRead', async (data) => {
       const { roomId, userid } = data;
@@ -128,6 +126,12 @@ function setupSocket(server) {
         console.error('Error marking messages as read:', error);
       }
     });
+
+    //establist a socket connection
+    socket.on('connectUser', async(data) => {
+      const {userid} = data;
+      console.log('user connected online', userid);
+    })
 
     // Clean up on client disconnect
     socket.on('disconnect', () => {

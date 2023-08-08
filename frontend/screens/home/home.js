@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useEffect, useState, useRef} from 'react';
 import axios from 'axios';
@@ -13,6 +13,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FeedPost from '../post/feedPost';
 import jwtDecode from 'jwt-decode';
 import FeedPosts from '../post/feedPosts';
+import createSocket from '../socketConfig';
+import { setToken, setRole, setUnreadCount, clearUnreadCount } from '../../reducers'; 
 
 export default Home = () => {
 
@@ -33,11 +35,57 @@ export default Home = () => {
   
   const [JobPostPage, setJobPostPage] = useState(1);
 
+  const socket = createSocket(token);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    socket.connect();
+
+    // socket.emit('joinChat', { user1:userid, user2:0});
+
+    // // Listen for the 'roomJoined' event to receive the room ID from the backend
+    // socket.on('roomJoined', (data) => {
+    //     const { roomId } = data;
+    //     console.log(`Joined chat room with room ID: ${roomId}`);
+    //     // setRoomId(roomId); // Update the component state with the room ID
+        
+    //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
+    //   // socket.emit('UnReadMessage', { userid });
+    //   console.log(`Joined chat room with room ID: ${roomId}`);
+    // });
+
+    //establist a socket connection
+    socket.emit('connectUser', { userid:userid})
+
+    socket.emit('UnReadMessage', { userid });
+
+    socket.on('UnReadMessageResult', (unreadCount) => {
+
+      console.log('data', unreadCount);
+      if (unreadCount > 0) {
+      // setUnreadMessages(true);
+      dispatch(setUnreadCount(true))
+      console.log('unread msg')
+      } else {
+      // setUnreadMessages(null);
+      dispatch(clearUnreadCount())
+      console.log('all read msg')
+      }
+    });
+    return () => {
+      socket.disconnect();
+      // Unsubscribe from events if necessary
+      // Example: socket.off('eventFromServer', handleEventFromServer);
+    };
+  }, []);
+
+
   useEffect(()=>{
     if(isFocused){
       getJobPost();
       getFeedPost();
     }
+
+    console.log('home')
 
     return () => {
      setData('');

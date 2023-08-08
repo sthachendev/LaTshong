@@ -380,10 +380,12 @@ const handleMessage = (touserid, tousername) => {
       {/* user dp and name */}
       <View style={{display:"flex", flexDirection:"row",}}>
 
-        {data[0].imageurl !== null ? 
+        {data[0].imageurl.length > 0 ? 
         <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25, borderColor:"lightgrey", borderWidth:1,}} />
         :
-        <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20, borderColor:"lightgrey", borderWidth:1}}/>
+        <Image source={require("../../assets/images/default.png")} 
+        style={{width:40, height:40, borderRadius:20,  borderColor:"lightgrey", borderWidth:1, marginLeft:5}}
+        />
         }
 
         <View>
@@ -396,17 +398,12 @@ const handleMessage = (touserid, tousername) => {
       {/* job details */}
       <View style={styles.container}>
 
-        <Text style={{padding:10, fontWeight:'bold'}}>{capitalizeWords(data[0].job_title)}</Text>
-        <Text style={{padding:10, paddingTop:0, color:'#404040', textAlign:'justify'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
+        <Text style={{ paddingLeft:0, padding:10, fontWeight:'bold'}}>{capitalizeWords(data[0].job_title)}</Text>
+        <Text style={{ paddingLeft:0, padding:10, paddingTop:0, color:'#404040', textAlign:'justify'}}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
 
         <View style={styles.tableRow}>
           <Text style={styles.headerCell}>Requirements</Text>
           <Text style={styles.cell}>{capitalizeFirstLetterOfParagraphs(data[0].job_requirements)}</Text>
-        </View> 
-        
-        <View style={styles.tableRow}>
-          <Text style={styles.headerCell}>Total Slots</Text>
-          <Text style={styles.cell}>{data[0].vacancy_no}</Text>
         </View> 
         
         <View style={styles.tableRow}>
@@ -424,6 +421,11 @@ const handleMessage = (touserid, tousername) => {
           <Text style={styles.cell}>{data[0].job_salary}</Text>
         </View>
 
+        <View style={styles.tableRow}>
+          <Text style={styles.headerCell}>Slot</Text>
+          <Text style={styles.cell}>{data[0].vacancy_no}</Text>
+        </View> 
+
         <View style={[styles.tableRow,{borderBottomWidth:0}]}>
           <Text style={styles.headerCell}>Remarks</Text>
           <Text style={styles.cell}>{data[0]?.remarks === "" ? "-" : capitalizeFirstLetterOfParagraphs(data[0].remarks)}</Text>
@@ -432,7 +434,7 @@ const handleMessage = (touserid, tousername) => {
       </View>
 
      <View style={{display:'flex', flexDirection:'row', justifyContent:'space-between'}}>
-     <Text style={{fontSize:12, color:'#404040', paddingLeft:15}}>Total Applicant: {data[0].applicants.length}</Text>
+     <Text style={{fontSize:12, color:'#404040', paddingLeft:5}}>Total Applicant: {data[0].applicants.length}</Text>
      </View>
       </View>
 
@@ -553,35 +555,33 @@ const handleMessage = (touserid, tousername) => {
       return (
         <TouchableHighlight style={styles.itemContainer}  underlayColor="#F1F2F6" 
         onPress={()=>navigation.navigate('ViewProfile', { userid: item.id })}>
-          <View style={{padding:10}}>
+        <View style={{padding:10}}>
 
-       
-<View style={{ display: "flex", flexDirection: "row", flex: 1, justifyContent: 'space-between' }}>
-  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-    {item.imageurl.length > 0 ? (
-      <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{ width: 40, height: 40, borderRadius: 5 }} />
-    ) : (
-      <Image source={require("../../assets/images/default.png")} style={{ width: 40, height: 40, borderRadius: 5 }} />
-    )}
+        <View style={{ display: "flex", flexDirection: "row", flex: 1, justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {item.imageurl.length > 0 ? (
+              <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{ width: 40, height: 40, borderRadius: 5 }} />
+            ) : (
+              <Image source={require("../../assets/images/default.png")} style={{ width: 40, height: 40, borderRadius: 5 }} />
+            )}
 
-    <Text style={{ paddingLeft:5, fontWeight: "500", fontSize: 14, textAlignVertical: 'center', maxWidth: SCREEN_WIDTH - 120 }}
-      numberOfLines={1} ellipsizeMode='tail'>
-      {capitalizeWords(item.name)}
-    </Text>
-  </View>
+            <Text style={{ paddingLeft:5, fontWeight: "500", fontSize: 14, textAlignVertical: 'center', maxWidth: SCREEN_WIDTH - 120 }}
+              numberOfLines={1} ellipsizeMode='tail'>
+              {capitalizeWords(item.name)}
+            </Text>
+          </View>
 
-  <TouchableHighlight
-    style={[styles.btn2]}
-    underlayColor="#F1F2F6"
-    onPress={() => handleUserSelect(item.id)}
-  >
-    <Text style={[styles.btnText, { color: 'rgba(30,49,157,0.7)' }]}>
-      {selectedOption === 'p' && 'Select'}
-      {selectedOption === 'a' && 'De-select'}
-    </Text>
-  </TouchableHighlight>
-</View>
-
+          <TouchableHighlight
+            style={[styles.btn2]}
+            underlayColor="#F1F2F6"
+            onPress={() => handleUserSelect(item.id)}
+          >
+            <Text style={[styles.btnText, { color: 'rgba(30,49,157,0.7)' }]}>
+              {selectedOption === 'p' && 'Select'}
+              {selectedOption === 'a' && 'De-select'}
+            </Text>
+          </TouchableHighlight>
+        </View>
         
       </View>
         </TouchableHighlight>
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     },
     itemContainer: {
     backgroundColor: '#fff',
-    marginVertical:20,
+    marginVertical:10,
     marginHorizontal:10,
     borderRadius: 5,
     borderWidth:.25,
@@ -686,7 +686,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     color:'#404040',
     textAlignVertical:"center",
-    padding:10
+    padding:10,
+    paddingLeft:0
   },
   cell: {
     flex: .5,

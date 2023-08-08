@@ -49,11 +49,13 @@ function BottomTab() {
 
   const unread_count = useSelector((state) => state.unread_count)
 
+  const socket = createSocket(token);
+
   const getUnreadCount = () => {
     console.log(userid)
     axios.get(`${config.API_URL}/api/unread_count/${userid}`)
     .then(res=>{
-      console.log(res.data)
+      console.log('count',res.data)
       if (res.data.unreadCount > 0 ) {
         dispatch(setUnreadCount(true))
       } else { 
@@ -65,7 +67,40 @@ function BottomTab() {
 
   useEffect(() => {
     getUnreadCount()
-  }, [userid]);
+    // socket.connect();
+
+    // socket.emit('joinChat', { user1:userid, user2:0});
+
+    // // Listen for the 'roomJoined' event to receive the room ID from the backend
+    // socket.on('roomJoined', (data) => {
+    //     const { roomId } = data;
+    //     console.log(`Joined chat room with room ID: ${roomId}`);
+    //     // setRoomId(roomId); // Update the component state with the room ID
+        
+    //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
+    //   // socket.emit('UnReadMessage', { userid });
+    //   console.log(`Joined chat room with room ID: ${roomId}`);
+    // });
+
+    //establist a socket connection
+    // socket.emit('connectUser')
+
+    // socket.emit('UnReadMessage', { userid });
+
+    // socket.on('UnReadMessageResult', (unreadCount) => {
+
+    //   console.log('data', unreadCount);
+    //   if (unreadCount > 0) {
+    //   // setUnreadMessages(true);
+    //   dispatch(setUnreadCount(true))
+    //   console.log('unread msg')
+    //   } else {
+    //   // setUnreadMessages(null);
+    //   dispatch(clearUnreadCount())
+    //   console.log('all read msg')
+    //   }
+    // });
+  }, [userid, dispatch]);
 
   return (
     <Tab.Navigator

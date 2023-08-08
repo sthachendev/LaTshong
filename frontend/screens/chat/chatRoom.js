@@ -23,7 +23,6 @@ export default ChatRoom = ({route, navigation}) => {
 
   const token = useSelector((state) => state.token);
   const userid = jwtDecode(token).userid;
-
   const {touserid, imageurl} = route.params;
 
   useLayoutEffect(() => {
@@ -379,7 +378,7 @@ const saveAndroidFile = async (fileUri, fileName) => {
         style={{
           display: "flex",
           flexDirection: "row",
-          alignSelf: msg.userid === userid ? "flex-end" : "flex-start",
+          alignSelf: msg.userid == userid ? "flex-end" : "flex-start",
           margin: 10,
           marginTop:10,
           marginBottom: 5,
@@ -387,10 +386,10 @@ const saveAndroidFile = async (fileUri, fileName) => {
         {msg.message_type === 'i' ? //if i --image
          <TouchableOpacity
          style={{
-           backgroundColor: msg.userid === userid ? '#373B58' : '#F0F0F0',
+           backgroundColor: msg.userid == userid ? '#373B58' : '#F0F0F0',
            borderRadius: 20,
-           borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
-           borderBottomRightRadius: msg.userid === userid ? 0 : 20,
+           borderBottomLeftRadius: msg.userid == userid ? 20 : 0,
+           borderBottomRightRadius: msg.userid == userid ? 0 : 20,
            padding:10,
            alignSelf:"flex-start",
            maxWidth: "85%",
@@ -406,17 +405,17 @@ const saveAndroidFile = async (fileUri, fileName) => {
       :
       <TouchableOpacity
         style={{
-          backgroundColor: msg.userid === userid ? 'rgba(30,49,157,0.7)' : '#F0F0F0',
+          backgroundColor: msg.userid == userid ? 'rgba(30,49,157,0.7)' : '#F0F0F0',
           borderRadius: 20,
-          borderBottomLeftRadius: msg.userid === userid ? 20 : 0,
-          borderBottomRightRadius: msg.userid === userid ? 0 : 20,
+          borderBottomLeftRadius: msg.userid == userid ? 20 : 0,
+          borderBottomRightRadius: msg.userid == userid ? 0 : 20,
           padding:10,
           alignSelf:"flex-start",
           maxWidth: "85%",
         }}
         activeOpacity={1}>
         {/* t --text */}
-      {msg.message_type === 't' && <Text style={{color: msg.userid === userid ? '#fff' : '#000',}}>{msg.message}</Text>}
+      {msg.message_type === 't' && <Text style={{color: msg.userid == userid ? '#fff' : '#000',}}>{msg.message}</Text>}
       {msg.message_type === 'a' &&  //a mimetype aplication/*
       
       <TouchableOpacity 
@@ -424,10 +423,10 @@ const saveAndroidFile = async (fileUri, fileName) => {
       onPress={() => downloadFile(`${config.API_URL}/${msg.file_uri}`, msg.file_name)}
       onLongPress={() => downloadAndShareFile(`${config.API_URL}/${msg.file_uri}`, msg.file_name)}
       >
-        <Text numberOfLines={1} style={{color: msg.userid === userid ? '#fff' : '#000',}}>
-          <Ionicons name="document-outline" size={20} color={msg.userid === userid ? '#fff' : '#000'}/> {msg.file_name}
+        <Text numberOfLines={1} style={{color: msg.userid == userid ? '#fff' : '#000',}}>
+          <Ionicons name="document-outline" size={20} color={msg.userid == userid ? '#fff' : '#000'}/> {msg.file_name}
         </Text>
-        <Text style={{color: msg.userid === userid ? '#fff' : '#000', fontSize:12}}>
+        <Text style={{color: msg.userid == userid ? '#fff' : '#000', fontSize:12}}>
         {getFileSize(msg.file_size)}
         </Text>
       </TouchableOpacity>
@@ -437,14 +436,16 @@ const saveAndroidFile = async (fileUri, fileName) => {
       }
       
         </View>
-
+{console.log("Message User ID:", msg.userid)}{
+console.log("Current User ID:", userid)
+}
         {/* date */}
         <Text style={{ color: "grey", 
-        textAlign: msg.userid === userid ? "right" : "left", fontSize:11,
-        paddingLeft: msg.userid === userid ? 0 : 10,
-        paddingRight: msg.userid === userid ? 10 : 0,
+        textAlign: msg.userid == userid ? "right" : "left", fontSize:11,
+        paddingLeft: msg.userid == userid ? 0 : 10,
+        paddingRight: msg.userid == userid ? 10 : 0,
         }}>
-          {getTime(msg.date)} {msg.userid !== userid && msg.message_type === 'a' && ' ~ attachment'}
+          {getTime(msg.date)} {msg.userid !== userid && msg.message_type == 'a' && ' ~ attachment'}
         </Text>
 
         </View>

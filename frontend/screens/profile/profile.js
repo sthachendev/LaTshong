@@ -258,8 +258,8 @@ const keyExtractor = (item) => item.id.toString();
     keyExtractor={keyExtractor}
     showsHorizontalScrollIndicator={false}
     maxToRenderPerBatch={5} // Adjust this value based on your needs
-    onEndReached={loadMorePosts} // Call loadMorePosts when the user scrolls near the end
-    onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
+    // onEndReached={loadMorePosts} // Call loadMorePosts when the user scrolls near the end
+    // onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
     ListFooterComponent={<>
       {feedLoading && <ActivityIndicator size='small' color='#1E319D'/>}
       </>}
