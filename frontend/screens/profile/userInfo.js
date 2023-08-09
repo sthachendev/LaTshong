@@ -128,7 +128,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
           {/* add profile pic btn  // show if profile is of current user*/}
           {userid === current_userid && //add image btn
             <TouchableHighlight style={{borderColor:'rgba(30,49,157,0.7)', borderWidth:2, backgroundColor:'#fff',
-              position:"absolute", bottom:0, right:0, borderRadius:5, padding:3}} onPress={handlePickImage} underlayColor='#F1F2F6'>
+              position:"absolute", bottom:0, right:0, borderRadius:20, padding:3}} onPress={handlePickImage} underlayColor='#F1F2F6'>
               <MaterialIcons
                   name="create"
                   color='#1E319D'
@@ -162,7 +162,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
       </View>
 
       {/* bio */}
-      <TouchableOpacity style={{ backgroundColor:'#7E8CA7', padding:15, marginHorizontal:15, borderRadius:10, elevation:2}} 
+      <TouchableOpacity style={{ display:'flex', flexDirection:'row', justifyContent:'center', backgroundColor:'#7E8CA7', padding:15, marginHorizontal:15, borderRadius:10, elevation:2}} 
      activeOpacity={1}>
 
         <Text style={{ color:"#fff", textAlign:'center',}}>
@@ -170,13 +170,21 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
         </Text>
 
         {userid === current_userid && 
-        <TouchableHighlight style={{borderColor:'rgba(30,49,157,0.7)', borderWidth:2, backgroundColor:'#fff',
-        position:"absolute", bottom:0, right:0, borderRadius:5, padding:3}}  
+        <TouchableHighlight style={{
+          // borderColor:'rgba(30,49,157,0.7)', borderWidth:2, 
+        // backgroundColor:'#fff',
+        display:'flex',
+        marginLeft:5,
+        alignSelf:'center',
+        padding:5,
+        borderRadius:20
+        // justifyContent:'flex-end'
+        // position:"absolute", bottom:0, right:0, borderRadius:10, padding:5
+      }}  
         onPress={()=>{setIsModalVisible2(true); userInfo[0].bio && setDesc(userInfo[0].bio)}} 
-          underlayColor='#F1F2F6'>
-        <MaterialIcons name="create" color='#1E319D'
-            size={20}
-          />
+          underlayColor='#F1F2F6'
+          >
+        <MaterialIcons name="create" color='#1E319D' size={15}/>
         </TouchableHighlight>
         }
 

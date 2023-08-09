@@ -17,6 +17,7 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
   const [modalVisible, setModalVisible] = useState(false);//image viewer
 
+  console.log('feed post')
   return(
   <View style={styles.itemContainer} >
 
@@ -27,10 +28,10 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
   <View style={{ paddingTop:10}}>
     <View style={{display:"flex", flexDirection:'row', paddingHorizontal:15}}>
-      {item.imageurl !== null ? //profile image
+      {item.imageurl.length > 0 ?//profile image
       <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{width:40, height:40,  borderRadius: 25, borderColor:"lightgrey", borderWidth:1}} />
       :
-      <Image source={require("../../assets/images/default.png")} style={{width:50, height:50, borderRadius:25, borderColor:"lightgrey", borderWidth:1}} />
+      <Image source={require("../../assets/images/default.png")} style={{width:40, height:40, borderRadius:25, borderColor:"lightgrey", borderWidth:1}} />
       }
       <View style={{flex:1}}>
 

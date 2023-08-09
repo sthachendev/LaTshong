@@ -318,6 +318,7 @@ export default Home = () => {
         !jobTabSelected &&
           <FlatList
             // ref={flatListRef}
+            showsVerticalScrollIndicator={false}
             data={feedsData}
             renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} 
             selectedItem={selectedItem} setSelectedItem={setSelectedItem} getFeedPost={getFeedPost}/>}
@@ -373,7 +374,8 @@ export default Home = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:'rgba(30,49,157,0.1)'
+    // backgroundColor:'rgba(30,49,157,0.1)'
+    backgroundColor:'#fff'
   },
   floatingPost: {
     position: 'absolute',
@@ -409,5 +411,6 @@ const styles = StyleSheet.create({
     flex:1,
     padding:10,
     justifyContent:'center',
+    backgroundColor:'#fff'
   },
 });

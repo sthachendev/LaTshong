@@ -41,18 +41,18 @@ export function getTimeDifference(postDate) {
     if (diffInSeconds < 10) {
       return 'Just now';
     } else {
-      return `${diffInSeconds} s ago`;
+      return `${diffInSeconds} s. ago`;
     }
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} min ago`;
+    return `${diffInMinutes} min. ago`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours} h ago`;
+    return `${diffInHours} hr. ago`;
   }
 
   const diffInDays = Math.floor(diffInHours / 24);

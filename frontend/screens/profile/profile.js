@@ -262,7 +262,16 @@ const keyExtractor = (item) => item.id.toString();
     // onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
     ListFooterComponent={<>
       {feedLoading && <ActivityIndicator size='small' color='#1E319D'/>}
-      </>}
+      </>
+      }
+    ListEmptyComponent={()=>{
+      return(
+        <View style={{display:'flex', marginTop:30}}>
+          <Text style={{textAlign:'center', color:'grey'}}>No Post</Text>
+        </View>
+      )
+    }}
+
     />
     }
     </View>
