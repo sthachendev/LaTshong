@@ -151,7 +151,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
            <View style={{ flex:1, display:'flex', flexDirection:'row', justifyContent:'space-around'}}>
        
            <TouchableHighlight style={styles.btn} underlayColor='#F1F2F6' 
-           onPress={()=>{ navigation.navigate('ChatRoom', {touserid: userInfo[0].id, title: capitalizeWords(userInfo[0].name)})}}>
+           onPress={()=>{ navigation.navigate('ChatRoom', {touserid: userInfo[0].id, imageurl:userInfo[0].imageurl, title: capitalizeWords(userInfo[0].name)})}}>
               <Text style={{ marginLeft:10,  textAlign:'center' }}>Message</Text>
             </TouchableHighlight>
     

@@ -922,7 +922,7 @@ app.get("/api/get_feed_post/:id", async (req, res) => {//postid
 app.get('/api/feed_posts/:userid', async (req, res) => {
   try {
     const { userid } = req.params;
-    const { page = 1, pageSize = 5 } = req.query;
+    const { page, pageSize} = req.query;
     const offset = (page - 1) * pageSize;
 
     // Fetch feed posts from the database, joined with user information, filtered by userid, ordered by postdate in descending order (latest first), and apply pagination

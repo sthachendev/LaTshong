@@ -24,6 +24,7 @@ export default ChatRoom = ({route, navigation}) => {
   const token = useSelector((state) => state.token);
   const userid = jwtDecode(token).userid;
   const {touserid, imageurl} = route.params;
+  console.log(route.params)
 
   useLayoutEffect(() => {
     navigation.setOptions({

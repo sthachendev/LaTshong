@@ -85,7 +85,7 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
         {/* <VideoPlayer  videoUri={`${config.API_URL}/${item.media_uri}`} /> */}
         <Video
             source={{ uri: `${config.API_URL}/${item.media_uri}` }}
-            style={{ width: "100%", height: 200, borderRadius:5, backgroundColor:'#000' }}
+            style={{ width: "100%", height: 200, backgroundColor:'#000' }}
             useNativeControls
             resizeMode="contain"
           />
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
       // borderColor:"lightgrey", borderWidth:1,
       paddingBottom:10,
       // borderRadius: 5,
-      marginBottom:5,
+      // marginBottom:5,
       // borderColor:'rgba(49, 105, 210, 0.5)',
       // borderBottomWidth:0.5,
       // elevation: 2, // Add elevation for shadow effect (Android)

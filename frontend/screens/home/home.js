@@ -107,11 +107,12 @@ export default Home = () => {
     try {
       if (role === 'em') {//fetch job post of an user
 
-        // setLoading(true);
-        // const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`, {
-        //   params: { page: 1, pageSize: 5 },});
-        // setJobPosts(res.data);
-        // if (res.data) setLoading(false);
+        setLoading(true);
+        const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`
+        // , {params: { page: 1, pageSize: 5 },}
+          );
+        setJobPosts(res.data);
+        if (res.data) setLoading(false);
 
       } else { //fetch job posts post by all/ any em
         console.log('js posts fetching')
@@ -121,16 +122,6 @@ export default Home = () => {
         setJobPosts(res.data);
         setJobPostPage(2);
         setLoading(false);
-
-        // if (res.data.length > 0) {
-          // setJobPostPage(2); // Set page to 2 since we already fetched the first page
-          // setJobPosts(res.data); // Set feedsData with the fetched data (no need to concatenate)
-          // setHasMoreData(true); // Reset hasMoreData because we fetched new data
-        // } else {
-        //   setJobPosts([]); // If no data received, set an empty array
-        //   // setHasMoreData(false); // No more data available
-        // }
-        // if (res.data) setLoading(false);
       }
     } catch (error) {
       console.error(error);
@@ -139,17 +130,15 @@ export default Home = () => {
     }
   };
 
-  const [hasMoreData, setHasMoreData] = useState(true); //inorder to handle excess fetch
+  const [hasMoreDataJobPosts, setHasMoreDataJobPosts] = useState(true); //inorder to handle excess fetch
   
   const loadMoreJobPosts = async () => {
     // If already loading, return to prevent multiple requests
-    if (loading || !hasMoreData) {
+    if (loading || !hasMoreDataJobPosts) {
       return;
     }
-  
-    setLoading(true);
-  
     try {
+    setLoading(true);
       // Your API call here, e.g., using axios
       console.log('teter')
       const res = await axios.get(`${config.API_URL}/api/get_job_post/?page=${JobPostPage}&pageSize=5`);
@@ -157,7 +146,7 @@ export default Home = () => {
         setJobPosts(prevPosts => [...prevPosts, ...res.data]);
         setJobPostPage(JobPostPage + 1);
       } else {
-        setHasMoreData(false); // No more data available
+        setHasMoreDataJobPosts(false); // No more data available
       }
     } catch (error) {
       console.error(error);
@@ -166,43 +155,20 @@ export default Home = () => {
     }
   };
   
-//   const loadMoreJobPosts = async () => {
-//     setPage(page + 1);
-//     // if (loading) return; 
-//     // if (loading) return; // Check if you're already loading data or if there's no more data
+  const [hasMoreDataFeeds, setHasMoreDataFeeds] = useState(true); //inorder to handle excess fetch
 
-//     // console.log('loadMoreJobPosts')
-//     // setLoading(true);
-//     // console.log(JobPostPage,'JobPostPage')
-
-//     // try {
-//     //   const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
-//     //     params: { page: JobPostPage, pageSize: 1 },
-//     //   });
-//     //   if (res.data.length > 0) {
-//     //     setJobPostPage(JobPostPage + 1);
-//     //     setJobPosts((prevData) => [...prevData, ...res.data]);
-//     //   } else {// if no data is available to fetch
-//     //     // setHasMoreData(false); // No more data available
-//     //   }
-//     // } catch (error) {
-//     //   console.error(error);
-//     // } finally {
-//     //   setLoading(false);
-//     // }
-//  };
-  
   const getFeedPost = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-        params: { page: 1, pageSize: 5 },
-      });
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/?page=1&pageSize=5`
+      // , { params: { page: 1, pageSize: 5 },}
+      );
       if (res.data.length > 0) {
-        setPage(2); // Set page to 2 since we already fetched the first page
         setFeedsData(res.data); // Set feedsData with the fetched data (no need to concatenate)
+        setPage(2); // Set page to 2 since we already fetched the first page
       } else {
         setFeedsData([]); // If no data received, set an empty array
+        setHasMoreDataFeeds(false); // No more data available
       }
     } catch (error) {
       console.error(error);
@@ -212,18 +178,23 @@ export default Home = () => {
   };
 
   const loadMorePosts = async () => {//feed
-    if (loading) return;
-  
+    // if (loading) return;
+    if (loading || !hasMoreDataFeeds) {
+      return;
+    }
     setLoading(true);
     console.log('feed')
     try {
-      const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-        params: { page: page, pageSize: 5 },
-      });
+      // const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
+      //   params: { page: page, pageSize: 5 },
+      // });
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/?page=${page}&pageSize=5`);
       if (res.data.length > 0) {
-        setPage(page + 1); // Update page state instead of JobPostPage
         setFeedsData((prevData) => [...prevData, ...res.data]);
+        setPage(page + 1); // Update page state instead of JobPostPage
         console.log(res.data)
+      } else {
+        setHasMoreDataFeeds(false); // No more data available
       }
     } catch (error) {
       console.error(error);
@@ -231,12 +202,13 @@ export default Home = () => {
       setLoading(false);
     }
   };
-  
 
   const onRefresh = async () => {
     setRefreshing(true); // Set refreshing to true to show the loader
     try {
-      setHasMoreData(true);
+      setHasMoreDataJobPosts(true);
+      setHasMoreDataFeeds(true);
+
       await getJobPost(); // Fetch data again
       await getFeedPost(); // Fetch data again
     } catch (error) {
@@ -354,10 +326,8 @@ export default Home = () => {
               )
             }}
             // onScroll={(event)=>{handleScroll(event);}} // Add onScroll event to track the scroll position
-            // onEndReached={data.length >= 5 && !loading ? loadMoreJobPosts : null} // Call loadMoreJobPosts only when there are more posts to load and not already loading
-            // onEndReached={loadMoreJobPosts} // Call loadMorePosts when the user scrolls near the end
             onEndReached={() => {
-              if (!loading && hasMoreData) {
+              if (!loading && hasMoreDataJobPosts) {
                 loadMoreJobPosts();
               }
             }}
@@ -380,24 +350,22 @@ export default Home = () => {
             renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} 
             selectedItem={selectedItem} setSelectedItem={setSelectedItem} getFeedPost={getFeedPost}/>}
             keyExtractor={(item) => item.id.toString()}
-            maxToRenderPerBatch={5} // Adjust this value based on your needs
             ListEmptyComponent={()=>{
               return(
                 <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No posts</Text>
               )
             }}
-            getItemLayout={(data, index) => (
-              {length: 500, offset: 500 * index, index}
-            )}
             // onScroll={handleScroll} // Add onScroll event to track the scroll position
-            onEndReached={loadMorePosts} // Call loadMorePosts when the user scrolls near the end
+            onEndReached={() => {
+              if (!loading && hasMoreDataFeeds) {
+                loadMorePosts();
+              }
+            }}
             onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            ListFooterComponent={<>
-            {loading && <ActivityIndicator size='small' color='#1E319D'/>}
-            </>}
+           
           />
       }
 

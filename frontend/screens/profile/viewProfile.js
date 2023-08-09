@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux';
 import UserInfo from "./userInfo";
 import { useState, useEffect } from "react";
-import { FlatList, Text, View, Image } from "react-native";
+import { FlatList, Text, View, Image, ActivityIndicator } from "react-native";
 import axios from "axios";
 import { useIsFocused } from "@react-navigation/native";
 import config from "../config";
@@ -25,6 +25,7 @@ export default ViewProfile = ({route, navigation}) => {
   const [data, setData] = useState([]);
   const [feedsData, setFeedsData] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingFeeds, setLoadingFeeds] = useState(false);
 
   const [role, setRole] = useState('');//fetch and set role
 
@@ -42,7 +43,6 @@ export default ViewProfile = ({route, navigation}) => {
       setLoading(true)
       const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         }
       });
@@ -58,16 +58,18 @@ export default ViewProfile = ({route, navigation}) => {
   const isFocused = useIsFocused();
  
   useEffect(()=>{
-    if(isFocused){
+    // if(isFocused){
       getPost();
       getFeedPost();
-    }
-    return () => {
-     setData('');
-    };
-  },[isFocused])
+    // }
+    // return () => {
+    //  setData('');
+    // };
+  },[
+    // isFocused
+  ])
 
-  const getPost = async() => {
+  const getPost = async() => {//certifcates
     try {
       setLoading(true)
       const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`,{
@@ -84,17 +86,52 @@ export default ViewProfile = ({route, navigation}) => {
     }
   }
 
+  const [hasMoreDataFeeds, setHasMoreDataFeeds] = useState(true); //inorder to handle excess fetch
+  const [page, setPage] = useState(1);
+
   const getFeedPost = async() => {
     try {
-      setLoading(true)
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}`);
+      setLoadingFeeds(true)
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=1&pageSize=5`);
       console.log('getFeedPost', res.data);
+      if (res.data.length > 0) {
       setFeedsData(res.data)
-      setLoading(false)
+      setPage(2)
+      } else {
+        setHasMoreDataFeeds(false);
+      }
     } catch (error) {
       console.error(error)
+    } finally {
+      setLoadingFeeds(false)
     }
   }
+
+  const loadMorePosts = async () => {//feed
+    // if (loading) return;
+    if (loadingFeeds || !hasMoreDataFeeds) {
+      return;
+    }
+    setLoadingFeeds(true);
+    console.log('feed')
+    try {
+      // const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
+      //   params: { page: page, pageSize: 5 },
+      // });
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=${page}&pageSize=5`);
+      if (res.data.length > 0) {
+        setFeedsData((prevData) => [...prevData, ...res.data]);
+        setPage(page + 1); // Update page state instead of page
+        console.log(res.data)
+      } else {
+        setHasMoreDataFeeds(false); // No more data available
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingFeeds(false);
+    }
+  };
 
   const handleImageClick = () => {
     setModalVisible(true);
@@ -123,8 +160,7 @@ const renderItem = ({ item }) => {
   );
 };
 
-// aviod using anynomus fn
-const keyExtractor = (item) => item.id.toString();
+const userinfo = ()=>  <UserInfo userid={userid} navigation={navigation} role={role} />;
 
   return(
     <View style={{
@@ -139,7 +175,7 @@ const keyExtractor = (item) => item.id.toString();
     {role === 'js' && 
     <FlatList
     // horizontal
-    ListHeaderComponent={()=>  <UserInfo userid={userid} navigation={navigation} role={role} />}
+    ListHeaderComponent={userinfo}
       data={data}
       ListEmptyComponent={()=>{
         return(
@@ -149,21 +185,31 @@ const keyExtractor = (item) => item.id.toString();
         )
       }}
       renderItem={renderItem}
-      keyExtractor={keyExtractor}
+      keyExtractor={(item) => item.id.toString()}
       showsHorizontalScrollIndicator={false}
       maxToRenderPerBatch={3} // Adjust this value based on your needs
     />
     }
      {role === 'em' && 
     <FlatList
-    // horizontal
-    ListHeaderComponent={()=><UserInfo userid={userid} navigation={navigation} role={role} />}
+    showsVerticalScrollIndicator={false}
+    ListHeaderComponent={userinfo}
       data={feedsData}
       renderItem={({item})=><FeedPosts item={item} role={role} navigation={navigation}/>}
-      keyExtractor={keyExtractor}
+      keyExtractor={(item) => item.id.toString()}
       showsHorizontalScrollIndicator={false}
-      maxToRenderPerBatch={3} // Adjust this value based on your needs
+      // maxToRenderPerBatch={3} // Adjust this value based on your needs
+      onEndReached={() => {
+        if (!loadingFeeds && hasMoreDataFeeds) {
+          loadMorePosts();
+        }
+      }}
+      onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
+      ListFooterComponent={<>
+        {loadingFeeds && <ActivityIndicator size='small' color='#1E319D'/>}
+      </>}
     />
+    
     }
     </View>
   )
