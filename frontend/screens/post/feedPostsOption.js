@@ -2,7 +2,7 @@ import { Text, View, Modal, TouchableWithoutFeedback, TouchableHighlight, Image,
     ToastAndroid, TouchableOpacity, TextInput} from "react-native";
 import axios from "axios";
 import config from "../config";
-import { MaterialIcons } from "@expo/vector-icons";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from "react-redux";
 import jwtDecode from "jwt-decode";
 
@@ -44,7 +44,7 @@ export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby, po
 
     return (
         <>
-        <Modal visible={isModalVisible} onRequestClose={()=>setIsModalVisible(false)} transparent={true} animationType="slide">
+        <Modal visible={isModalVisible} onRequestClose={()=>setIsModalVisible(false)} transparent={true} animationType="fade">
         <TouchableWithoutFeedback onPress={()=>setIsModalVisible(false)}>
             <View style={{
                 backgroundColor: "rgba(0,0,0,0.5)",
@@ -63,29 +63,42 @@ export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby, po
                 bottom: 0, // Align the modal to the bottom of the screen
                 left: 0,
                 right: 0,
-                height:'30%', // Set the height of the modal (half of the screen)
+                height:'15%', // Set the height of the modal (half of the screen)
             }}>
             {/* top close header and next/ post btn */}
-            <View style={styles.buttonContainer2}>
-                <View/>
-                <TouchableOpacity onPress={()=>{setIsModalVisible(false);}}>
-                <MaterialIcons name="close" size={24} color="black" />
-            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonContainer2} onPress={()=>{setIsModalVisible(false);}}>
+            {/* <Text style={styles.buttonText2}>CTA</Text> */}
+                {/* <TouchableOpacity onPress={()=>{setIsModalVisible(false);}}> */}
+                {/* <Icon name="close" size={24} color="black"/> */}
+            {/* </TouchableOpacity> */}
 
-            </View>
+            </TouchableOpacity>
 
             <View style={styles.container}>
 
                 {
-                    postby === userid ?
+                    postby == userid ?
                     <TouchableHighlight style={styles.btn} underlayColor="#F1F2F6"
                     onPress={handleDelete}>
-                    <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20, color:'red'}}>Delete Post</Text>
+                    <>
+                        <Icon name="delete" size={20} color="rgba(30,49,157,0.7)" style={{}}/>
+                        <Text style={{ paddingHorizontal:5,  color:'rgba(30,49,157,0.7)', }}>
+                        Delete post
+                        </Text>
+                    </>
+                    {/* <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20, color:'red'}}>Delete Post</Text> */}
                     </TouchableHighlight>
                     :
                     <TouchableHighlight style={styles.btn} underlayColor="#F1F2F6"  
                     onPress={handleReport}>
-                    <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20, color:'red'}}>Report Post</Text>
+                    
+                    <>
+                    <Icon name="flag" size={20} color="rgba(30,49,157,0.7)" style={{}}/>
+                    <Text style={{ paddingHorizontal:5,  color:'rgba(30,49,157,0.7)', }}>
+                        Flag as Inappropriate
+                    </Text>
+                    </>
+                    {/* <Text style={{textAlign:'center', textAlignVertical:'center', paddingVertical:20, color:'red'}}>Report Post</Text> */}
                     </TouchableHighlight>
                 }
 
@@ -110,20 +123,29 @@ const styles = StyleSheet.create({
         alignContent:'center'
     },
     buttonContainer2: {
-        backgroundColor: "#F1F2F6",
-        padding: 10,
+        backgroundColor: "lightgrey",
+        padding: 5,
         paddingHorizontal:15,
-        width: "100%",
+        width: "15%",
         display:"flex",
         flexDirection:"row",
-        justifyContent:"space-between",
+        justifyContent:'center',
+        alignSelf:'center',
         borderRadius:10
     },
     btn:{ 
     backgroundColor:'#fff',
-    borderColor:'red',
-    borderWidth:0.25,
-    borderRadius:5,
-    marginVertical:15 }
+    // borderColor:'red',
+    // borderWidth:0.25,
+    // borderRadius:5,
+    marginVertical:15, 
+    flexDirection:'row',
+    padding:15
+    },
+    buttonText2: {
+        fontSize: 16,
+        fontWeight:'bold',
+        textAlign:'center'
+      },
   });
   

@@ -475,7 +475,7 @@ const handleMessage = (touserid, tousername) => {
             onPress={()=>token ? handleReport(data[0].id) : navigation.navigate('Login')}
             >
               <>
-              <Icon name="report" size={20} color="rgba(30,49,157,0.7)" style={{}}/>
+              <Icon name="flag" size={20} color="rgba(30,49,157,0.7)" style={{}}/>
               <Text style={{ paddingHorizontal:5,  color:'rgba(30,49,157,0.7)', }}>
                 Flag as Inappropriate
               </Text>

@@ -873,8 +873,8 @@ app.patch('/api/feed_post', upload, async (req, res) => {
 app.get('/api/feed_posts', async (req, res) => {
   try {
     const { page, pageSize } = req.query;
-    const pageNumber = parseInt(page, 10) || 1;
-    const itemsPerPage = parseInt(pageSize, 10) || 10;
+    const pageNumber = parseInt(page, 5) || 1;
+    const itemsPerPage = parseInt(pageSize, 5) || 5;
 
     // Calculate the offset based on the requested page and page size
     const offset = (pageNumber - 1) * itemsPerPage;

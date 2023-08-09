@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FeedPost from '../post/feedPost';
 import jwtDecode from 'jwt-decode';
 import FeedPosts from '../post/feedPosts';
-import createSocket from '../socketConfig';
+// import createSocket from '../socketConfig';
 import { setToken, setRole, setUnreadCount, clearUnreadCount } from '../../reducers'; 
 
 export default Home = () => {
@@ -27,7 +27,7 @@ export default Home = () => {
   const role = useSelector((state) => state.role);
   const userid = token ? jwtDecode(token).userid : null;
   
-  const [data, setData] = useState('');
+  const [jobPost, setJobPosts] = useState('');
   const [feedsData, setFeedsData] = useState('');
   
   const [page, setPage] = useState(1);
@@ -35,82 +35,101 @@ export default Home = () => {
   
   const [JobPostPage, setJobPostPage] = useState(1);
 
-  const socket = createSocket(token);
-  const dispatch = useDispatch();
-  useEffect(() => {
-    socket.connect();
+  // const socket = createSocket(token);
+  // const dispatch = useDispatch();
+  // useEffect(() => {
+  //   socket.connect();
 
-    // socket.emit('joinChat', { user1:userid, user2:0});
+  //   // socket.emit('joinChat', { user1:userid, user2:0});
 
-    // // Listen for the 'roomJoined' event to receive the room ID from the backend
-    // socket.on('roomJoined', (data) => {
-    //     const { roomId } = data;
-    //     console.log(`Joined chat room with room ID: ${roomId}`);
-    //     // setRoomId(roomId); // Update the component state with the room ID
+  //   // // Listen for the 'roomJoined' event to receive the room ID from the backend
+  //   // socket.on('roomJoined', (data) => {
+  //   //     const { roomId } = data;
+  //   //     console.log(`Joined chat room with room ID: ${roomId}`);
+  //   //     // setRoomId(roomId); // Update the component state with the room ID
         
-    //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
-    //   // socket.emit('UnReadMessage', { userid });
-    //   console.log(`Joined chat room with room ID: ${roomId}`);
-    // });
+  //   //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
+  //   //   // socket.emit('UnReadMessage', { userid });
+  //   //   console.log(`Joined chat room with room ID: ${roomId}`);
+  //   // });
 
-    //establist a socket connection
-    socket.emit('connectUser', { userid:userid})
+  //   //establist a socket connection
+  //   socket.emit('connectUser', { userid:userid})
 
-    socket.emit('UnReadMessage', { userid });
+  //   socket.emit('UnReadMessage', { userid });
 
-    socket.on('UnReadMessageResult', (unreadCount) => {
+  //   socket.on('UnReadMessageResult', (unreadCount) => {
 
-      console.log('data', unreadCount);
-      if (unreadCount > 0) {
-      // setUnreadMessages(true);
-      dispatch(setUnreadCount(true))
-      console.log('unread msg')
-      } else {
-      // setUnreadMessages(null);
-      dispatch(clearUnreadCount())
-      console.log('all read msg')
-      }
-    });
-    return () => {
-      socket.disconnect();
-      // Unsubscribe from events if necessary
-      // Example: socket.off('eventFromServer', handleEventFromServer);
-    };
-  }, []);
+  //     console.log('data', unreadCount);
+  //     if (unreadCount > 0) {
+  //     // setUnreadMessages(true);
+  //     dispatch(setUnreadCount(true))
+  //     console.log('unread msg')
+  //     } else {
+  //     // setUnreadMessages(null);
+  //     dispatch(clearUnreadCount())
+  //     console.log('all read msg')
+  //     }
+  //   });
+  //   return () => {
+  //     socket.disconnect();
+  //     // Unsubscribe from events if necessary
+  //     // Example: socket.off('eventFromServer', handleEventFromServer);
+  //   };
+  // }, []);
 
+
+  // useEffect(()=>{
+  //   if(isFocused){
+  //     getJobPost();
+  //     getFeedPost();
+  //   }
+
+  //   console.log('home')
+
+  //   return () => {
+  //    setJobPosts('');
+  //   };
+    
+  // },[isFocused])
 
   useEffect(()=>{
-    if(isFocused){
-      getJobPost();
-      getFeedPost();
-    }
+    getJobPost();
+    getFeedPost();
 
-    console.log('home')
+  return () => {
+   setJobPosts('');
+  };
+  
+},[])
 
-    return () => {
-     setData('');
-    };
-    
-  },[isFocused])
-
-  const getJobPost = async () => {
+  const getJobPost = async() => {
     try {
-      if (role === 'em') {
+      if (role === 'em') {//fetch job post of an user
+
+        // setLoading(true);
+        // const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`, {
+        //   params: { page: 1, pageSize: 5 },});
+        // setJobPosts(res.data);
+        // if (res.data) setLoading(false);
+
+      } else { //fetch job posts post by all/ any em
+        console.log('js posts fetching')
+
         setLoading(true);
-        const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`);
-        setData(res.data);
-        if (res.data) setLoading(false);
-      } else {
-        setLoading(true);
-        const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
-          params: { page: 1, pageSize: 10 },
-        });
-        if (res.data.length > 0) {
-          setJobPostPage(2); // Set page to 2 since we already fetched the first page
-          setData(res.data); // Set feedsData with the fetched data (no need to concatenate)
-        } else {
-          setData([]); // If no data received, set an empty array
-        }
+        const res = await axios.get(`${config.API_URL}/api/get_job_post/?page=1&pageSize=5`);
+        setJobPosts(res.data);
+        setJobPostPage(2);
+        setLoading(false);
+
+        // if (res.data.length > 0) {
+          // setJobPostPage(2); // Set page to 2 since we already fetched the first page
+          // setJobPosts(res.data); // Set feedsData with the fetched data (no need to concatenate)
+          // setHasMoreData(true); // Reset hasMoreData because we fetched new data
+        // } else {
+        //   setJobPosts([]); // If no data received, set an empty array
+        //   // setHasMoreData(false); // No more data available
+        // }
         // if (res.data) setLoading(false);
       }
     } catch (error) {
@@ -119,26 +138,59 @@ export default Home = () => {
       setLoading(false);
     }
   };
+
+  const [hasMoreData, setHasMoreData] = useState(true); //inorder to handle excess fetch
   
   const loadMoreJobPosts = async () => {
-    if (loading) return;
+    // If already loading, return to prevent multiple requests
+    if (loading || !hasMoreData) {
+      return;
+    }
   
     setLoading(true);
-    console.log(JobPostPage)
+  
     try {
-      const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
-        params: { page: JobPostPage + 1, pageSize: 5 },
-      });
+      // Your API call here, e.g., using axios
+      console.log('teter')
+      const res = await axios.get(`${config.API_URL}/api/get_job_post/?page=${JobPostPage}&pageSize=5`);
       if (res.data.length > 0) {
+        setJobPosts(prevPosts => [...prevPosts, ...res.data]);
         setJobPostPage(JobPostPage + 1);
-        setData((prevData) => [...prevData, ...res.data]);
+      } else {
+        setHasMoreData(false); // No more data available
       }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
- };
+  };
+  
+//   const loadMoreJobPosts = async () => {
+//     setPage(page + 1);
+//     // if (loading) return; 
+//     // if (loading) return; // Check if you're already loading data or if there's no more data
+
+//     // console.log('loadMoreJobPosts')
+//     // setLoading(true);
+//     // console.log(JobPostPage,'JobPostPage')
+
+//     // try {
+//     //   const res = await axios.get(`${config.API_URL}/api/get_job_post`, {
+//     //     params: { page: JobPostPage, pageSize: 1 },
+//     //   });
+//     //   if (res.data.length > 0) {
+//     //     setJobPostPage(JobPostPage + 1);
+//     //     setJobPosts((prevData) => [...prevData, ...res.data]);
+//     //   } else {// if no data is available to fetch
+//     //     // setHasMoreData(false); // No more data available
+//     //   }
+//     // } catch (error) {
+//     //   console.error(error);
+//     // } finally {
+//     //   setLoading(false);
+//     // }
+//  };
   
   const getFeedPost = async () => {
     try {
@@ -159,17 +211,19 @@ export default Home = () => {
     }
   };
 
-  const loadMorePosts = async () => {
+  const loadMorePosts = async () => {//feed
     if (loading) return;
   
     setLoading(true);
+    console.log('feed')
     try {
       const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-        params: { page: page + 1, pageSize: 5 },
+        params: { page: page, pageSize: 5 },
       });
       if (res.data.length > 0) {
         setPage(page + 1); // Update page state instead of JobPostPage
         setFeedsData((prevData) => [...prevData, ...res.data]);
+        console.log(res.data)
       }
     } catch (error) {
       console.error(error);
@@ -182,6 +236,7 @@ export default Home = () => {
   const onRefresh = async () => {
     setRefreshing(true); // Set refreshing to true to show the loader
     try {
+      setHasMoreData(true);
       await getJobPost(); // Fetch data again
       await getFeedPost(); // Fetch data again
     } catch (error) {
@@ -194,12 +249,12 @@ export default Home = () => {
   //this to retain the faltlist position when scrolling 
   const flatListRef = useRef(null);
   
-  // const [scrollOffset, setScrollOffset] = useState(0);
+  const [scrollOffset, setScrollOffset] = useState(0);
 
-  // const handleScroll = (event) => {
-  //   const offsetY = event.nativeEvent.contentOffset.y;
-  //   setScrollOffset(offsetY);
-  // };
+  const handleScroll = (event) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    setScrollOffset(offsetY);
+  };
   
   useEffect(() => {
     if (isFocused) {
@@ -262,7 +317,7 @@ export default Home = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);//feed post modal
 
-  if (!data) {
+  if (!jobPost) {
     return <Spinner/>;
   }
 
@@ -289,21 +344,23 @@ export default Home = () => {
         jobTabSelected &&
           <FlatList
             ref={flatListRef}
-            data={data}
+            data={jobPost}
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => <Posts item={item} role={role} navigation={navigation} selectedItem={selectedItem} setSelectedItem={setSelectedItem}/>}
             keyExtractor={(item, index) => index.toString()}
-            maxToRenderPerBatch={3} // Adjust this value based on your needs
             ListEmptyComponent={()=>{
               return(
                 <Text style={{textAlign:"center", marginVertical:30, color:"grey"}}>No posts</Text>
               )
             }}
-            getItemLayout={(data, index) => (
-              {length: 500, offset: 500 * index, index}
-            )}
             // onScroll={(event)=>{handleScroll(event);}} // Add onScroll event to track the scroll position
-            onEndReached={data.length >= 5 && !loading ? loadMoreJobPosts : null} // Call loadMoreJobPosts only when there are more posts to load and not already loading
+            // onEndReached={data.length >= 5 && !loading ? loadMoreJobPosts : null} // Call loadMoreJobPosts only when there are more posts to load and not already loading
             // onEndReached={loadMoreJobPosts} // Call loadMorePosts when the user scrolls near the end
+            onEndReached={() => {
+              if (!loading && hasMoreData) {
+                loadMoreJobPosts();
+              }
+            }}
             onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -317,7 +374,7 @@ export default Home = () => {
       {//news feeds posts
         !jobTabSelected &&
           <FlatList
-            // ref={flatListRef}
+            ref={flatListRef}
             showsVerticalScrollIndicator={false}
             data={feedsData}
             renderItem={({ item }) => <FeedPosts item={item} role={role} navigation={navigation} 

@@ -15,7 +15,7 @@ import { DrawerToggleButton } from "@react-navigation/drawer";
 import adminHome from "../screens/admin/adminHome";
 import contentManagement from "../screens/admin/contentManagement";
 import userManagement from "../screens/admin/userManagement";
-import createSocket from "../screens/socketConfig";
+// import createSocket from "../screens/socketConfig";
 import jwtDecode from "jwt-decode";
 import config from "../screens/config";
 import axios from "axios";
@@ -49,58 +49,58 @@ function BottomTab() {
 
   const unread_count = useSelector((state) => state.unread_count)
 
-  const socket = createSocket(token);
+  // const socket = createSocket(token);
 
-  const getUnreadCount = () => {
-    console.log(userid)
-    axios.get(`${config.API_URL}/api/unread_count/${userid}`)
-    .then(res=>{
-      console.log('count',res.data)
-      if (res.data.unreadCount > 0 ) {
-        dispatch(setUnreadCount(true))
-      } else { 
-        dispatch(setUnreadCount(null))
-      }
-    })
-    .catch(e=>console.log(e))
-  }
+  // const getUnreadCount = () => {
+  //   console.log(userid)
+  //   axios.get(`${config.API_URL}/api/unread_count/${userid}`)
+  //   .then(res=>{
+  //     console.log('count',res.data)
+  //     if (res.data.unreadCount > 0 ) {
+  //       dispatch(setUnreadCount(true))
+  //     } else { 
+  //       dispatch(setUnreadCount(null))
+  //     }
+  //   })
+  //   .catch(e=>console.log(e))
+  // }
 
-  useEffect(() => {
-    getUnreadCount()
-    // socket.connect();
+  // useEffect(() => {
+  //   getUnreadCount()
+  //   // socket.connect();
 
-    // socket.emit('joinChat', { user1:userid, user2:0});
+  //   // socket.emit('joinChat', { user1:userid, user2:0});
 
-    // // Listen for the 'roomJoined' event to receive the room ID from the backend
-    // socket.on('roomJoined', (data) => {
-    //     const { roomId } = data;
-    //     console.log(`Joined chat room with room ID: ${roomId}`);
-    //     // setRoomId(roomId); // Update the component state with the room ID
+  //   // // Listen for the 'roomJoined' event to receive the room ID from the backend
+  //   // socket.on('roomJoined', (data) => {
+  //   //     const { roomId } = data;
+  //   //     console.log(`Joined chat room with room ID: ${roomId}`);
+  //   //     // setRoomId(roomId); // Update the component state with the room ID
         
-    //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
-    //   // socket.emit('UnReadMessage', { userid });
-    //   console.log(`Joined chat room with room ID: ${roomId}`);
-    // });
+  //   //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
+  //   //   // socket.emit('UnReadMessage', { userid });
+  //   //   console.log(`Joined chat room with room ID: ${roomId}`);
+  //   // });
 
-    //establist a socket connection
-    // socket.emit('connectUser')
+  //   //establist a socket connection
+  //   // socket.emit('connectUser')
 
-    // socket.emit('UnReadMessage', { userid });
+  //   // socket.emit('UnReadMessage', { userid });
 
-    // socket.on('UnReadMessageResult', (unreadCount) => {
+  //   // socket.on('UnReadMessageResult', (unreadCount) => {
 
-    //   console.log('data', unreadCount);
-    //   if (unreadCount > 0) {
-    //   // setUnreadMessages(true);
-    //   dispatch(setUnreadCount(true))
-    //   console.log('unread msg')
-    //   } else {
-    //   // setUnreadMessages(null);
-    //   dispatch(clearUnreadCount())
-    //   console.log('all read msg')
-    //   }
-    // });
-  }, [userid, dispatch]);
+  //   //   console.log('data', unreadCount);
+  //   //   if (unreadCount > 0) {
+  //   //   // setUnreadMessages(true);
+  //   //   dispatch(setUnreadCount(true))
+  //   //   console.log('unread msg')
+  //   //   } else {
+  //   //   // setUnreadMessages(null);
+  //   //   dispatch(clearUnreadCount())
+  //   //   console.log('all read msg')
+  //   //   }
+  //   // });
+  // }, [userid, dispatch]);
 
   return (
     <Tab.Navigator

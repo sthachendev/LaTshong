@@ -128,10 +128,10 @@ function setupSocket(server) {
     });
 
     //establist a socket connection
-    socket.on('connectUser', async(data) => {
-      const {userid} = data;
-      console.log('user connected online', userid);
-    })
+    // socket.on('connectUser', async(data) => {
+    //   const {userid} = data;
+    //   console.log('user connected online', userid);
+    // })
 
     // Clean up on client disconnect
     socket.on('disconnect', () => {

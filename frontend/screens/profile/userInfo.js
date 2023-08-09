@@ -106,23 +106,22 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
           // style={{backgroundColor:'red'}}
           >
           {/* profile image */}
-          {userInfo[0].imageurl.length > 0 ? 
-          <>
-          { image ? 
-            <Image  source={{ uri : image }}  
-            style={{width:120, height:120, borderRadius:60, borderColor:"lightgrey", borderWidth:1,}}
-           />
-           :
+          {image? //if image show image uploaded image
+          <Image  source={{ uri : image }}  
+          style={{width:120, height:120, borderRadius:60, borderColor:"lightgrey", borderWidth:1,}}
+         />
+         :
+         <>
+          {  userInfo[0].imageurl.length > 0 ? //if image then display image profile image
            <Image  source={{ uri : `${config.API_URL}/${userInfo[0].imageurl}`}}  
              style={{width:120, height:120, borderRadius:60, borderColor:"lightgrey", borderWidth:1,}}
             />
-          }
-         
-          </>
-          :
+            : //else display deafult empty image
             <Image source={require("../../assets/images/default.png")} 
-            style={{width:120, height:120, borderRadius:60,  borderColor:"lightgrey", borderWidth:1, marginTop:20}}
-            />
+           style={{width:120, height:120, borderRadius:60,  borderColor:"lightgrey", borderWidth:1, marginTop:20}}
+           />
+          }
+          </>
           }
 
           {/* add profile pic btn  // show if profile is of current user*/}
