@@ -29,6 +29,7 @@ export default Profile = ({navigation}) => {
 
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [hasMoreDataFeeds, setHasMoreDataFeeds] = useState(true); //inorder to handle excess fetch
   const [feedLoading, setFeedLoading] = useState(false);
 
   const isFocused = useIsFocused();
@@ -66,14 +67,12 @@ export default Profile = ({navigation}) => {
   const getFeedPost = async () => {
     try {
       setFeedLoading(true);
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}`, {
-        params: { page: 1, pageSize: 5 },
-      });
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=1&pageSize=5`);
       if (res.data.length > 0) {
         setPage(2); // Set page to 2 since we already fetched the first page
         setFeedsData(res.data); // Set feedsData with the fetched data (no need to concatenate)
       } else {
-        setFeedsData([]); // If no data received, set an empty array
+        setHasMoreDataFeeds(false);
       }
     } catch (error) {
       console.error(error);
@@ -83,17 +82,19 @@ export default Profile = ({navigation}) => {
   };
 
   const loadMorePosts = async () => {
-    if (feedLoading) return;
+    if (feedLoading || !hasMoreDataFeeds) {
+      return;
+    }
 
     setFeedLoading(true);
     try {
-      const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-        params: { page: page + 1, pageSize: 5 },
-      });
+      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=${page}&pageSize=5`);
       if (res.data.length > 0) {
-        setPage(page + 1);
         setFeedsData((prevData) => [...prevData, ...res.data]); // Concatenate new data with previous data
-      }
+        setPage(page + 1);
+      } else {
+        setHasMoreDataFeeds(false); // No more data available
+      }         
     } catch (error) {
       console.error(error);
     } finally {
@@ -257,13 +258,16 @@ const keyExtractor = (item) => item.id.toString();
     renderItem={({item})=><FeedPosts item={item} role={role} navigation={navigation} getFeedPost={getFeedPost}/>}
     keyExtractor={keyExtractor}
     showsHorizontalScrollIndicator={false}
-    maxToRenderPerBatch={5} // Adjust this value based on your needs
-    // onEndReached={loadMorePosts} // Call loadMorePosts when the user scrolls near the end
-    // onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
-    ListFooterComponent={<>
-      {feedLoading && <ActivityIndicator size='small' color='#1E319D'/>}
-      </>
+    onEndReachedThreshold={0.1} // Adjust this threshold based on your preference
+    onEndReached={() => {
+      if (!feedLoading && hasMoreDataFeeds) {
+        loadMorePosts();
       }
+    }}
+    // ListFooterComponent={<>
+    //   {feedLoading && <ActivityIndicator size='small' color='#1E319D'/>}
+    //   </>
+    //   }
     ListEmptyComponent={()=>{
       return(
         <View style={{display:'flex', marginTop:30}}>

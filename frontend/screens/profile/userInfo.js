@@ -103,7 +103,6 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
       
           <TouchableOpacity onPress={()=>{userInfo[0].imageurl && setImageUri(`${config.API_URL}/${userInfo[0].imageurl}`); handleImageClick();}} 
           activeOpacity={1} 
-          // style={{backgroundColor:'red'}}
           >
           {/* profile image */}
           {image? //if image show image uploaded image

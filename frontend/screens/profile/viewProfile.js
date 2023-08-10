@@ -122,9 +122,6 @@ export default ViewProfile = ({route, navigation}) => {
     setLoadingFeeds(true);
     console.log('feed')
     try {
-      // const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-      //   params: { page: page, pageSize: 5 },
-      // });
       const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=${page}&pageSize=5`);
       if (res.data.length > 0) {
         setFeedsData((prevData) => [...prevData, ...res.data]);

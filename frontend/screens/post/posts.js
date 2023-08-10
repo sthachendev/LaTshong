@@ -40,7 +40,7 @@ const Posts = (({item, role, navigation, selectedItem, setSelectedItem}) => {
   onPress={() => navigation.navigate('PostDetails', { id: item.id, role })}>
     
   <View style={{paddingHorizontal:10, paddingVertical:15}}>
-    <Text>{item.id}</Text>
+    {/* <Text>{item.id}</Text> */}
 
     <View style={{flexDirection:'row', justifyContent:'space-between',}}>
       <Text style={{color:"grey", fontSize:12}}>

@@ -26,6 +26,8 @@ export default ChatRoom = ({route, navigation}) => {
   const {touserid, imageurl} = route.params;
   console.log(route.params)
 
+  const [sending, setSending] = useState(false);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerTitle: () => <Header title={route.params.title} imageUrl={imageurl} touserid={touserid} />,
@@ -88,6 +90,7 @@ export default ChatRoom = ({route, navigation}) => {
       });    
 
       socket.on('messageAdded', (data) => {
+        setSending(false);
         const { id, userid, roomId, message, message_type, date, file_name, file_size, file_uri, file_type} = data;
 
         console.log('new message', userid, touserid, file_name, file_size, file_uri, file_type);
@@ -122,9 +125,10 @@ export default ChatRoom = ({route, navigation}) => {
 
   const sendMessage = (message) => {
     // Emit the message event to the server
+    setSending(true)
     console.log('send btn');
     if (message && message.trim() !== ''){
-    console.log('send msg');
+    // console.log('send msg');
       // socket.emit('message', { message, fromuserid:userid, touserid:touserid});
       socket.emit('addMessage', { message, userid, roomId });
       setMessage('');
@@ -151,7 +155,7 @@ export default ChatRoom = ({route, navigation}) => {
           })
           .catch(e=>console.log(e))
         
-          console.log('posted')
+          // console.log('posted')
         } catch (error) {
           console.log(error);
         }
@@ -313,9 +317,9 @@ const saveAndroidFile = async (fileUri, fileName) => {
         return(
           <>
             <View style={{display:'flex', alignContent:'flex-end', justifyContent:'center', flexDirection:'row'}}>
-            <Image style={{ width: 200, height: 200, borderRadius:100, marginVertical:10}} source={require("../../assets/images/message.png")} />
+            {/* <Image style={{ width: 200, height: 200, borderRadius:100, marginVertical:10}} source={require("../../assets/images/message.png")} /> */}
             </View>
-            <Text style={{textAlign:'center', fontSize:12, color:'grey'}}>---</Text>
+            {/* <Text style={{textAlign:'center', fontSize:12, color:'grey'}}>---</Text>
             <Text style={{ textAlign:"justify", fontSize:12, color:'grey', padding:10}}>
             🙏 Please remember to be polite and respectful. Treat others the way you want to be treated.
             {'\n'}{'\n'}
@@ -323,7 +327,8 @@ const saveAndroidFile = async (fileUri, fileName) => {
             {'\n'}{'\n'}
             🔒 Your privacy is important to us! Be cautious when sharing links or interacting with unknown users.
            </Text>
-           <Text style={{textAlign:'center', fontSize:12, color:'grey', marginBottom:30}}>---</Text>
+           <Text style={{textAlign:'center', fontSize:12, color:'grey', marginBottom:30}}>---</Text> */}
+           <Text/>
           </>
          
         )
@@ -440,6 +445,7 @@ const saveAndroidFile = async (fileUri, fileName) => {
 {console.log("Message User ID:", msg.userid)}{
 console.log("Current User ID:", userid)
 }
+
         {/* date */}
         <Text style={{ color: "grey", 
         textAlign: msg.userid == userid ? "right" : "left", fontSize:11,
@@ -503,7 +509,7 @@ console.log("Current User ID:", userid)
           borderRadius: 20,
           maxHeight:100
         }}
-        placeholder="Write a message..."
+        placeholder={sending ? 'sending...':'Write a message...'}
         multiline
         onChangeText={setMessage}
         value={message}

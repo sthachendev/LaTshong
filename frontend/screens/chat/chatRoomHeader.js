@@ -28,8 +28,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    width: 40, // Adjust the width and height according to your needs
-    height: 40,
+    width: 35, // Adjust the width and height according to your needs
+    height: 35,
 
     borderRadius: 20,
     borderColor:"lightgrey", borderWidth:1

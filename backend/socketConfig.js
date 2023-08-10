@@ -6,10 +6,29 @@ function setupSocket(server) {
   const io = socketIo(server);
 
   // Socket.IO logic can be added here
+  let onlineUsers = [];
+
+    const addNewUser = (userid, socketid) => {
+      !onlineUsers.some((user)=>user.id === userid) &&
+      onlineUsers.push({ userid, socketid});
+    }
+
+    const removeUser = (socketid) => {
+      onlineUsers = onlineUsers.filter((user) => user.socketid !== socketid);
+    }
+
+    const getUser = (userid) => {
+      return onlineUsers.find((user) => user.userid === userid)
+    }
 
  // Define Socket.IO event handlers
     io.on('connection', (socket) => {
     console.log('A client connected.');
+
+    socket.on('newUser', (userid) => {
+      console.log('user added')
+      addNewUser(userid, socket.id);
+    })
     
     socket.on('joinChat', async (data) => {
       const { user1, user2 } = data;
@@ -136,6 +155,7 @@ function setupSocket(server) {
     // Clean up on client disconnect
     socket.on('disconnect', () => {
       console.log('A client disconnected.');
+      removeUser(socket.id);
       // Perform any necessary clean-up tasks
     });
   });
