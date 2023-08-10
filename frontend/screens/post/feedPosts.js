@@ -10,6 +10,8 @@ import { useState } from 'react';
 import FeedPostsOption from './feedPostsOption';
 import ImageViewer from '../custom/ImageViewer';
 import Ionicons from "react-native-vector-icons/Ionicons";
+// import LazyImage from '../custom/LazyImage';
+// import VideoPlayer from '../custom/VideoPlayer';
 
 const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
@@ -17,7 +19,8 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
   const [modalVisible, setModalVisible] = useState(false);//image viewer
 
-  console.log('feed post')
+  console.log('feed post');
+  
   return(
   <View style={styles.itemContainer} >
 

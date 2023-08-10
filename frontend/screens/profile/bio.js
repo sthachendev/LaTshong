@@ -43,7 +43,7 @@ export default Bio = ({isModalVisible, setIsModalVisible, fetchUserInfo, desc, s
 
     return (
         <>
-        <Modal visible={isModalVisible} onRequestClose={()=>setIsModalVisible(false)} transparent={true} animationType="slide">
+        <Modal visible={isModalVisible} onRequestClose={()=>setIsModalVisible(false)} transparent={true} animationType="fade">
         <TouchableWithoutFeedback onPress={()=>setIsModalVisible(false)}>
             <View style={{
                 backgroundColor: "rgba(0,0,0,0.9)",

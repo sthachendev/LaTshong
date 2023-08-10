@@ -173,7 +173,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
           // borderColor:'rgba(30,49,157,0.7)', borderWidth:2, 
         // backgroundColor:'#fff',
         display:'flex',
-        marginLeft:5,
+        // marginLeft:5,
         alignSelf:'center',
         padding:5,
         borderRadius:20
@@ -183,7 +183,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
         onPress={()=>{setIsModalVisible2(true); userInfo[0].bio && setDesc(userInfo[0].bio)}} 
           underlayColor='#F1F2F6'
           >
-        <MaterialIcons name="create" color='#1E319D' size={15}/>
+        <MaterialIcons name="drive-file-rename-outline" color='#000' size={15}/>
         </TouchableHighlight>
         }
 

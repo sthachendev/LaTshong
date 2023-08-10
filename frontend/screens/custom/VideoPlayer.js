@@ -36,7 +36,7 @@ export default function VideoPlayer({ videoUri }) {
       />
 
       <TouchableOpacity style={styles.playPauseButton} onPress={handlePlayPause}>
-        <AntDesign name={isPlaying ? 'pause' : 'play'} size={24} color="white" />
+        <AntDesign name={isPlaying ? 'pause' : 'play'} size={24} color={isPlaying?"transparent":'#fff'} />
       </TouchableOpacity>
 
       <View style={styles.progressContainer}>
@@ -75,8 +75,9 @@ const styles = StyleSheet.create({
   },
   playPauseButton: {
     position: 'absolute',
-    bottom: 20,
-    left: '45%',
+    bottom: '40%', // Adjust this value as needed
+    left: '50%',
+    transform: [{ translateX: -12 }], // Adjust this value to horizontally center the button
     zIndex: 1,
   },
   progressContainer: {

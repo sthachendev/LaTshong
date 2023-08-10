@@ -365,7 +365,9 @@ export default Home = () => {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-           
+            ListFooterComponent={<>
+              {loading && <ActivityIndicator size='small' color='#1E319D'/>}
+            </>}
           />
       }
 
