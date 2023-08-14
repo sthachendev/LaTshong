@@ -6,20 +6,20 @@ function setupSocket(server) {
   const io = socketIo(server);
 
   // Socket.IO logic can be added here
-  let onlineUsers = [];
+  // let onlineUsers = [];
 
-    const addNewUser = (userid, socketid) => {
-      !onlineUsers.some((user)=>user.id === userid) &&
-      onlineUsers.push({ userid, socketid});
-    }
+  //   const addNewUser = (userid, socketid) => {
+  //     !onlineUsers.some((user)=>user.id === userid) &&
+  //     onlineUsers.push({ userid, socketid});
+  //   }
 
-    const removeUser = (socketid) => {
-      onlineUsers = onlineUsers.filter((user) => user.socketid !== socketid);
-    }
+  //   const removeUser = (socketid) => {
+  //     onlineUsers = onlineUsers.filter((user) => user.socketid !== socketid);
+  //   }
 
-    const getUser = (userid) => {
-      return onlineUsers.find((user) => user.userid === userid)
-    }
+  //   const getUser = (userid) => {
+  //     return onlineUsers.find((user) => user.userid === userid)
+  //   }
 
  // Define Socket.IO event handlers
     io.on('connection', (socket) => {
@@ -155,7 +155,7 @@ function setupSocket(server) {
     // Clean up on client disconnect
     socket.on('disconnect', () => {
       console.log('A client disconnected.');
-      removeUser(socket.id);
+      // removeUser(socket.id);
       // Perform any necessary clean-up tasks
     });
   });
@@ -170,7 +170,7 @@ function setupSocket(server) {
         WHERE m.room_id = $1
         ORDER BY m.date ASC
       `, [roomId]);
-
+      //fetch using limit and offset
 
     // Extract the data from the query result
     const messages = result.rows;
@@ -183,6 +183,32 @@ function setupSocket(server) {
       throw error;
     }
   };
+
+  // const fetchMessage = async (roomId, limit, pageNumber) => {
+  //   console.log('fetchMessage');
+  //   try {
+  //     const offset = (pageNumber - 1) * limit;
+      
+  //     const result = await pool.query(`
+  //       SELECT m.*, ad.file_name, ad.file_size, ad.file_uri
+  //       FROM messages AS m
+  //       LEFT JOIN attachment_details AS ad ON m.id = ad.message_id
+  //       WHERE m.room_id = $1
+  //       ORDER BY m.date ASC
+  //       OFFSET $2
+  //       LIMIT $3;
+  //     `, [roomId, offset, limit]);
+      
+  //     const messages = result.rows;
+    
+  //     console.log(messages);
+    
+  //     return messages;
+  //   } catch (error) {
+  //     console.error('Error occurred while fetching data from the database:', error);
+  //     throw error;
+  //   }
+  // };
 
   const fetchUnreadMessageCount = async (userid) => {
     try {

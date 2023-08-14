@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ToastAndroid } from 'react-native';
-import io from 'socket.io-client';
+// import io from 'socket.io-client';
 import config from '../config';
 import { useDispatch, useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
@@ -163,6 +163,10 @@ export default ChatRoom = ({route, navigation}) => {
     }
   };
 
+  const handleFetchMore = () => {
+    console.log('fetchingmore messages')
+  }
+
   const [file, setFile] = useState('');
   
   const pickAttachment = async () => {
@@ -310,6 +314,8 @@ const saveAndroidFile = async (fileUri, fileName) => {
     <FlatList
     //header is footer, the message is shown in reverse oorder
       // ref={flatListRef}
+      showsVerticalScrollIndicator={false}
+      onEndReached={()=>handleFetchMore()}
       data={messages}
       keyExtractor={(item) => item.id.toString()}
       initialNumToRender={10}

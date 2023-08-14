@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 export default PostDetails = ({ route, navigation }) => {
   
   const { id, role } = route.params;//post id
+  console.log(route.params);
 
   const [data, setData] = useState('');
   const [usersData, setUserData] = useState([]);
@@ -59,11 +60,20 @@ const getJobPost = async () => {
       setData(res.data);
       setPostStatus(res.data[0].status);
     setLoading(false);
-    // console.log(res.data[0].postby);
+    // console.log(res.data[0]);
     const applicants = res.data[0].applicants;
     const accepted_applicants = res.data[0].accepted_applicants;
 
-    if(applicants.includes(userid)) setIsApply(true)
+    console.log(userid);
+
+    const intUserid = parseInt(userid); //converting userid to int
+    if(applicants.includes(intUserid)) 
+    // {
+      // console.log('this is true')
+      setIsApply(true)
+    // }else{
+    //   // console.log('this is false')
+    // }
 
     if ( role === 'em' && role !== 'js' ){
       setLoading(true);
@@ -106,7 +116,6 @@ const handleApply = async (postid) => {
         },
         {
           headers: {
-            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           }
         }
@@ -125,10 +134,10 @@ const handleApply = async (postid) => {
   }
 }
 
-const handleMessage = (touserid, tousername) => {
+const handleMessage = (touserid, tousername, imageurl) => {
   if (token) {
     navigation.navigate('ChatRoom', 
-    {touserid: touserid, title: capitalizeWords(tousername)})
+    {touserid: touserid, title: capitalizeWords(tousername), imageurl})
   }else{
     navigation.navigate('Login');
   }
@@ -452,7 +461,7 @@ const handleMessage = (touserid, tousername) => {
             </TouchableHighlight>
         
             <TouchableHighlight style={{borderColor:'rgba(30,49,157,0.7)',borderWidth:0.25, flex:.45, borderRadius:25}} underlayColor="#F1F2F6"  
-            onPress={()=>handleMessage(data[0].postby, data[0].name)}
+            onPress={()=>handleMessage(data[0].postby, data[0].name, data[0].imageurl)}
             >
               <Text style={{ paddingVertical:10,  textAlign:"center", color:'rgba(30,49,157,0.7)' }}>
                 {/* <MaterialIcons name="mail" size={20} color="lightgrey" /> */}

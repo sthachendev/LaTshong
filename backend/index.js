@@ -349,18 +349,27 @@ app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
   try {
     const { userid, postid } = req.body;
 
-    if (postid) {
+    if (postid && userid) {
       const jobPost = await pool.query("SELECT applicants FROM job_posts WHERE id = $1", [postid]);
+      
+      if (jobPost.rows.length === 0) {
+        return res.status(404).send("Job post not found");
+      }
+      
       const applicants = jobPost.rows[0].applicants;
 
-      if (applicants.includes(userid)) {
+      const userIdInt = parseInt(userid);
+
+      if (applicants.includes(userIdInt)) {
         // User has already applied, so remove them from the applicants array
-        await pool.query("UPDATE job_posts SET applicants = array_remove(applicants, $1) WHERE id = $2", [userid, postid]);
-        res.status(200).send({isApply:false});
+        const updatedApplicants = applicants.filter(applicantId => applicantId !== userIdInt);
+        await pool.query("UPDATE job_posts SET applicants = $1 WHERE id = $2", [updatedApplicants, postid]);
+        res.status(200).send({ isApply: false });
       } else {
         // User hasn't applied, so add them to the applicants array
-        await pool.query("UPDATE job_posts SET applicants = array_append(applicants, $1) WHERE id = $2", [userid, postid]);
-        res.status(200).send({isApply:true});
+        const updatedApplicants = [...applicants, userIdInt];
+        await pool.query("UPDATE job_posts SET applicants = $1 WHERE id = $2", [updatedApplicants, postid]);
+        res.status(200).send({ isApply: true });
       }
     } else {
       return res.status(400).send("Invalid update request");
@@ -740,13 +749,32 @@ app.get("/api/get_job_post_location", async (req, res) => {//token not required
 });
 
 //search //token not required
+// app.get("/api/search_job", async (req, res) => {
+//   try {
+//     const { query } = req.query; // Get the search query from the request
+//     // Define the search query
+//     const searchQuery = `
+//       SELECT job_title, job_description FROM job_posts WHERE job_title ILIKE $1 OR job_description ILIKE $1 OR job_requirements ILIKE $1
+//       OR nature ILIKE $1 OR location_ ILIKE $1 OR job_salary ILIKE $1`;
+
+//     // Execute the search query
+//     const result = await pool.query(searchQuery, [`%${query}%`]);
+
+//     // Send the search results as the API response
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error("Error occurred:", err);
+//     res.status(500).json({ error: "An error occurred" });
+//   }
+// });
 app.get("/api/search_job", async (req, res) => {
   try {
     const { query } = req.query; // Get the search query from the request
     // Define the search query
     const searchQuery = `
       SELECT job_title, job_description FROM job_posts WHERE job_title ILIKE $1 OR job_description ILIKE $1 OR job_requirements ILIKE $1
-      OR nature ILIKE $1 OR location_ ILIKE $1 OR job_salary ILIKE $1`;
+      OR nature ILIKE $1 OR location_ ILIKE $1 OR job_salary ILIKE $1
+      LIMIT 800`; // Add a LIMIT clause to limit the results to 800
 
     // Execute the search query
     const result = await pool.query(searchQuery, [`%${query}%`]);
