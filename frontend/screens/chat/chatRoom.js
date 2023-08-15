@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Image, ToastAndroid } from 'react-native';
-// import io from 'socket.io-client';
+import io from 'socket.io-client';
 import config from '../config';
 import { useDispatch, useSelector } from 'react-redux';
 import jwtDecode from 'jwt-decode';
@@ -42,15 +42,28 @@ export default ChatRoom = ({route, navigation}) => {
 
   const dispatch = useDispatch();
 
-  const socket = createSocket(token);
-
   //user input
   const [message, setMessage] = useState('');
   //fetch messages
   const [messages, setMessages] = useState('');
   const [roomId, setRoomId] = useState(null);
-    
+
+  const [lastMessageId, setLastMessageId] = useState(null);
+
+  const [socket, setSocket] = useState(null);
+
+// socket.on('fetchMessages', (data) => {
+//   const { messages } = data;
+//   if (messages.length > 0) {
+//     setLastMessageId(messages[messages.length - 1].id); // Update last message ID
+//     // ...
+//   }
+// });
+
   useEffect(() => {
+
+  const socket = createSocket(token);
+  setSocket(socket)//set socket to acess outside
     // Connect to Socket.IO when the component mounts
     // socket.connect();
     //send uid to check for chat room id
@@ -63,7 +76,7 @@ export default ChatRoom = ({route, navigation}) => {
         setRoomId(roomId); // Update the component state with the room ID
         
       socket.emit('markRoomMessagesAsRead', { roomId, userid });
-      socket.emit('UnReadMessage', { userid });
+      socket.emit('UnReadMessage', { roomId, userid });
       console.log(`Joined chat room with room ID: ${roomId}`);
     });
 
@@ -84,9 +97,11 @@ export default ChatRoom = ({route, navigation}) => {
 
       socket.on('fetchMessages', (data) => {
         const { messages} = data;
-        // console.log(messages,'messages')
-        setMessages(messages.reverse());
-        // scrollToBottom();
+        // setMessages(messages.reverse());
+        setMessages(messages);
+        console.log(messages);
+        console.log(messages[messages.length - 1].id) // last message id
+        // setLastMessageId(messages[messages.length - 1].id);
       });    
 
       socket.on('messageAdded', (data) => {
@@ -115,6 +130,50 @@ export default ChatRoom = ({route, navigation}) => {
         // scrollToBottom();
       });
 
+      socket.on('fetchOlderMessages', (data) => {
+        const { messages } = data;
+      
+        console.log('Received older messages:', messages.length);
+      
+        messages.forEach((oldMessage) => { // Change variable name here
+          const { id, userid, roomId, message, message_type, date, file_name, file_size, file_uri, file_type } = oldMessage;
+      
+          // console.log(
+          //   'New message:',
+          //   id,
+          //   userid,
+          //   roomId,
+          //   message,
+          //   message_type,
+          //   date,
+          //   file_name,
+          //   file_size,
+          //   file_uri,
+          //   file_type
+          // );
+          console.log('olfed asd', id)
+      
+          // // Now you can process each individual message here
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id,
+              userid,
+              roomId,
+              message,
+              message_type,
+              date,
+              file_name,
+              file_size,
+              file_uri,
+              file_type
+            }
+          ]);
+        });
+      
+        // console.log('data', data);
+      });
+      
     // Clean up the connection and event subscriptions when the component unmounts
     return () => {
       socket.disconnect();
@@ -126,7 +185,7 @@ export default ChatRoom = ({route, navigation}) => {
   const sendMessage = (message) => {
     // Emit the message event to the server
     setSending(true)
-    console.log('send btn');
+    // console.log('send btn');
     if (message && message.trim() !== ''){
     // console.log('send msg');
       // socket.emit('message', { message, fromuserid:userid, touserid:touserid});
@@ -134,7 +193,7 @@ export default ChatRoom = ({route, navigation}) => {
       setMessage('');
     }else if (file) {
       // socket.emit('addAttachment', { file, userid, roomId });
-    console.log('send file');
+    // console.log('send file');
         try {
           const formData = new FormData();
           formData.append('userid', userid);
@@ -164,7 +223,12 @@ export default ChatRoom = ({route, navigation}) => {
   };
 
   const handleFetchMore = () => {
-    console.log('fetchingmore messages')
+    console.log('fetchingmore messages', messages[messages.length - 1].id)
+    // setLastMessageId(messages[messages.length - 1].id);
+
+    if (messages[messages.length - 1].id) {
+      socket.emit('requestOlderMessages', { roomId, lastMessageId:messages[messages.length - 1].id });
+    }
   }
 
   const [file, setFile] = useState('');
@@ -315,9 +379,10 @@ const saveAndroidFile = async (fileUri, fileName) => {
     //header is footer, the message is shown in reverse oorder
       // ref={flatListRef}
       showsVerticalScrollIndicator={false}
-      onEndReached={()=>handleFetchMore()}
+      // onEndReached={()=>handleFetchMore()}
+      // onEndReachedThreshold={0.1}
       data={messages}
-      keyExtractor={(item) => item.id.toString()}
+      keyExtractor={(item) => item.id}
       initialNumToRender={10}
       ListFooterComponent={()=>{
         return(
@@ -334,7 +399,10 @@ const saveAndroidFile = async (fileUri, fileName) => {
             🔒 Your privacy is important to us! Be cautious when sharing links or interacting with unknown users.
            </Text>
            <Text style={{textAlign:'center', fontSize:12, color:'grey', marginBottom:30}}>---</Text> */}
-           <Text/>
+           {/* <Text/> */}
+           <TouchableOpacity onPress={handleFetchMore}>
+            <Text>Load More</Text>
+           </TouchableOpacity>
           </>
          
         )
@@ -375,7 +443,6 @@ const saveAndroidFile = async (fileUri, fileName) => {
       return(
         <View key={index} onFocus={() => markMessageAsRead(message.id)} // <-- Call markMessageAsRead when the user focuses on a message
         >
-
         {isLastMessageOfDate && (
           <Text
             style={{ textAlign: "center",
@@ -438,7 +505,7 @@ const saveAndroidFile = async (fileUri, fileName) => {
         <Text numberOfLines={1} style={{color: msg.userid == userid ? '#fff' : '#000',}}>
           <Ionicons name="document-outline" size={20} color={msg.userid == userid ? '#fff' : '#000'}/> {msg.file_name}
         </Text>
-        <Text style={{color: msg.userid == userid ? '#fff' : '#000', fontSize:12}}>
+        <Text style={{color: msg.userid == userid ? '#fff' : '#000', fontSize:12}}> 
         {getFileSize(msg.file_size)}
         </Text>
       </TouchableOpacity>
@@ -448,9 +515,11 @@ const saveAndroidFile = async (fileUri, fileName) => {
       }
       
         </View>
-{console.log("Message User ID:", msg.userid)}{
-console.log("Current User ID:", userid)
-}
+{/* {console.log("Message User ID:", msg.userid)}{
+console.log("Current User ID:", userid)} */}
+{console.log("msg id:", msg.id)}
+
+<Text >{msg.id}</Text>
 
         {/* date */}
         <Text style={{ color: "grey", 

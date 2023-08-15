@@ -180,6 +180,8 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: "soyecharo@outlook.com",//email
     pass: "Password@@2020",//password
+    // user: process.env.EMAIL_USER,
+    // pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -1334,8 +1336,17 @@ app.post("/api/add_reportedby_job_post/:postid/:userid", authenticateTokenAPI, a
 //api to sent the unread count 
 app.get('/api/unread_count/:userid', async (req, res) => {
   try {
-    const {userid} = req.params; // Assuming you get the 'userid' from the query parameters
-    console.log('userid', userid)
+    const { userid } = req.params; // Assuming you get the 'userid' from the query parameters
+    console.log('userid', userid);
+
+    // Convert the userid string to an integer
+    const userIdInt = parseInt(userid, 10);
+
+    if (isNaN(userIdInt)) {
+      // Return an error response for invalid user ID
+      return res.status(400).json({ error: 'Invalid user ID provided.' });
+    }
+
     const chatRoomsQuery = `
       SELECT chat_rooms.room_id,
         COUNT(*) FILTER (WHERE messages.unread = true) AS unread_count
@@ -1344,8 +1355,8 @@ app.get('/api/unread_count/:userid', async (req, res) => {
       WHERE (chat_rooms.user1 = $1 OR chat_rooms.user2 = $1) AND messages.userid <> $1
       GROUP BY chat_rooms.room_id;
     `;
-    const chatRoomsValues = [userid];
-    const { rows } = await pool.query(chatRoomsQuery, chatRoomsValues);
+
+    const { rows } = await pool.query(chatRoomsQuery, [userIdInt]);
 
     // Calculate the total unread count for the user
     const unreadCount = rows.reduce((total, row) => total + row.unread_count, 0);

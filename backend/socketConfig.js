@@ -25,10 +25,14 @@ function setupSocket(server) {
     io.on('connection', (socket) => {
     console.log('A client connected.');
 
-    socket.on('newUser', (userid) => {
-      console.log('user added')
-      addNewUser(userid, socket.id);
-    })
+    // socket.on('newUser', (userid) => {
+    //   console.log('user added')
+    //   addNewUser(userid, socket.id);
+    // })
+
+    socket.on('reconnect', (attemptNumber) => {
+      console.log('Client reconnected after attempt', attemptNumber);
+    });
     
     socket.on('joinChat', async (data) => {
       const { user1, user2 } = data;
@@ -74,16 +78,18 @@ function setupSocket(server) {
       }
   
       console.log(`User ${user1} joined chat room ${roomId} with User ${user2}`);
-  
-      // Fetch data from the database
-      const messages = await fetchMessage(roomId);
-      socket.emit('fetchMessages', { messages });
-  
-      // Send the room ID to the frontend
-      socket.emit('roomJoined', { roomId });
-  
+      
       // Join the chat room
       socket.join(roomId);
+
+      // Send the room ID to the frontend
+      io.to(roomId).emit('roomJoined', { roomId });
+
+      // Fetch data from the database
+      const messages = await fetchMessage(roomId);
+      // socket.emit('fetchMessages', { messages });
+      io.to(roomId).emit('fetchMessages', { messages });
+
     });
   
     socket.on('addMessage', async(data) => {
@@ -115,11 +121,11 @@ function setupSocket(server) {
 
     // Listen for the 'UnReadMessage' event from the client
     socket.on('UnReadMessage', async (data) => {
-      const { userid } = data;
+      const { roomId, userid } = data;
      // Fetch the updated unread count after marking messages as read
      const unreadCount = await fetchUnreadMessageCount(userid);
 
-     socket.emit('UnReadMessageResult', unreadCount);
+     io.to(roomId).emit('UnReadMessageResult', unreadCount);
        console.log(unreadCount);
     });
 
@@ -146,6 +152,15 @@ function setupSocket(server) {
       }
     });
 
+     // Handle 'requestOlderMessages' event
+  socket.on('requestOlderMessages', async({ roomId, lastMessageId }) => {
+
+    console.log('toomID', roomId, 'lastmessageID', lastMessageId)
+    const messages = await fetchMessagesById( roomId, lastMessageId);
+    console.log(messages)
+    io.to(roomId).emit('fetchOlderMessages', { messages });
+  });
+
     //establist a socket connection
     // socket.on('connectUser', async(data) => {
     //   const {userid} = data;
@@ -168,7 +183,7 @@ function setupSocket(server) {
         FROM messages AS m
         LEFT JOIN attachment_details AS ad ON m.id = ad.message_id
         WHERE m.room_id = $1
-        ORDER BY m.date ASC
+        ORDER BY m.date DESC LIMIT 10
       `, [roomId]);
       //fetch using limit and offset
 
@@ -184,31 +199,29 @@ function setupSocket(server) {
     }
   };
 
-  // const fetchMessage = async (roomId, limit, pageNumber) => {
-  //   console.log('fetchMessage');
-  //   try {
-  //     const offset = (pageNumber - 1) * limit;
-      
-  //     const result = await pool.query(`
-  //       SELECT m.*, ad.file_name, ad.file_size, ad.file_uri
-  //       FROM messages AS m
-  //       LEFT JOIN attachment_details AS ad ON m.id = ad.message_id
-  //       WHERE m.room_id = $1
-  //       ORDER BY m.date ASC
-  //       OFFSET $2
-  //       LIMIT $3;
-  //     `, [roomId, offset, limit]);
-      
-  //     const messages = result.rows;
-    
-  //     console.log(messages);
-    
-  //     return messages;
-  //   } catch (error) {
-  //     console.error('Error occurred while fetching data from the database:', error);
-  //     throw error;
-  //   }
-  // };
+  const fetchMessagesById = async (roomId, lastMessageId) => {
+    console.log('fetchMessagesById');
+    try {
+      const result = await pool.query(`
+        SELECT m.*, ad.file_name, ad.file_size, ad.file_uri
+        FROM messages AS m
+        LEFT JOIN attachment_details AS ad ON m.id = ad.message_id
+        WHERE m.room_id = $1 AND m.id < $2
+        ORDER BY m.date DESC
+        LIMIT 10
+      `, [roomId, lastMessageId]);
+  
+      // Extract the data from the query result
+      const messages = result.rows;
+  
+      // console.log(messages);
+  
+      return messages;
+    } catch (error) {
+      console.error('Error occurred while fetching data from the database:', error);
+      throw error;
+    }
+  };
 
   const fetchUnreadMessageCount = async (userid) => {
     try {
