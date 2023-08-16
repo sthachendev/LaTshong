@@ -379,7 +379,7 @@ const saveAndroidFile = async (fileUri, fileName) => {
     //header is footer, the message is shown in reverse oorder
       // ref={flatListRef}
       showsVerticalScrollIndicator={false}
-      // onEndReached={()=>handleFetchMore()}
+      onEndReached={()=>handleFetchMore()}
       // onEndReachedThreshold={0.1}
       data={messages}
       keyExtractor={(item) => item.id}
@@ -400,9 +400,9 @@ const saveAndroidFile = async (fileUri, fileName) => {
            </Text>
            <Text style={{textAlign:'center', fontSize:12, color:'grey', marginBottom:30}}>---</Text> */}
            {/* <Text/> */}
-           <TouchableOpacity onPress={handleFetchMore}>
+           {/* <TouchableOpacity onPress={handleFetchMore}>
             <Text>Load More</Text>
-           </TouchableOpacity>
+           </TouchableOpacity> */}
           </>
          
         )
