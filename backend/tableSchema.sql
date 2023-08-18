@@ -1,7 +1,7 @@
 -- users table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    cid VARCHAR(11) NOT NULL,
+    -- cid VARCHAR(11) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -10,8 +10,18 @@ CREATE TABLE IF NOT EXISTS users (
     --admin
     imageurl TEXT[] DEFAULT '{}',
     bio TEXT,
-    created_on TIMESTAMP NOT NULL
+    created_on TIMESTAMP NOT NULL---,
+    ---isverified VARCHAR(255) NOT NULL DEFAULT 'false'
+    ---false, true and pending
 );
+
+--accountverification request table
+CREATE TABLE IF NOT EXISTS account_verification_requests (
+        id INTEGER PRIMARY KEY,
+        user_id BIGSERIAL,
+        account_verified_on DATETIME,
+        status TEXT ---false, true, pending
+    )
 
 -- job_posts table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS job_posts (

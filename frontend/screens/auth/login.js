@@ -12,7 +12,6 @@ import { TouchableHighlight } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { ScrollView } from "react-native";
 import { ActivityIndicator } from "react-native";
-import Spinner from "../custom/Spinner";
 
 export default function Login({navigation}) {
   const [email, setEmail] = useState("");
@@ -99,7 +98,7 @@ export default function Login({navigation}) {
     <Text style={{
       textAlign: 'center',
       fontWeight:'200',
-      fontSize: 25,
+      fontSize: 21,
       marginTop:10
       }}>བཟོ་གྲྭ་ཚོང་ལས་དང་ལཱ་གཡོག་ལྷནཁག།</Text>
 

@@ -112,8 +112,8 @@ app.post("/api/signup", (req, res) => {
       const date = new Date();
 
       pool.query(
-        "INSERT INTO users (email, name, password, role, cid, created_on) VALUES ($1, $2, $3, $4, $5, $6)",
-        [email, name, hash, role, cid, date],
+        "INSERT INTO users (email, name, password, role, created_on) VALUES ($1, $2, $3, $4, $5)",
+        [email, name, hash, role, date],
         (err, result) => {
           if (err) {
             console.error(err);
@@ -248,7 +248,7 @@ app.patch('/api/post', upload, async (req, res) => {
   }
 });
 
-//all posts, userid
+//all posts by userid
 app.get("/api/get_post/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -455,24 +455,6 @@ app.post("/api/employer_post", (req, res) => {//token required
 
 // Configure Socket.IO middleware for JWT authentication
 io.use(authenticateTokenSocketIO);
-
-// const fetchMessage = async (roomId) => {
-//   console.log('fetchMessage');
-//   try {
-//     // Perform the database query
-//     const result = await pool.query('SELECT * FROM messages WHERE room_id = $1', [roomId]);
-
-//     // Extract the data from the query result
-//     const messages = result.rows;
-
-//     console.log(messages)
-
-//     return messages;
-//   } catch (error) {
-//     console.error('Error occurred while fetching data from the database:', error);
-//     throw error;
-//   }
-// };
 
 //user info // fetch imageurl n last chat message as t or false
 app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
@@ -1368,6 +1350,31 @@ app.get('/api/unread_count/:userid', async (req, res) => {
     res.status(500).json({ error: 'An error occurred while processing the request.' });
   }
 });
+
+// app.patch('/api/request_account_verification/:userid', async (req, res) => {
+//   try {
+//     const { userid } = req.params;
+
+//     // Update the user's 'isverified' status to 'pending' if it's false
+//     if (!isverified) {
+//       const { rowCount } = await pool.query(
+//         'UPDATE users SET isverified = $1 WHERE id = $2 AND isverified = false',
+//         ['pending', userid]
+//       );
+
+//       if (rowCount === 0) {
+//         return res.status(404).json({ message: 'User not found or is already verified' });
+//       }
+
+//       return res.status(200).json({ message: 'User verification status updated successfully', updated: true });
+//     } else {
+//       return res.status(200).json({ message: 'User is already verified', updated: false });
+//     }
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: 'Server Error' });
+//   }
+// });
 
 // app.listen(3000, () => {
 //     console.log("Server listening on port 3000");

@@ -14,9 +14,10 @@ import config from "../config";
 
 export default function Signup({navigation}) {
 
-  const [cid, setCid] = useState("");
+  // const [cid, setCid] = useState("");
 
   const [firsName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
   const [lastName, setLastName] = useState("");
 
   const [email, setEmail] = useState("");
@@ -54,14 +55,20 @@ export default function Signup({navigation}) {
     const name = firsName + lastName;
 
    if (email.trim() !== "" && validateInput(name.trim()) &&
-    password.trim() !== "" && confirmPassword.trim() && checked === true 
-    && validateInputContainNumOnly(cid)){
+    password.trim() !== "" && confirmPassword.trim() && checked === true){
       console.log('ok')
 
+      let name;
+
+      if (middleName.trim() !== "") {
+        name = firsName+' '+middleName+' '+lastName;
+      } else {
+        name = firsName+' '+lastName;
+      }
+
       const data =  {
-        cid,
         email : email.trim(),
-        name: firsName+' '+lastName,
+        name: name,
         password,
         role
       }
@@ -83,8 +90,6 @@ export default function Signup({navigation}) {
     }else if((email.trim() === "" || name.trim() === "" ||
     password.trim() === "" || confirmPassword.trim() === "")){
       setMessage("Fill up all the fields!")
-    }else if (!validateInputContainNumOnly(cid)){
-      setMessage("Invalid citizen ID")
     }else if (firsName === ""){
       setMessage("Enter your name!")
     }else if (!validateInput(name.trim())){
@@ -146,9 +151,9 @@ export default function Signup({navigation}) {
 
         <TextInput
           mode="outlined"
-          label="Citizen ID"
-          value={cid}
-          onChangeText={setCid}
+          label="First name"
+          value={firsName}
+          onChangeText={setFirstName}
           onFocus={()=>setMessage("")}
           style={{fontSize:14, marginTop:10,}}
           theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
@@ -156,10 +161,10 @@ export default function Signup({navigation}) {
 
         <TextInput
           mode="outlined"
-          label="First name"
-          value={firsName}
-          onChangeText={setFirstName}
-          onFocus={()=>setMessage("")}
+          label="Middle name"
+          value={middleName}
+          onChangeText={setMiddleName}
+          onFocus={()=>setMiddleName("")}
           style={{fontSize:14, marginTop:10,}}
           theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
         />
