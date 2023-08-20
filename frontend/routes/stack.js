@@ -14,7 +14,7 @@ import DrawerNav from "./drawerNav";
 import Support from "../screens/support/support";
 import ForgotPassword from "../screens/auth/forgotPassword";
 import ChangePassword from "../screens/setting/changePassword";
-import AppliedLists from "../screens/post/appliedLists";
+import SavedPosts from "../screens/post/savedPosts";
 import Search from "../screens/explore/search";
 
 function Stack() {
@@ -155,8 +155,8 @@ function Stack() {
       />
 
       <Stack.Screen
-        name="AppliedLists"
-        component={AppliedLists}
+        name="SavedPosts"
+        component={SavedPosts}
         options={{
           headerShown: true,
           headerTitle:'Saved Job Post',

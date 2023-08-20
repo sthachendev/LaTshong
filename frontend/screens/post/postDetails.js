@@ -56,7 +56,7 @@ export default PostDetails = ({ route, navigation }) => {
 const getJobPost = async () => {
   try {//post id
     setLoading(true);
-      const res = await axios.get(`${config.API_URL}/api/get_job_post/${id}`);//no need to add token
+      const res = await axios.get(`${config.API_URL}/api/post-jobs/${id}`);//no need to add token
       setData(res.data);
       setPostStatus(res.data[0].status);
     setLoading(false);
@@ -77,7 +77,7 @@ const getJobPost = async () => {
 
     if ( role === 'em' && role !== 'js' ){
       setLoading(true);
-      const response = await axios.get(`${config.API_URL}/api/get_user_info_`, {
+      const response = await axios.get(`${config.API_URL}/api/post-jobs/apply/users`, {
         params: {
           applicants: applicants,
           acceptedApplicants: accepted_applicants,
@@ -109,7 +109,7 @@ const handleApply = async (postid) => {
   try {
     if (token) {
       const res = await axios.put(
-        `${config.API_URL}/api/update_job_post`,
+        `${config.API_URL}/api/post-jobs/apply`,
         {
           userid: jwtDecode(token).userid,
           postid: postid
@@ -167,9 +167,8 @@ const handleMessage = (touserid, tousername, imageurl) => {
               text: status === 'o' ? "Close" : 'Re-open',
               onPress: async() => {
                   try {
-                    axios.put(`${config.API_URL}/api/update_job_post_status/${id}`,{}, {
+                    axios.put(`${config.API_URL}/api/post-jobs/${id}/status`,{}, {
                       headers:{
-                          'Content-Type': 'application/json',
                           Authorization: `Bearer ${token}`,
                       }
                     })
@@ -204,7 +203,7 @@ const handleMessage = (touserid, tousername, imageurl) => {
               text: "Delete",
               onPress: async() => {
                   try {
-                    axios.delete(`${config.API_URL}/api/delete_job_post/${id}`,{
+                    axios.delete(`${config.API_URL}/api/post-jobs/${id}`,{
                       headers: {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
@@ -237,12 +236,10 @@ const handleMessage = (touserid, tousername, imageurl) => {
   };
 
   //update the applicants list and put the user in accept lists
-  const handleUserSelect = (userId) => {
+  const handleUserSelect = (userid) => {
     console.log(userid)
-    const jobPostId = id;
-    axios.put(`${config.API_URL}/api/move_user_to_accepted/${jobPostId}/${userId}`,{},{
+    axios.put(`${config.API_URL}/api/post-jobs/${id}/${userid}`,{},{
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       }
     })
@@ -326,7 +323,7 @@ const handleMessage = (touserid, tousername, imageurl) => {
   };
 
   const handlePostSave = (postid) => {
-    axios.post(`${config.API_URL}/api/user_saved_post`, {userid: jwtDecode(token).userid, postid: postid},
+    axios.post(`${config.API_URL}/api/post-jobs/save`, {userid: jwtDecode(token).userid, postid: postid},
       {
         headers: {
           'Content-Type': 'application/json',
@@ -349,7 +346,7 @@ const handleMessage = (touserid, tousername, imageurl) => {
   const handleReport = async (postid) => {
     console.log(postid)
     try {
-    const res = await axios.post(`${config.API_URL}/api/add_reportedby_job_post/${postid}/${userid}`,{}, {
+    const res = await axios.post(`${config.API_URL}/api/post-jobs/${postid}/report/${userid}`,{}, {
     headers: {
         Authorization: `Bearer ${token}`,
         }

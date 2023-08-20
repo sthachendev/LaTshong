@@ -15,7 +15,7 @@ const Posts = (({item, role, navigation, selectedItem, setSelectedItem}) => {
   const token = useSelector(state=>state.token);
 
   const handlePostSave = (postid) => {
-    axios.post(`${config.API_URL}/api/user_saved_post`, {userid: jwtDecode(token).userid, postid: postid},
+    axios.post(`${config.API_URL}/api/post-jobs/save`, {userid: jwtDecode(token).userid, postid: postid},
       {
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ const Posts = (({item, role, navigation, selectedItem, setSelectedItem}) => {
         {item.status == 'c' && 'Closed '}{item.status == 'c' && getTimeDifference2(item.closedate)}
       </Text>
 
-     { token && <>
+     { token && role == 'js' && <>
         <TouchableHighlight 
         onPress={()=>handlePostSave(item.id)} 
         underlayColor='rgba(49, 105, 210, 0.5)'

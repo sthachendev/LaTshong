@@ -50,7 +50,7 @@ const UserManagement = () => {
   const fetchUserData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${config.API_URL}/api/get_all_users`, {
+      const response = await axios.get(`${config.API_URL}/api/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

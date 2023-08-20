@@ -74,7 +74,7 @@ export default function Signup({navigation}) {
       }
       setLoading(true);
 
-      axios.post(`${config.API_URL}/api/getOTP`, { email })
+      axios.post(`${config.API_URL}/api/otp`, { email })
 
       .then(response => {
         if (response.data.success){

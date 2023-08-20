@@ -47,7 +47,7 @@ export default ViewProfile = ({route, navigation}) => {
   const fetchUserInfo = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
+      const response = await axios.get(`${config.API_URL}/api/users/${userid}`,{
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -79,7 +79,7 @@ export default ViewProfile = ({route, navigation}) => {
   const getPost = async() => {//certifcates
     try {
       setLoading(true)
-      const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`,{
+      const res = await axios.get(`${config.API_URL}/api/${userid}/post-certificates`,{
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -99,7 +99,7 @@ export default ViewProfile = ({route, navigation}) => {
   const getFeedPost = async() => {
     try {
       setLoadingFeeds(true)
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=1&pageSize=5`);
+      const res = await axios.get(`${config.API_URL}/api/${userid}/post-feeds/?page=1&pageSize=5`);
       // console.log('getFeedPost', res.data);
       if (res.data.length > 0) {
       setFeedsData(res.data)
@@ -122,7 +122,7 @@ export default ViewProfile = ({route, navigation}) => {
     setLoadingFeeds(true);
     console.log('feed')
     try {
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=${page}&pageSize=5`);
+      const res = await axios.get(`${config.API_URL}/api/${userid}/post-feeds/?page=${page}&pageSize=5`);
       if (res.data.length > 0) {
         setFeedsData((prevData) => [...prevData, ...res.data]);
         setPage(page + 1); // Update page state instead of page

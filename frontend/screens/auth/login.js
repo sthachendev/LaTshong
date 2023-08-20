@@ -55,9 +55,11 @@ export default function Login({navigation}) {
       
     }catch (error) {
       if (error.response && error.response.status === 401) {
+        setLoading(false);
         console.log(error.response.data.message);
         setMessage(error.response.data.message)
       } else {
+        setLoading(false);
         console.log(error.message);
       }
     }

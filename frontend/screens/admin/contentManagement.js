@@ -50,7 +50,7 @@ const UserManagement = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${config.API_URL}/api/reported_posts`, {
+      const response = await axios.get(`${config.API_URL}/api/posts/report`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

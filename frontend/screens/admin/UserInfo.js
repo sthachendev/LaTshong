@@ -32,26 +32,64 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
         { cancelable: true }
       );
     }
+
+    const handleVerification = (userid) => {
+      Alert.alert(
+        "Do you want to set user as verified user?",
+        "User will be a verified user.",
+        [
+            {
+                text: 'Verify',
+                onPress: () => {
+                  verifyUser(userid);
+                },
+              },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ],
+        { cancelable: true }
+      );
+    }
+
+    const verifyUser = async (userid) => {
+      try {
+      const res = await axios.patch(`${config.API_URL}/api//api/users/${userid}/verify`, {
+      headers: {
+          Authorization: `Bearer ${token}`,
+          }
+      });
+     
+      console.log(res.status)
+      if (res.status == 200){
+          fetchUserData();
+          setIsModalVisible(false)
+          ToastAndroid.show("User Deleted", ToastAndroid.SHORT);
+      }
+      } catch (error) {
+      console.log(error);
+      }
+  };
     
     const deleteUser = async (userid) => {
-        try {
-        const res = await axios.delete(`${config.API_URL}/api/delete_user/${userid}`, {
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            }
-        });
-       
-        console.log(res.status)
-        if (res.status == 200){
-            fetchUserData();
-            setIsModalVisible(false)
-            ToastAndroid.show("User Deleted", ToastAndroid.SHORT);
-        }
-        } catch (error) {
-        console.log(error);
-        }
-    };
+      try {
+      const res = await axios.delete(`${config.API_URL}/api/users/${userid}`, {
+      headers: {
+          Authorization: `Bearer ${token}`,
+          }
+      });
+     
+      console.log(res.status)
+      if (res.status == 200){
+          fetchUserData();
+          setIsModalVisible(false)
+          ToastAndroid.show("User Deleted", ToastAndroid.SHORT);
+      }
+      } catch (error) {
+      console.log(error);
+      }
+  };
 
     const [name, setName] = useState(user.name);
     const [cid, setCid] = useState(user.cid);
@@ -72,7 +110,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
 
     const updateUserField = (userid, field, value, token) => {
       axios
-        .put(`${config.API_URL}/api/update_${field}/${userid}`, { [field]: value }, {
+        .put(`${config.API_URL}/api/users/${userid}/${field}`, { [field]: value }, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -150,18 +188,29 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
             />
             }
             </View>
-          
+            
+            <TextInput
+              mode="outlined"
+              label="Account Status"
+              value={user.verification_status}
+              style={{fontSize:14, marginTop:5}}
+              theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
+              multiline={true}
+              blurOnSubmit={true}
+              disabled
+              />
+
               <TextInput
               mode="outlined"
               label="Name"
               value={name}
               onChangeText={setName}
-              style={{fontSize:14, marginTop:5}}
+              style={{fontSize:14, marginTop:20}}
               theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
               multiline={true}
               blurOnSubmit={true}
               />
-            <TextInput
+            {/* <TextInput
               mode="outlined"
               label="CID No."
               value={cid}
@@ -170,7 +219,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
               theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
               multiline={true}
               blurOnSubmit={true}
-              />
+              /> */}
             {/* <Text style={{padding:10}}>CID No: {user.cid}</Text> */}
             <TextInput
               mode="outlined"
@@ -221,7 +270,21 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
 
             </ScrollView>
 
-            <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(255,0,0,.7)', marginVertical:10,
+            <View>
+
+            </View>
+            <TouchableHighlight style={{ backgroundColor:'#fff',borderColor:'rgba(30,49,157,0.7)', borderWidth:0.25, marginVertical:10,
+            width:'100%', borderRadius:25}} 
+              underlayColor='rgba(30,49,157,0.1))'  
+              onPress={()=>handleVerification(user.id)}
+              >
+                <Text style={{ paddingVertical:10,  textAlign:"center", 
+                color:'rgba(30,49,157,0.7)' }}>
+                Verify Account
+                </Text>
+              </TouchableHighlight>
+
+              <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(255,0,0,.7)', marginVertical:10,
             width:'100%', borderWidth:0.25, borderRadius:25}} 
               underlayColor='rgba(255,0,0,.1)'  
               onPress={()=>handleDelete(user.id)}

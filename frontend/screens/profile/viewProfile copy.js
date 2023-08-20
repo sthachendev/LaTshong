@@ -28,7 +28,7 @@ export default ViewProfile = ({route, navigation}) => {
 
   const fetchUserInfo = async () => {
     try {
-      const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
+      const response = await axios.get(`${config.API_URL}/api/users/${userid}`,{
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -53,7 +53,7 @@ export default ViewProfile = ({route, navigation}) => {
 
   const getPost = async() => {
     try {
-      const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`,{
+      const res = await axios.get(`${config.API_URL}/api/${userid}/post-certificates`,{
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

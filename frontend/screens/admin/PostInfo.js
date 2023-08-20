@@ -23,7 +23,7 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
         console.log(res.data);
         setData(res.data);
       }else if (post.posttype === 'feed_post') {
-        const res = await axios.get(`${config.API_URL}/api/get_feed_post/${post.id}`);//no need to add token
+        const res = await axios.get(`${config.API_URL}/api/post-feeds/:id${post.id}`);//no need to add token
         console.log(res.data);
         setData(res.data);
       }
@@ -66,7 +66,7 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
 
         if (post.posttype === 'feed_post') {
           try {
-          const res = await axios.delete(`${config.API_URL}/api/delete_feed_post/${postid}`, {
+          const res = await axios.delete(`${config.API_URL}/api/post-feeds/${postid}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             }
@@ -85,7 +85,7 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
         }else if (post.posttype === 'job_post') {
           try {
             const id = postid;
-            const res = await axios.delete(`${config.API_URL}/api/delete_job_post/${id}`, {
+            const res = await axios.delete(`${config.API_URL}/api/job-posts/${id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               }

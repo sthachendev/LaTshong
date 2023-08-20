@@ -22,7 +22,7 @@ export default Bio = ({isModalVisible, setIsModalVisible, fetchUserInfo, desc, s
     
     const handlePost = async () => {
         try {
-        const res = await axios.patch(`${config.API_URL}/api/users/${userid}`, {bio:desc}, {
+        const res = await axios.patch(`${config.API_URL}/api/users/${userid}/bio`, {bio:desc}, {
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

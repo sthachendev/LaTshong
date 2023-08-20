@@ -204,7 +204,7 @@ export default ChatRoom = ({route, navigation}) => {
             type: file.mimeType,
           });
         
-          axios.patch(`${config.API_URL}/api/upload_attachement`, formData, {
+          axios.patch(`${config.API_URL}/api/chats/upload-attachement`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },

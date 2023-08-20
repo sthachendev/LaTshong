@@ -39,7 +39,7 @@ export default function ForgotPassword({navigation}) {
   const handleRequestOTP = async() => {
    if(email.trim() !== ""){
     setLoading(true);
-    axios.post(`${config.API_URL}/api/getOTP`, { email })
+    axios.post(`${config.API_URL}/api/otp`, { email })
     .then(res=>{
       console.log(res.data.otp)
       setValidOtp(res.data.otp)
@@ -68,7 +68,7 @@ export default function ForgotPassword({navigation}) {
       
       console.log('email',email)
 
-      axios.put(`${config.API_URL}/api/updatePassword`, {password, email})
+      axios.put(`${config.API_URL}/api/users/password`, {password, email})
       .then(res =>{
         ToastAndroid.show('Password updated!', ToastAndroid.SHORT);
         console.log(res.data)

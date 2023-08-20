@@ -21,7 +21,7 @@ export default function ChangePassword({ navigation, route }) {
 
       setLoading(true);
 
-      axios.put(`${config.API_URL}/api/updatePassword/${userid}`, {currentPassword, newPassword:newPassword})
+      axios.put(`${config.API_URL}/api/users/${userid}/password`, {currentPassword, newPassword:newPassword})
       .then(res =>{
         ToastAndroid.show(res.data.msg, ToastAndroid.SHORT);
         setLoading(false);

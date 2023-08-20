@@ -13,7 +13,7 @@ export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby, po
     
     const handleReport = async () => {
         try {
-        const res = await axios.post(`${config.API_URL}/api/add_reportedby_feed_post/${postid}/${userid}`,{}, {
+        const res = await axios.put(`${config.API_URL}/api/post-feeds/${postid}/report/${userid}`,{}, {
         headers: {
             Authorization: `Bearer ${token}`,
             }
@@ -29,7 +29,7 @@ export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby, po
     };
 
     const handleDelete = () => {
-        axios.delete(`${config.API_URL}/api/delete_feed_post/${postid}`, {
+        axios.delete(`${config.API_URL}/api/post-feeds/${postid}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
                 }
@@ -63,7 +63,7 @@ export default FeedPostsOption = ({isModalVisible, setIsModalVisible, postby, po
                 bottom: 0, // Align the modal to the bottom of the screen
                 left: 0,
                 right: 0,
-                height:'15%', // Set the height of the modal (half of the screen)
+                height:'20%', // Set the height of the modal (half of the screen)
             }}>
             {/* top close header and next/ post btn */}
             <TouchableOpacity style={styles.buttonContainer2} onPress={()=>{setIsModalVisible(false);}}>

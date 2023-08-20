@@ -108,7 +108,7 @@ export default Home = () => {
       if (role === 'em') {//fetch job post of an user
 
         setLoading(true);
-        const res = await axios.get(`${config.API_URL}/api/get_all_job_posted_by_userid/${userid}`
+        const res = await axios.get(`${config.API_URL}/api/${userid}/post-jobs`
         // , {params: { page: 1, pageSize: 5 },}
           );
         setJobPosts(res.data);
@@ -118,7 +118,7 @@ export default Home = () => {
         console.log('js posts fetching')
 
         setLoading(true);
-        const res = await axios.get(`${config.API_URL}/api/get_job_post/?page=1&pageSize=5`);
+        const res = await axios.get(`${config.API_URL}/api/post-jobs/?page=1&pageSize=5`);
         setJobPosts(res.data);
         setJobPostPage(2);
         setLoading(false);
@@ -141,7 +141,7 @@ export default Home = () => {
     setLoading(true);
       // Your API call here, e.g., using axios
       console.log('teter')
-      const res = await axios.get(`${config.API_URL}/api/get_job_post/?page=${JobPostPage}&pageSize=5`);
+      const res = await axios.get(`${config.API_URL}/api/post-jobs/?page=${JobPostPage}&pageSize=5`);
       if (res.data.length > 0) {
         setJobPosts(prevPosts => [...prevPosts, ...res.data]);
         setJobPostPage(JobPostPage + 1);
@@ -160,7 +160,7 @@ export default Home = () => {
   const getFeedPost = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/?page=1&pageSize=5`
+      const res = await axios.get(`${config.API_URL}/api/post-feeds/?page=1&pageSize=5`
       // , { params: { page: 1, pageSize: 5 },}
       );
       if (res.data.length > 0) {
@@ -185,10 +185,7 @@ export default Home = () => {
     setLoading(true);
     console.log('feed')
     try {
-      // const res = await axios.get(`${config.API_URL}/api/feed_posts`, {
-      //   params: { page: page, pageSize: 5 },
-      // });
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/?page=${page}&pageSize=5`);
+      const res = await axios.get(`${config.API_URL}/api/post-feeds/?page=${page}&pageSize=5`);
       if (res.data.length > 0) {
         setFeedsData((prevData) => [...prevData, ...res.data]);
         setPage(page + 1); // Update page state instead of JobPostPage

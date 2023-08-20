@@ -42,7 +42,7 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
   const fetchUserInfo = async () => {
     try {
       setLoading(true)
-      const response = await axios.get(`${config.API_URL}/api/get_user_info/${userid}`,{
+      const response = await axios.get(`${config.API_URL}/api/users/${userid}`,{
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

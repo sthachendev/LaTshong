@@ -77,7 +77,7 @@ export default FeedPost = ({isModalVisible, setIsModalVisible, userid, getFeedPo
 
       console.log('formdata', formData)
 
-      await axios.patch(`${config.API_URL}/api/feed_post`, formData, {
+      await axios.patch(`${config.API_URL}/api/post-feeds`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

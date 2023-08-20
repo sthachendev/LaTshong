@@ -75,7 +75,7 @@ const Post = ({navigation}) => {
     };
     
     try {
-      const response = await axios.post(`${config.API_URL}/api/job_post`, jobData, {
+      const response = await axios.post(`${config.API_URL}/api/post-jobs`, jobData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

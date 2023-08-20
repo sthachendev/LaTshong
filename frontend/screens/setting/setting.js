@@ -1,11 +1,19 @@
+import axios from "axios";
 import { View, Text, StyleSheet, TouchableHighlight, ToastAndroid, TouchableOpacity } from "react-native";
+import config from "../config";
 
 export default function Setting({ navigation, route }) {
-  
+
   const { userid } = route.params;
 
   const handleRequest = () => {
-    ToastAndroid.show("Account verification request sent", ToastAndroid.SHORT);
+    axios.patch(`${config.API_URL}/api/user/${userid}/apply/verify`)
+    .then( (res) => {
+    ToastAndroid.show(`${res.data.message}`, ToastAndroid.SHORT);
+    })
+    .catch(e=>{
+      console.log(e)
+    })
   }
 
   return (

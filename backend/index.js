@@ -100,7 +100,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 app.post("/api/signup", (req, res) => {
-  const { email, name, password, role, cid } = req.body;
+  const { email, name, password, role } = req.body;
 
   // Hash the password //10 is salt value
   bcrypt.hash(password, 10, (err, hash) => {
@@ -188,15 +188,15 @@ const transporter = nodemailer.createTransport({
 // function to generate random 6-digit alphanumeric code
 function generateRandomCode() {
   let characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    "0123456789";
   let code = "";
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 4; i++) {
     code += characters.charAt(Math.floor(Math.random() * characters.length));
   }
   return code;
 }
 
-app.post("/api/getOTP", async (req, res) => {
+app.post("/api/otp", async (req, res) => {
   const { email } = req.body;
 
   const otp = generateRandomCode();
@@ -223,7 +223,7 @@ app.post("/api/getOTP", async (req, res) => {
 });
 
 //upload post //user profile cards // certificates
-app.patch('/api/post', upload, async (req, res) => {
+app.patch('/api/post-certificates', upload, async (req, res) => {
   try {
     const { postby } = req.body;
 
@@ -249,17 +249,17 @@ app.patch('/api/post', upload, async (req, res) => {
 });
 
 //all posts by userid
-app.get("/api/get_post/:id", async (req, res) => {
+app.get("/api/:userid/post-certificates", async (req, res) => {
   try {
-    const { id } = req.params;
-    const { rows } = await pool.query("SELECT * FROM posts WHERE postby = $1", [id]);
+    const { userid } = req.params;
+    const { rows } = await pool.query("SELECT * FROM posts WHERE postby = $1", [userid]);
     res.status(200).json(rows);
   } catch (error) {
     console.log(error);
   }
 });
 
-app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
+app.post("/api/post-jobs", authenticateTokenAPI, (req, res) => {
     try {
       const { job_title, job_description, job_requirements, job_salary, postby, 
         location, nature, vacancy_no, location_, remark} = req.body;
@@ -282,7 +282,7 @@ app.post("/api/job_post", authenticateTokenAPI, (req, res) => {
 });
 
 //all //required pagination
-app.get("/api/get_job_post", async (req, res) => {
+app.get("/api/post-jobs", async (req, res) => {
   try {
     const { page, pageSize } = req.query;
     const pageNumber = parseInt(page, 10) || 1;
@@ -305,7 +305,7 @@ app.get("/api/get_job_post", async (req, res) => {
 });
 
 //particular post by post id //this doesnt require token user user have to view w/o login
-app.get("/api/get_job_post/:id", async (req, res) => {
+app.get("/api/post-jobs/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -326,7 +326,7 @@ app.get("/api/get_job_post/:id", async (req, res) => {
 });
 
 //api to get all job posts posted by //required pagination but not nesessary
-app.get("/api/get_all_job_posted_by_userid/:userid", async (req, res) => {
+app.get("/api/:userid/post-jobs", async (req, res) => {
   try {
     const { userid } = req.params;
 
@@ -347,7 +347,7 @@ app.get("/api/get_all_job_posted_by_userid/:userid", async (req, res) => {
 });
 
 //applicants {}
-app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
+app.put("/api/post-jobs/apply", authenticateTokenAPI, async (req, res) => {
   try {
     const { userid, postid } = req.body;
 
@@ -383,7 +383,7 @@ app.put("/api/update_job_post", authenticateTokenAPI, async (req, res) => {
 });
 
 //get_user_info_ for multiple arrays (users)
-app.get("/api/get_user_info_", authenticateTokenAPI, async (req, res) => {
+app.get("/api/post-jobs/apply/users", authenticateTokenAPI, async (req, res) => {
   const { applicants, acceptedApplicants } = req.query;
   
   try {
@@ -409,8 +409,8 @@ app.get("/api/get_user_info_", authenticateTokenAPI, async (req, res) => {
 });
 
 //user info
-app.get("/api/get_user_info/:id", authenticateTokenAPI, async (req, res) => {
-  const id = req.params.id;
+app.get("/api/users/:userid", authenticateTokenAPI, async (req, res) => {
+  const id = req.params.userid;
   try {
     const { rows } = await pool.query(
       `SELECT * FROM users WHERE id = ${id}`
@@ -423,35 +423,35 @@ app.get("/api/get_user_info/:id", authenticateTokenAPI, async (req, res) => {
 })
 
 // post
-app.post("/api/employer_post", (req, res) => {//token required
-  upload(req, res, async (err) => {
-    if (err) {
-      // An error occurred when uploading
-      console.log(err);
-      return res.status(400).json({ message: "Error uploading file." });
-    }
+// app.post("/api/employer_post", (req, res) => {//token required
+//   upload(req, res, async (err) => {
+//     if (err) {
+//       // An error occurred when uploading
+//       console.log(err);
+//       return res.status(400).json({ message: "Error uploading file." });
+//     }
 
-    console.log(req.file);
-    try {
-      const { description, postby } = req.body;
-      const postdate = new Date();
+//     console.log(req.file);
+//     try {
+//       const { description, postby } = req.body;
+//       const postdate = new Date();
 
-      const filepaths = req.files["images"].map((file) => file.path);
+//       const filepaths = req.files["images"].map((file) => file.path);
 
-      // insert the post data into the database
-      const { rows } = await pool.query(
-        `INSERT INTO posts 
-        (description, postby, postdate, images) VALUES ($1, $2, $3, $4) RETURNING *`,
-        [description, postby, postdate, filepaths]
-      );
+//       // insert the post data into the database
+//       const { rows } = await pool.query(
+//         `INSERT INTO posts 
+//         (description, postby, postdate, images) VALUES ($1, $2, $3, $4) RETURNING *`,
+//         [description, postby, postdate, filepaths]
+//       );
 
-      res.status(201).json(rows);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Server Error" });
-    }
-  });
-});
+//       res.status(201).json(rows);
+//     } catch (err) {
+//       console.error(err);
+//       res.status(500).json({ message: "Server Error" });
+//     }
+//   });
+// });
 
 // Configure Socket.IO middleware for JWT authentication
 io.use(authenticateTokenSocketIO);
@@ -526,7 +526,7 @@ app.get("/api/chat_rooms/:id", authenticateTokenAPI, async (req, res) => {
 });
 
 //update user password using userid & curretn password required //token required
-app.put("/api/updatePassword/:userid", async (req, res) => {
+app.put("/api/users/:userid/password", async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     const { userid } = req.params;
@@ -564,7 +564,7 @@ app.put("/api/updatePassword/:userid", async (req, res) => {
 });
 
 // PUT request to update password without requiring the current password
-app.put("/api/updatePassword", async (req, res) => {
+app.put("/api/users/password", async (req, res) => {
   try {
     const { password, email } = req.body;
     console.log(email)
@@ -590,7 +590,7 @@ app.put("/api/updatePassword", async (req, res) => {
 });
 
 //update user profile //token required
-app.patch('/api/updateProfile', upload, async (req, res) => {
+app.patch('/api/users/profile', upload, async (req, res) => {
   try {
     const { userid } = req.body;
     console.log(req.body);
@@ -612,7 +612,7 @@ app.patch('/api/updateProfile', upload, async (req, res) => {
 
 // api to handle post status close and open
 // Update job post status by ID
-app.put("/api/update_job_post_status/:id", authenticateTokenAPI, async (req, res) => {
+app.put("/api/post-jobs/:id/status", authenticateTokenAPI, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -654,7 +654,7 @@ app.put("/api/update_job_post_status/:id", authenticateTokenAPI, async (req, res
 
 //api to delete job post by id
 // Delete job post by ID
-app.delete("/api/delete_job_post/:id", authenticateTokenAPI, async (req, res) => {
+app.delete("/api/post-jobs/:id", authenticateTokenAPI, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -679,30 +679,30 @@ app.delete("/api/delete_job_post/:id", authenticateTokenAPI, async (req, res) =>
 
 //api to update the applicants
 // Move the user from applicants to accepted_applicants and vice versa
-app.put("/api/move_user_to_accepted/:jobPostId/:userId", authenticateTokenAPI, async (req, res) => {
+app.put("/api/post-jobs/:id/:userid", authenticateTokenAPI, async (req, res) => {
   try {
-    const { jobPostId, userId } = req.params;
+    const { id, userid } = req.params;
 
     // Check if the job post exists before attempting to update
     const checkQuery = "SELECT id, applicants, accepted_applicants FROM job_posts WHERE id = $1";
-    const { rows } = await pool.query(checkQuery, [jobPostId]);
+    const { rows } = await pool.query(checkQuery, [id]);
 
     if (rows.length === 0) {
       return res.status(404).json({ error: "Job post not found." });
     }
 
     const jobPost = rows[0];
-    const applicantIndex = jobPost.applicants.indexOf(parseInt(userId, 10));
-    const acceptedApplicantIndex = jobPost.accepted_applicants.indexOf(parseInt(userId, 10));
+    const applicantIndex = jobPost.applicants.indexOf(parseInt(userid, 10));
+    const acceptedApplicantIndex = jobPost.accepted_applicants.indexOf(parseInt(userid, 10));
 
     if (applicantIndex !== -1) {
       // Move the user ID from applicants to accepted_applicants
       jobPost.applicants.splice(applicantIndex, 1); // Remove from applicants
-      jobPost.accepted_applicants.push(userId); // Add to accepted_applicants
+      jobPost.accepted_applicants.push(userid); // Add to accepted_applicants
     } else if (acceptedApplicantIndex !== -1) {
       // Move the user ID from accepted_applicants to applicants
       jobPost.accepted_applicants.splice(acceptedApplicantIndex, 1); // Remove from accepted_applicants
-      jobPost.applicants.push(userId); // Add to applicants
+      jobPost.applicants.push(userid); // Add to applicants
     } else {
       return res.status(404).json({ error: "User not found in applicants list or accepted_applicants list." });
     }
@@ -713,7 +713,7 @@ app.put("/api/move_user_to_accepted/:jobPostId/:userId", authenticateTokenAPI, a
 
     // Update the job post in the database with the modified arrays
     const updateQuery = "UPDATE job_posts SET applicants = $1, accepted_applicants = $2 WHERE id = $3";
-    await pool.query(updateQuery, [updatedApplicants, updatedAcceptedApplicants, jobPostId]);
+    await pool.query(updateQuery, [updatedApplicants, updatedAcceptedApplicants, id]);
 
     res.status(200).json({ message: "User moved successfully." });
   } catch (error) {
@@ -722,7 +722,7 @@ app.put("/api/move_user_to_accepted/:jobPostId/:userId", authenticateTokenAPI, a
   }
 });
 
-app.get("/api/get_job_post_location", async (req, res) => {//token not required
+app.get("/api/post-jobs/location", async (req, res) => {//token not required
   try {
     const { rows } = await pool.query(`SELECT id, location, job_title FROM job_posts;`);
     // console.log("rows", rows);
@@ -732,26 +732,7 @@ app.get("/api/get_job_post_location", async (req, res) => {//token not required
   }
 });
 
-//search //token not required
-// app.get("/api/search_job", async (req, res) => {
-//   try {
-//     const { query } = req.query; // Get the search query from the request
-//     // Define the search query
-//     const searchQuery = `
-//       SELECT job_title, job_description FROM job_posts WHERE job_title ILIKE $1 OR job_description ILIKE $1 OR job_requirements ILIKE $1
-//       OR nature ILIKE $1 OR location_ ILIKE $1 OR job_salary ILIKE $1`;
-
-//     // Execute the search query
-//     const result = await pool.query(searchQuery, [`%${query}%`]);
-
-//     // Send the search results as the API response
-//     res.json(result.rows);
-//   } catch (err) {
-//     console.error("Error occurred:", err);
-//     res.status(500).json({ error: "An error occurred" });
-//   }
-// });
-app.get("/api/search_job", async (req, res) => {
+app.get("/api/post-jobs/search", async (req, res) => {
   try {
     const { query } = req.query; // Get the search query from the request
     // Define the search query
@@ -771,8 +752,8 @@ app.get("/api/search_job", async (req, res) => {
   }
 });
 
-//update user profile //token required
-app.patch('/api/upload_attachement', upload, async (req, res) => {
+//upload message attchemtn//token required
+app.patch('/api/chats/upload-attachement', upload, async (req, res) => {
   try {
     const { roomId, userid } = req.body;
     console.log(req.body);
@@ -838,9 +819,9 @@ app.patch('/api/upload_attachement', upload, async (req, res) => {
 //api to delte posts // profile posts
 
 //feed_post  //token required
-app.patch('/api/feed_post', upload, async (req, res) => {
+app.patch('/api/post-feeds', upload, async (req, res) => {
   try {//| _desc | media_uri | media_type | postby | postdate
-    const { _desc, postby, media_type,  } = req.body;
+    const { _desc, postby, media_type  } = req.body;
 
     const postdate = new Date();
     console.log(req.body);
@@ -863,26 +844,8 @@ app.patch('/api/feed_post', upload, async (req, res) => {
   }
 });
 
-// Get all feed posts in a specific order //required pagination
-// app.get('/api/feed_posts', async (_req, res) => {
-//   try {
-//     // Fetch feed posts from the database, joined with user information, ordered by postdate in descending order (latest first)
-//     const { rows } = await pool.query(`
-//       SELECT feed_posts.*, users.name, users.imageurl
-//       FROM feed_posts
-//       INNER JOIN users ON feed_posts.postby = users.id
-//       ORDER BY feed_posts.postdate DESC
-//     `);
-
-//     res.status(200).json(rows);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// });
-
 //get all feed posts //pagination //home.js
-app.get('/api/feed_posts', async (req, res) => {
+app.get('/api/post-feeds', async (req, res) => {
   try {
     const { page, pageSize } = req.query;
     const pageNumber = parseInt(page, 5) || 1;
@@ -908,7 +871,7 @@ app.get('/api/feed_posts', async (req, res) => {
 });
 
 //get feed post single
-app.get("/api/get_feed_post/:id", async (req, res) => {//postid
+app.get("/api/post-feeds/:id", async (req, res) => {//postid
   try {
     const id = req.params.id;
 
@@ -931,7 +894,7 @@ app.get("/api/get_feed_post/:id", async (req, res) => {//postid
 });
 
 // Get all feed posts by a specific user in a specific order with pagination // user profile
-app.get('/api/feed_posts/:userid', async (req, res) => {
+app.get('/api/:userid/post-feeds', async (req, res) => {
   try {
     const { userid } = req.params;
     const { page, pageSize} = req.query;
@@ -956,7 +919,7 @@ app.get('/api/feed_posts/:userid', async (req, res) => {
 
 
 // API endpoint to add data to the user_saved_posts table //token
-app.post('/api/user_saved_post', authenticateTokenAPI, async (req, res) => {
+app.post('/api/post-jobs/save', authenticateTokenAPI, async (req, res) => {
   try {
     const { postid, userid } = req.body;
 
@@ -1000,7 +963,7 @@ app.post('/api/user_saved_post', authenticateTokenAPI, async (req, res) => {
 });
 
 //saved posts from user, job post
-app.get("/api/fetch_saved_posts/:userid", authenticateTokenAPI, async (req, res) => {
+app.get("/api/post-jobs/save/:userid", authenticateTokenAPI, async (req, res) => {
   try {
     const { userid } = req.params;
 
@@ -1019,12 +982,12 @@ app.get("/api/fetch_saved_posts/:userid", authenticateTokenAPI, async (req, res)
 });
 
 //search //token not required
-app.get("/api/search_talent", async (req, res) => {
+app.get("/api/users/search", async (req, res) => {
   try {
     const { query } = req.query; // Get the search query from the request
     // Define the search query
     const searchQuery = `
-    SELECT id, name, email, bio FROM users WHERE (name ILIKE $1 OR email ILIKE $1 OR bio ILIKE $1) AND role = 'js'`;
+    SELECT id, name, email, bio, verification_status FROM users WHERE (name ILIKE $1 OR email ILIKE $1 OR bio ILIKE $1) AND role = 'js'`;
 
     // Execute the search query
     const result = await pool.query(searchQuery, [`%${query}%`]);
@@ -1039,7 +1002,7 @@ app.get("/api/search_talent", async (req, res) => {
 
 //bio update api
 // Define the route to update the user's bio //token required
-app.patch('/api/users/:userid', async (req, res) => {
+app.patch('/api/users/:userid/bio', async (req, res) => {
   try {
     const { bio } = req.body;
     const { userid } = req.params;
@@ -1062,7 +1025,7 @@ app.patch('/api/users/:userid', async (req, res) => {
 });
 
 // API endpoint to add userid to reportedby array //feed posts
-app.post("/api/add_reportedby_feed_post/:postid/:userid", authenticateTokenAPI, async (req, res) => {
+app.put("/api/post-feeds/:postid/report/:userid", authenticateTokenAPI, async (req, res) => {
   try {
     const { postid, userid } = req.params;
 
@@ -1083,7 +1046,7 @@ app.post("/api/add_reportedby_feed_post/:postid/:userid", authenticateTokenAPI, 
 });
 
 //delete feed post
-app.delete("/api/delete_feed_post/:postid", authenticateTokenAPI, async (req, res) => {
+app.delete("/api/post-feeds/:postid", authenticateTokenAPI, async (req, res) => {
   try {
     const { postid } = req.params;
 
@@ -1107,7 +1070,7 @@ app.delete("/api/delete_feed_post/:postid", authenticateTokenAPI, async (req, re
 });
 
 //delete user card post
-app.delete("/api/delete_post/:postid", authenticateTokenAPI, async (req, res) => {
+app.delete("/api/post-certificates/:postid", authenticateTokenAPI, async (req, res) => {
   try {
     const { postid } = req.params;
 
@@ -1194,7 +1157,7 @@ function getMediaSizeSync(folderPath) {
 }
 
 // get all user info
-app.get("/api/get_all_users", authenticateTokenAPI, async (req, res) => {
+app.get("/api/users", authenticateTokenAPI, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM users WHERE role = $1 OR role = $2", ['js', 'em']);
 
@@ -1206,7 +1169,7 @@ app.get("/api/get_all_users", authenticateTokenAPI, async (req, res) => {
 });
 
 // Add the route to delete a user by ID
-app.delete("/api/delete_user/:id", authenticateTokenAPI, async (req, res) => {
+app.delete("/api/users/:id", authenticateTokenAPI, async (req, res) => {
   const userId = req.params.id;
 
   try {
@@ -1225,25 +1188,25 @@ app.delete("/api/delete_user/:id", authenticateTokenAPI, async (req, res) => {
 //api to update cid of the users table 
 //api to update name of the users table 
 // API to update cid of the users table
-app.put("/api/update_cid/:id", authenticateTokenAPI, async (req, res) => {
-  const userId = req.params.id;
-  const { cid } = req.body;
+// app.put("/api/update_cid/:id", authenticateTokenAPI, async (req, res) => {
+//   const userId = req.params.id;
+//   const { cid } = req.body;
 
-  try {
-    const result = await pool.query("UPDATE users SET cid = $1 WHERE id = $2", [cid, userId]);
-    if (result.rowCount === 0) {
-      return res.status(404).json({ error: "User not found" });
-    }
+//   try {
+//     const result = await pool.query("UPDATE users SET cid = $1 WHERE id = $2", [cid, userId]);
+//     if (result.rowCount === 0) {
+//       return res.status(404).json({ error: "User not found" });
+//     }
 
-    res.json({ message: "User's cid updated successfully" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+//     res.json({ message: "User's cid updated successfully" });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ error: "Internal server error" });
+//   }
+// });
 
 // API to update name of the users table
-app.put("/api/update_name/:id", authenticateTokenAPI, async (req, res) => {
+app.put("/api/users/:id/name", authenticateTokenAPI, async (req, res) => {
   const userId = req.params.id;
   const { name } = req.body;
 
@@ -1264,7 +1227,7 @@ app.put("/api/update_name/:id", authenticateTokenAPI, async (req, res) => {
 // API endpoint to fetch all posts with reportby //feed posts
 
 // Get reported feed posts and job posts from the database, joined with user information
-app.get('/api/reported_posts', async (req, res) => {
+app.get('/api/posts/report', async (req, res) => {
   try {
     // Fetch reported feed posts from the database, joined with user information
     const { rows: reportedFeedPosts } = await pool.query(`
@@ -1295,7 +1258,7 @@ app.get('/api/reported_posts', async (req, res) => {
 });
 
 // API endpoint to add userid to reportedby array //job feeds
-app.post("/api/add_reportedby_job_post/:postid/:userid", authenticateTokenAPI, async (req, res) => {
+app.post("/api/post-jobs/:postid/report/:userid", authenticateTokenAPI, async (req, res) => {
   try {
     const { postid, userid } = req.params;
 
@@ -1351,30 +1314,79 @@ app.get('/api/unread_count/:userid', async (req, res) => {
   }
 });
 
-// app.patch('/api/request_account_verification/:userid', async (req, res) => {
-//   try {
-//     const { userid } = req.params;
+//set the account status to pending from false
+app.patch('/api/user/:userid/apply/verify', async (req, res) => {
+  try {
+    const { userid } = req.params;
 
-//     // Update the user's 'isverified' status to 'pending' if it's false
-//     if (!isverified) {
-//       const { rowCount } = await pool.query(
-//         'UPDATE users SET isverified = $1 WHERE id = $2 AND isverified = false',
-//         ['pending', userid]
-//       );
+    // Check if the user exists and their verification status
+    const { rowCount, rows } = await pool.query(
+      'SELECT verification_status FROM users WHERE id = $1',
+      [userid]
+    );
 
-//       if (rowCount === 0) {
-//         return res.status(404).json({ message: 'User not found or is already verified' });
-//       }
+    if (rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-//       return res.status(200).json({ message: 'User verification status updated successfully', updated: true });
-//     } else {
-//       return res.status(200).json({ message: 'User is already verified', updated: false });
-//     }
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: 'Server Error' });
-//   }
-// });
+    const verificationStatus = rows[0].verification_status;
+
+    if (verificationStatus == 'not verified') {
+      // Update the user's 'verification_status' to 'pending'
+      const updateResult = await pool.query(
+        `UPDATE users SET verification_status = $1 WHERE id = $2 AND verification_status = 'false'`,
+        ['pending', userid]
+      );
+
+      if (updateResult.rowCount === 0) {
+        return res.status(200).json({ message: 'User verification is already in progress', status: 'pending' });
+      }
+
+      return res.status(200).json({ message: 'User verification process initiated', status: 'requested' });
+    } else if (verificationStatus == 'verified') {
+      return res.status(200).json({ message: 'User account is already verified', status: 'verified' });
+    } else {
+      return res.status(200).json({ message: 'Account verification is pending', status: 'pending' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+//set the account verification to verified
+app.patch('/api/users/:userid/verify', authenticateTokenAPI, async (req, res) => {
+  try {
+    const { userid } = req.params;
+
+    // Check if the user exists and get their current verification status
+    const { rowCount, rows } = await pool.query(
+      'SELECT verification_status FROM users WHERE id = $1',
+      [userid]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const verificationStatus = rows[0].verification_status;
+
+    // Update the user's 'verification_status' to 'true' if not 'verified'
+    if (verificationStatus !== 'true') {
+      await pool.query(
+        'UPDATE users SET verification_status = $1 WHERE id = $2',
+        ['verified', userid]
+      );
+
+      return res.status(200).json({ message: 'User account successfully verified', status: 'verified' });
+    } else {
+      return res.status(200).json({ message: 'User account is already verified', status: 'verified' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
 
 // app.listen(3000, () => {
 //     console.log("Server listening on port 3000");

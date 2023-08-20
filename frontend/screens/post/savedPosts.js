@@ -35,7 +35,7 @@ export default AppliedList = ({navigation}) => {
     },[])
 
     const getJobPost = () => {
-    axios.get(`${config.API_URL}/api/fetch_saved_posts/${userid}`,{
+    axios.get(`${config.API_URL}/api/post-jobs/save/${userid}`,{
         headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,

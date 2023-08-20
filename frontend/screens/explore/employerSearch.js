@@ -16,7 +16,7 @@ export default function EmployerSearch({ navigation }) {
   const handleSearch = async () => {
     try {
       if (searchText.trim() !== "") {
-        const response = await axios.get(`${config.API_URL}/api/search_talent`, {
+        const response = await axios.get(`${config.API_URL}/api/users/search`, {
           params: { query: searchText },
         });
 

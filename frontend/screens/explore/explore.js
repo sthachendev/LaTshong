@@ -51,7 +51,7 @@ export default function Explore({ navigation }) {
 
   const getJobPost = async () => {
     try {
-      const res = await axios.get(`${config.API_URL}/api/get_job_post_location`);//no token required
+      const res = await axios.get(`${config.API_URL}/api/post-jobs/location`);//no token required
       console.log('explore', res.data);
       setData(res.data);
     } catch (error) {

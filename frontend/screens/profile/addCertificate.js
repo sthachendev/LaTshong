@@ -39,7 +39,7 @@ export default AddCertificate = ({isModalVisible, setIsModalVisible, userid, get
           type: 'image/jpg',
         });
       
-        await axios.patch(`${config.API_URL}/api/post`, formData, {
+        await axios.patch(`${config.API_URL}/api/post-certificates`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },

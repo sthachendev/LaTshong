@@ -50,7 +50,7 @@ export default Profile = ({navigation}) => {
   const getPost = async() => {
     try {
       setLoading(true);
-      const res = await axios.get(`${config.API_URL}/api/get_post/${userid}`,{
+      const res = await axios.get(`${config.API_URL}/api/${userid}/post-certificates`,{
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -67,7 +67,7 @@ export default Profile = ({navigation}) => {
   const getFeedPost = async () => {
     try {
       setFeedLoading(true);
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=1&pageSize=5`);
+      const res = await axios.get(`${config.API_URL}/api/${userid}/post-feeds/?page=1&pageSize=5`);
       if (res.data.length > 0) {
         setPage(2); // Set page to 2 since we already fetched the first page
         setFeedsData(res.data); // Set feedsData with the fetched data (no need to concatenate)
@@ -88,7 +88,7 @@ export default Profile = ({navigation}) => {
 
     setFeedLoading(true);
     try {
-      const res = await axios.get(`${config.API_URL}/api/feed_posts/${userid}/?page=${page}&pageSize=5`);
+      const res = await axios.get(`${config.API_URL}/api/${userid}/post-feeds/?page=${page}&pageSize=5`);
       if (res.data.length > 0) {
         setFeedsData((prevData) => [...prevData, ...res.data]); // Concatenate new data with previous data
         setPage(page + 1);
@@ -113,7 +113,7 @@ export default Profile = ({navigation}) => {
         type: 'image/png',
       });
     
-      await axios.patch(`${config.API_URL}/api/updateProfile`, formData, {
+      await axios.patch(`${config.API_URL}/api/users/profile`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -150,7 +150,7 @@ export default Profile = ({navigation}) => {
           {
               text: "Delete",
               onPress: () => {
-                axios.delete(`${config.API_URL}/api/delete_post/${postid}`, {
+                axios.delete(`${config.API_URL}/api/post-certificates/${postid}`, {
                   headers: {
                       Authorization: `Bearer ${token}`,
                       }
@@ -239,7 +239,7 @@ const keyExtractor = (item) => item.id.toString();
         return(
           <View style={{display:'flex'}}>
             <Image style={{ width: 400, height: 200, alignSelf:"center" }} source={require("../../assets/images/certificate.png")} />
-            <Text style={{textAlign:'center', color:'grey'}}>Add certificates, stand out from competition </Text>
+            <Text style={{textAlign:'center', color:'grey', marginTop:30}}>Add certificates, stand out from competition </Text>
           </View>
         )
       }}
