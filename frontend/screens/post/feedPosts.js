@@ -12,6 +12,7 @@ import ImageViewer from '../custom/ImageViewer';
 import Ionicons from "react-native-vector-icons/Ionicons";
 // import LazyImage from '../custom/LazyImage';
 // import VideoPlayer from '../custom/VideoPlayer';
+import { MaterialIcons } from "@expo/vector-icons";
 
 const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
@@ -40,10 +41,15 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
       <View style={{ display:'flex', flexDirection:'row', justifyContent:'space-between', flex:1}}>
 
-        <TouchableOpacity activeOpacity={0.9}
+        <TouchableOpacity activeOpacity={0.9} style={{flexDirection:'row', paddingRight:50}}
           onPress={()=>{role ? navigation.navigate('ViewProfile', { userid: item.postby}) : navigation.navigate('Login')}}>
-        <Text style={{marginLeft:10, textAlignVertical:'center', fontWeight:'500', marginRight:20,
+
+        <Text style={{marginLeft:10, textAlignVertical:'center', fontWeight:'500', marginRight:5,
         color: "#404040", fontSize:14}} numberOfLines={1}>{capitalizeWords(item.name)}</Text>
+          {item.verification_status == 'verified' &&
+              <Text style={{ color:"grey", fontSize:12, textAlignVertical:'center'}}>
+            <MaterialIcons name="verified" color='blue' size={16}/></Text>}
+
         </TouchableOpacity>
      
         <TouchableOpacity activeOpacity={0.9}

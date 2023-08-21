@@ -9,6 +9,7 @@ import { useSelector } from "react-redux";
 import Spinner from "../custom/Spinner";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default PostDetails = ({ route, navigation }) => {
   
@@ -205,7 +206,6 @@ const handleMessage = (touserid, tousername, imageurl) => {
                   try {
                     axios.delete(`${config.API_URL}/api/post-jobs/${id}`,{
                       headers: {
-                        'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
                       }
                     })
@@ -220,12 +220,6 @@ const handleMessage = (touserid, tousername, imageurl) => {
                   }
               },
             },
-          // : {
-          //   text: "Report",
-          //   onPress: () => {
-          //     handleReport();
-          //   },
-          // },
         {
           text: "Cancel",
           style: "cancel",
@@ -326,7 +320,6 @@ const handleMessage = (touserid, tousername, imageurl) => {
     axios.post(`${config.API_URL}/api/post-jobs/save`, {userid: jwtDecode(token).userid, postid: postid},
       {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         }
       }
@@ -395,7 +388,12 @@ const handleMessage = (touserid, tousername, imageurl) => {
         }
 
         <View>
-        <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
+          <View style={{flexDirection:'row'}}>
+          <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
+        {data[0].verification_status == 'verified' &&
+              <Text style={{marginLeft:5, color:"grey", fontSize:12, textAlignVertical:'center'}}>
+            <MaterialIcons name="verified" color='blue' size={16}/></Text>}
+          </View>
         <Text style={{marginLeft:10, color:"grey", fontSize:12}}>{data[0].email}</Text>
         </View>
 

@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import config from "../config";
-import { capitalizeWords, getTimeDifference } from "../fn";
+import { capitalizeFirstLetterOfParagraphs, capitalizeWords, getTimeDifference } from "../fn";
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 //used to show the result on press on particular location
 export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, selectedMarkerData, navigation }) => {
@@ -15,7 +16,7 @@ export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, se
     const [data, setData] = useState('');
 
     const getpost = () => {
-      if (postid) axios.get(`${config.API_URL}/api/get_job_post/${postid}`)//no need to add token
+      if (postid) axios.get(`${config.API_URL}/api/post-jobs/${postid}`)
       .then(res=>{
         console.log(res.data);
         setData(res.data);
@@ -29,14 +30,12 @@ export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, se
 
     return (
       <>
-      {/* <Text>selectedMarkerData{selectedMarkerData}</Text> */}
       {selectedMarkerData && (
         <Modal visible={isModalVisible} onRequestClose={closeModal} transparent={true} animationType="slide">
         <TouchableWithoutFeedback onPress={closeModal}>
           <View style={{
               backgroundColor: "transparent",
-              height: "100%", // Set the height of the modal (half of the screen)
-              // You can adjust the height to your desired value
+              height: "100%", 
               elevation:2
           }}>
             
@@ -62,13 +61,17 @@ export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, se
             {data[0].imageurl !== null ? 
             <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25}} />
             :
-            <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20}}/>
-            }
+            <Image source={require("../../assets/images/default.png")} 
+            style={{width:40, height:40, borderRadius:25,  borderColor:"lightgrey", borderWidth:1, marginLeft:5}}
+            />}
 
-            {/* <View > */}
             <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14, textAlignVertical:'center'}}>{capitalizeWords(data[0].name)}</Text>
-            {/* <Text style={{marginLeft:10, color:"grey", fontSize:12, textAlignVertical:'center'}}>~Verified Employer</Text> */}
-            {/* </View> */}
+            <Text style={{marginLeft:5, color:"grey", fontSize:12, textAlignVertical:'center'}}>
+            {data[0].verification_status == 'verified' &&  <Icon
+                  name="verified"
+                  color='blue'
+                  size={16}/>}
+            </Text>
 
           </View>
 
@@ -77,12 +80,10 @@ export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, se
             {data[0].status == 'c' && 'Closed ~ '}{data[0].status == 'c' && getTimeDifference(data[0].closedate)}</Text>
 
             <View style={styles.tableRow}>
-              <Text style={styles.headerCell}>Job Title</Text>
-              <Text style={styles.cell}>{capitalizeWords(data[0].job_title)}</Text>
+              <Text style={[styles.cell, {fontWeight:'bold'}]}>{capitalizeWords(data[0].job_title)}</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={styles.headerCell}>Description</Text>
-              <Text style={styles.cell} numberOfLines={7}>{data[0].job_description}</Text>
+              <Text style={styles.cell} numberOfLines={7}>{capitalizeFirstLetterOfParagraphs(data[0].job_description)}</Text>
             </View>
 
               </>

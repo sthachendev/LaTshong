@@ -14,6 +14,7 @@ import FeedPosts from "../post/feedPosts";
 import { memo } from 'react';
 import jwtDecode from 'jwt-decode';
 import { capitalizeWords, getTimeDifference2 } from '../fn';
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default ViewProfile = ({route, navigation}) => {
 
@@ -32,16 +33,10 @@ export default ViewProfile = ({route, navigation}) => {
   const [loading, setLoading] = useState(false);
   const [loadingFeeds, setLoadingFeeds] = useState(false);
 
-  // const [role, setRole] = useState('');//fetch and set role
   const [userInfo, setUserInfo] = useState('');
 
   useEffect(() => {
     fetchUserInfo();
-
-    // return () => {
-    //   setRole('')
-    // }
-
   }, []);
 
   const fetchUserInfo = async () => {
@@ -52,7 +47,6 @@ export default ViewProfile = ({route, navigation}) => {
           Authorization: `Bearer ${token}`,
         }
       });
-      // setRole(response.data[0].role);
       setLoading(false)
       setUserInfo(response.data[0])
     console.log(response.data[0],'response');
@@ -62,8 +56,6 @@ export default ViewProfile = ({route, navigation}) => {
     }
   };
 
-  // const isFocused = useIsFocused();
- 
   useEffect(()=>{
     // if(isFocused){
       getPost();
@@ -174,7 +166,6 @@ function UserInformation({ userInfo, current_userid }) {
           padding:10,  margin:20,
           paddingVertical:20,
           borderRadius:20,
-        // borderColor:'#000', borderWidth:.25
         elevation:2
         }}>
 
@@ -182,7 +173,6 @@ function UserInformation({ userInfo, current_userid }) {
       
           <TouchableOpacity onPress={()=>{userInfo.imageurl && setImageUri(`${config.API_URL}/${userInfo.imageurl}`); handleImageClick();}} 
           activeOpacity={1} 
-          // style={{backgroundColor:'red'}}
           >
           {/* profile image */}
           
@@ -201,8 +191,17 @@ function UserInformation({ userInfo, current_userid }) {
 
           {/* user name employee and bio */}
         <View style={{flexDirection:"column",}}>
+          <View style={{flexDirection:'row'}}>
           <Text style={{textAlign:"center", fontSize:20, marginLeft:15, marginVertical:5, fontWeight:'bold'}}>
             {capitalizeWords(userInfo.name)}</Text>
+            {userInfo.verification_status == 'verified' &&
+              <Text style={{marginLeft:5, color:"grey", fontSize:12, textAlignVertical:'center'}}>
+            <MaterialIcons
+                  name="verified"
+                  color='blue'
+                  size={16}/>
+            </Text>}
+          </View>
           <Text style={{textAlign:"center", fontSize:14, marginLeft:15, color:"grey", marginVertical:5}}>{userInfo.email}</Text>
           <Text style={{color:"grey", fontSize:12, textAlign:'center', marginVertical:5}}>Joined ~ {getTimeDifference2(userInfo.created_on)}</Text>
           </View>
@@ -267,22 +266,12 @@ function UserInformation({ userInfo, current_userid }) {
   )
 }
 
-// const userinfo = memo(function () {
-//   return <UserInformation userid={userid} navigation={navigation} role={role} />;
-// });
-
-// ... rest of your code
-
   return(
     <View style={{
-      // flex:1,
-    //  backgroundColor:'#fff'
     elevation:2
      }}>
 
     <ImageViewer uri={imageUri} modalVisible={modalVisible} setModalVisible={setModalVisible}/>
-
-    {/* <UserInfo userid={userid} navigation={navigation} role={role}/> */}
 
     {/* show option to upload and display certificates if the usser is js */}
     {userInfo.role === 'js' && 

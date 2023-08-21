@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, Image, TouchableHighlight, StyleSheet } from "react-native";
+import { View, Text, Image, TouchableHighlight, StyleSheet } from "react-native";
 import axios from "axios";
 import config from "../config";
 import { capitalizeWords, getTimeDifference2 } from "../fn";
@@ -44,7 +44,6 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
       setLoading(true)
       const response = await axios.get(`${config.API_URL}/api/users/${userid}`,{
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         }
       });
@@ -95,7 +94,6 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
           padding:10,  margin:20,
           paddingVertical:20,
           borderRadius:20,
-        // borderColor:'#000', borderWidth:.25
         elevation:2
         }}>
 
@@ -140,8 +138,21 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
 
           {/* user name employee and bio */}
         <View style={{flexDirection:"column",}}>
+          <View style={{flexDirection:'row', justifyContent:'center'}}>
           <Text style={{textAlign:"center", fontSize:20, marginLeft:15, marginVertical:5, fontWeight:'bold'}}>
             {capitalizeWords(userInfo[0].name)}</Text>
+            {
+              userInfo[0].verification_status == 'verified' &&
+              <Text style={{marginLeft:5, color:"grey", fontSize:12, textAlignVertical:'center'}}>
+            <MaterialIcons
+                  name="verified"
+                  color='blue'
+                  size={16}/>
+            </Text>
+            }
+          </View>
+          
+            
           <Text style={{textAlign:"center", fontSize:14, marginLeft:15, color:"grey", marginVertical:5}}>{userInfo[0].email}</Text>
           <Text style={{color:"grey", fontSize:12, textAlign:'center', marginVertical:5}}>Joined ~ {getTimeDifference2(userInfo[0].created_on)}</Text>
           </View>

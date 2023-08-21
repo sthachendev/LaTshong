@@ -204,7 +204,7 @@ app.post("/api/otp", async (req, res) => {
 
   // create email message object with the OTP
   const mailOptions = {
-    from: "soyecharo@outlook.com",
+    from: process.env.EMAIL_USER,
     to: email,
     subject: "LaTshong One-Time Password",
     html: `<p>Use this OTP <strong>${otp}</strong> before 15 min.</p>`,
@@ -287,11 +287,9 @@ app.get("/api/post-jobs", async (req, res) => {
     const { page, pageSize } = req.query;
     const pageNumber = parseInt(page, 10) || 1;
     const itemsPerPage = parseInt(pageSize, 10) || 10;
-    // const page = parseInt(req.query.page) || 1; // Get the requested page number (default to 1 if not provided)
-    // const itemsPerPage = parseInt(req.query.limit) || 10; // Number of items to show per page (default to 10 if not provided)
      console.log(pageNumber)
     const offset = (pageNumber - 1) * itemsPerPage;
-    const query = `SELECT job_posts.*, users.name, users.email, users.imageurl
+    const query = `SELECT job_posts.*, users.name, users.email, users.imageurl, users.verification_status
                    FROM job_posts
                    JOIN users ON job_posts.postBy = users.id  
                    ORDER BY job_posts.postdate DESC
@@ -310,7 +308,7 @@ app.get("/api/post-jobs/:id", async (req, res) => {
     const { id } = req.params;
 
     const { rows } = await pool.query(
-      `SELECT job_posts.*, users.name, users.email, users.imageurl
+      `SELECT job_posts.*, users.name, users.email, users.imageurl, users.verification_status
       FROM job_posts
       JOIN users ON job_posts.postBy = users.id
       WHERE job_posts.id = $1`,
@@ -722,22 +720,22 @@ app.put("/api/post-jobs/:id/:userid", authenticateTokenAPI, async (req, res) => 
   }
 });
 
-app.get("/api/post-jobs/location", async (req, res) => {//token not required
+app.get("/api/location", async (req, res) => {//token not required
   try {
     const { rows } = await pool.query(`SELECT id, location, job_title FROM job_posts;`);
-    // console.log("rows", rows);
+    console.log("rows", rows);
     res.status(200).json(rows);
   } catch (error) {
     console.log(error);
   }
 });
 
-app.get("/api/post-jobs/search", async (req, res) => {
+app.get("/api/search/post-jobs", async (req, res) => {
   try {
     const { query } = req.query; // Get the search query from the request
     // Define the search query
     const searchQuery = `
-      SELECT job_title, job_description FROM job_posts WHERE job_title ILIKE $1 OR job_description ILIKE $1 OR job_requirements ILIKE $1
+      SELECT id, job_title, job_description FROM job_posts WHERE job_title ILIKE $1 OR job_description ILIKE $1 OR job_requirements ILIKE $1
       OR nature ILIKE $1 OR location_ ILIKE $1 OR job_salary ILIKE $1
       LIMIT 800`; // Add a LIMIT clause to limit the results to 800
 
@@ -856,7 +854,7 @@ app.get('/api/post-feeds', async (req, res) => {
 
     // Fetch feed posts from the database, joined with user information, ordered by postdate in descending order (latest first)
     const { rows } = await pool.query(`
-      SELECT feed_posts.*, users.name, users.imageurl
+      SELECT feed_posts.*, users.name, users.imageurl, users.verification_status
       FROM feed_posts
       INNER JOIN users ON feed_posts.postby = users.id
       ORDER BY feed_posts.postdate DESC
@@ -982,7 +980,7 @@ app.get("/api/post-jobs/save/:userid", authenticateTokenAPI, async (req, res) =>
 });
 
 //search //token not required
-app.get("/api/users/search", async (req, res) => {
+app.get("/api/search/users", async (req, res) => {
   try {
     const { query } = req.query; // Get the search query from the request
     // Define the search query

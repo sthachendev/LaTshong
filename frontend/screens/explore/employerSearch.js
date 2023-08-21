@@ -5,6 +5,7 @@ import axios from "axios";
 import config from "../config";
 import { capitalizeWords } from "../fn";
 import { useSelector } from "react-redux";
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 export default function EmployerSearch({ navigation }) {
 
@@ -16,7 +17,7 @@ export default function EmployerSearch({ navigation }) {
   const handleSearch = async () => {
     try {
       if (searchText.trim() !== "") {
-        const response = await axios.get(`${config.API_URL}/api/users/search`, {
+        const response = await axios.get(`${config.API_URL}/api/search/users`, {
           params: { query: searchText },
         });
 
@@ -94,7 +95,16 @@ export default function EmployerSearch({ navigation }) {
           <TouchableOpacity style={{backgroundColor:'#fff', padding:10, paddingHorizontal:20}} activeOpacity={1}
           onPress={() => navigation.navigate('ViewProfile', { userid: item.id })}>
             <>
+            <View style={{flexDirection:'row'}}>
             <Text style={{ textAlign: "left", fontWeight:'bold' }}>{capitalizeWords(item.name)}</Text>
+            <Text style={{marginLeft:5, color:"grey", fontSize:12, textAlignVertical:'center'}}>
+            {item.verification_status == 'verified' &&  <MaterialIcons
+                  name="verified"
+                  color='blue'
+                  size={16}/>}
+            </Text>
+            </View>
+           
             <Text style={{ textAlign: "left", color:'grey' }} numberOfLines={2}>{item.email}</Text>
             </>
           </TouchableOpacity>

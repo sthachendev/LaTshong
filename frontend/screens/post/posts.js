@@ -18,7 +18,6 @@ const Posts = (({item, role, navigation, selectedItem, setSelectedItem}) => {
     axios.post(`${config.API_URL}/api/post-jobs/save`, {userid: jwtDecode(token).userid, postid: postid},
       {
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         }
       }
