@@ -45,7 +45,7 @@ export default Home = () => {
 
   const getJobPost = async() => {
     try {
-      if (role === 'em') {//fetch job post of an user
+      if (role === 'em') {
 
         setLoading(true);
         const res = await axios.get(`${config.API_URL}/api/${userid}/post-jobs`

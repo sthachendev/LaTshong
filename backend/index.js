@@ -174,14 +174,12 @@ const nodemailer = require("nodemailer");
 
 // create transporter object
 const transporter = nodemailer.createTransport({
-  host: "smtp-mail.outlook.com",
+  host: process.env.EMAIL_HOST,
   port: 587,
   secure: false,
   auth: {
-    user: "soyecharo@outlook.com",//email
-    pass: "Password@@2020",//password
-    // user: process.env.EMAIL_USER,
-    // pass: process.env.EMAIL_PASS,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -264,10 +262,7 @@ app.post("/api/post-jobs", authenticateTokenAPI, (req, res) => {
       const { job_title, job_description, job_requirements, job_salary, postby, 
         location, nature, vacancy_no, location_, remark} = req.body;
       const postdate = new Date();
-      // console.log(req.body);
       const status = 'o';
-
-      // insert the post data into the database
       const { rows } = pool.query(
         `INSERT INTO job_posts 
         (job_title, job_description, job_requirements, job_salary, postby, postdate, location, status, nature, vacancy_no, location_, remark) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,

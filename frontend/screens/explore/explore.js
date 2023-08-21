@@ -55,7 +55,7 @@ export default function Explore({ navigation }) {
       console.log('explore', res.data);
       setData(res.data);
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   };
 

@@ -4,7 +4,6 @@ import { Provider } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import store from './store';
 import Stack from './routes/stack';
-import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
 
@@ -69,6 +68,5 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: '#4942E4',
   },
 });
