@@ -85,6 +85,10 @@ function setupSocket(server) {
       // Send the room ID to the frontend
       io.to(roomId).emit('roomJoined', { roomId });
 
+      socket.on('user', (userid) => {
+        console.log('user added', userid)
+      })
+
       // Fetch data from the database
       const messages = await fetchMessage(roomId);
       // socket.emit('fetchMessages', { messages });

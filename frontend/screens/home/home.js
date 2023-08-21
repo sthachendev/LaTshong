@@ -35,64 +35,6 @@ export default Home = () => {
   
   const [JobPostPage, setJobPostPage] = useState(1);
 
-  // const socket = createSocket(token);
-  // const dispatch = useDispatch();
-  // useEffect(() => {
-  //   socket.connect();
-
-  //   // socket.emit('joinChat', { user1:userid, user2:0});
-
-  //   // // Listen for the 'roomJoined' event to receive the room ID from the backend
-  //   // socket.on('roomJoined', (data) => {
-  //   //     const { roomId } = data;
-  //   //     console.log(`Joined chat room with room ID: ${roomId}`);
-  //   //     // setRoomId(roomId); // Update the component state with the room ID
-        
-  //   //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
-  //   //   // socket.emit('UnReadMessage', { userid });
-  //   //   console.log(`Joined chat room with room ID: ${roomId}`);
-  //   // });
-
-  //   //establist a socket connection
-  //   socket.emit('connectUser', { userid:userid})
-
-  //   socket.emit('UnReadMessage', { userid });
-
-  //   socket.on('UnReadMessageResult', (unreadCount) => {
-
-  //     console.log('data', unreadCount);
-  //     if (unreadCount > 0) {
-  //     // setUnreadMessages(true);
-  //     dispatch(setUnreadCount(true))
-  //     console.log('unread msg')
-  //     } else {
-  //     // setUnreadMessages(null);
-  //     dispatch(clearUnreadCount())
-  //     console.log('all read msg')
-  //     }
-  //   });
-  //   return () => {
-  //     socket.disconnect();
-  //     // Unsubscribe from events if necessary
-  //     // Example: socket.off('eventFromServer', handleEventFromServer);
-  //   };
-  // }, []);
-
-
-  // useEffect(()=>{
-  //   if(isFocused){
-  //     getJobPost();
-  //     getFeedPost();
-  //   }
-
-  //   console.log('home')
-
-  //   return () => {
-  //    setJobPosts('');
-  //   };
-    
-  // },[isFocused])
-
   useEffect(()=>{
     getJobPost();
     getFeedPost();
@@ -105,7 +47,7 @@ export default Home = () => {
 
   const getJobPost = async() => {
     try {
-      if (role === 'em') {//fetch job post of an user
+      if (role === 'em') {
 
         setLoading(true);
         const res = await axios.get(`${config.API_URL}/api/${userid}/post-jobs`

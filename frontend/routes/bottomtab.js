@@ -1,32 +1,27 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setToken, setRole, setUnreadCount, clearUnreadCount } from '../reducers'; 
+import { setToken, setRole, setUnreadCount } from '../reducers'; 
 import Icon from 'react-native-vector-icons/MaterialIcons';
-
 import Home from '../screens/home/home';
 import Explore from "../screens/explore/explore";
 import Chat from "../screens/chat/chat";
 import Profile from "../screens/profile/profile";
 import EmployerSearch from "../screens/explore/employerSearch";
-
 import { DrawerToggleButton } from "@react-navigation/drawer";
 import adminHome from "../screens/admin/adminHome";
 import contentManagement from "../screens/admin/contentManagement";
 import userManagement from "../screens/admin/userManagement";
-// import createSocket from "../screens/socketConfig";
 import jwtDecode from "jwt-decode";
 import config from "../screens/config";
 import axios from "axios";
-import { useNavigation } from "@react-navigation/native";
+import * as Notifications from 'expo-notifications';
 
 const Tab = createBottomTabNavigator();
 
 function BottomTab() {
   const dispatch = useDispatch();
-
-  const navigation = useNavigation()
 
   useEffect(() => {
     const getToken = async () => {
@@ -52,66 +47,59 @@ function BottomTab() {
 
   const unread_count = useSelector((state) => state.unread_count)
 
-  // const socket = createSocket(token);
-
   const getUnreadCount = () => {
-    console.log(userid)
-    axios.get(`${config.API_URL}/api/unread_count/${userid}`)
-    .then(res=>{
-      console.log('count',res.data)
-      if (res.data.unreadCount > 0 ) {
-        dispatch(setUnreadCount(true))
-      } else { 
-        dispatch(setUnreadCount(null))
-      }
-    })
-    .catch(e=>console.log(e))
-  }
+    console.log(userid);
+    axios
+      .get(`${config.API_URL}/api/unread_count/${userid}`)
+      .then((res) => {
+        console.log('count', res.data);
+  
+        const hasUnreadMessages = res.data.unreadCount > 0;
+  
+        // Cancel existing notification by updating the notification ID
+        const notificationId = 'id123W'; // Set your unique notification ID
+        Notifications.cancelScheduledNotificationAsync(notificationId);
+  
+        if (hasUnreadMessages) {
+          dispatch(setUnreadCount(true));
+  
+          // Display a notification when there are unread messages
+          const notificationContent = {
+            title: 'New Message',
+            body: 'You have new unread messages.',
+          };
+  
+          Notifications.scheduleNotificationAsync({
+            content: notificationContent,
+            trigger: null, // Display immediately
+            identifier: notificationId, // Use the same notification ID
+          });
+        } else {
+          dispatch(setUnreadCount(null));
+        }
+      })
+      .catch((e) => console.log(e));
+  };
 
   useEffect(() => {
-    getUnreadCount()
-    // socket.connect();
+    if (token) {
+      getUnreadCount();
+     const interval = setInterval(() => {
+      getUnreadCount();
+      console.log('fetching count')
+    },  60 * 1000);
 
-    // socket.emit('joinChat', { user1:userid, user2:0});
+    return () => clearInterval(interval);
+    }
 
-    // // Listen for the 'roomJoined' event to receive the room ID from the backend
-    // socket.on('roomJoined', (data) => {
-    //     const { roomId } = data;
-    //     console.log(`Joined chat room with room ID: ${roomId}`);
-    //     // setRoomId(roomId); // Update the component state with the room ID
-        
-    //   // socket.emit('markRoomMessagesAsRead', { roomId, userid });
-    //   // socket.emit('UnReadMessage', { userid });
-    //   console.log(`Joined chat room with room ID: ${roomId}`);
-    // });
-
-    //establist a socket connection
-    // socket.emit('connectUser')
-
-    // socket.emit('UnReadMessage', { userid });
-
-    // socket.on('UnReadMessageResult', (unreadCount) => {
-
-    //   console.log('data', unreadCount);
-    //   if (unreadCount > 0) {
-    //   // setUnreadMessages(true);
-    //   dispatch(setUnreadCount(true))
-    //   console.log('unread msg')
-    //   } else {
-    //   // setUnreadMessages(null);
-    //   dispatch(clearUnreadCount())
-    //   console.log('all read msg')
-    //   }
-    // });
   }, [userid]);
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarHideOnKeyboard: true,
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ color, size }) => {
           let iconName;
-          let outlineIconName;
 
           if (route.name === "Home") {
             iconName='dashboard'
