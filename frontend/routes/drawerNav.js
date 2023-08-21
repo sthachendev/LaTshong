@@ -130,7 +130,7 @@ export default function DrawerNav({ navigation }) {
           {role === 'js' && 
             <DrawerItem
             label="Saved Job Post"
-            onPress={() => navigation.navigate('AppliedLists')}
+            onPress={() => navigation.navigate('SavedPosts')}
             icon={({ color, size }) => (
               <Icon
                 name="bookmark"

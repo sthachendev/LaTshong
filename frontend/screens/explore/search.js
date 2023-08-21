@@ -3,7 +3,6 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, Image, T
 import Icon from "react-native-vector-icons/Ionicons";
 import axios from "axios";
 import config from "../config";
-import { TouchableHighlight } from "react-native";
 import { capitalizeWords } from "../fn";
 import { useSelector } from "react-redux";
 
@@ -89,7 +88,7 @@ export default function Search({ navigation }) {
        }
 
         <FlatList
-        data={searchResult} // Pass the usersData as the data for the FlatList
+        data={searchResult} 
         renderItem={({ item }) => (
           <TouchableOpacity style={{backgroundColor:'#fff', padding:10, paddingHorizontal:20}} activeOpacity={1}
           onPress={() => navigation.navigate('PostDetails', { id: item.id, role })}>

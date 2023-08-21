@@ -388,21 +388,7 @@ const saveAndroidFile = async (fileUri, fileName) => {
         return(
           <>
             <View style={{display:'flex', alignContent:'flex-end', justifyContent:'center', flexDirection:'row'}}>
-            {/* <Image style={{ width: 200, height: 200, borderRadius:100, marginVertical:10}} source={require("../../assets/images/message.png")} /> */}
             </View>
-            {/* <Text style={{textAlign:'center', fontSize:12, color:'grey'}}>---</Text>
-            <Text style={{ textAlign:"justify", fontSize:12, color:'grey', padding:10}}>
-            🙏 Please remember to be polite and respectful. Treat others the way you want to be treated.
-            {'\n'}{'\n'}
-            🚫 Avoid sharing any personal or sensitive information, such as passwords, financial details.
-            {'\n'}{'\n'}
-            🔒 Your privacy is important to us! Be cautious when sharing links or interacting with unknown users.
-           </Text>
-           <Text style={{textAlign:'center', fontSize:12, color:'grey', marginBottom:30}}>---</Text> */}
-           {/* <Text/> */}
-           {/* <TouchableOpacity onPress={handleFetchMore}>
-            <Text>Load More</Text>
-           </TouchableOpacity> */}
           </>
          
         )
@@ -446,7 +432,6 @@ const saveAndroidFile = async (fileUri, fileName) => {
         {isLastMessageOfDate && (
           <Text
             style={{ textAlign: "center",
-              // backgroundColor:'#F8F8F8',
               color:'grey'
             }}>
             {messageDateLabel ? messageDateLabel : 'Today'}
@@ -498,7 +483,6 @@ const saveAndroidFile = async (fileUri, fileName) => {
       {msg.message_type === 'a' &&  //a mimetype aplication/*
       
       <TouchableOpacity 
-      // onPress={() => Linking.openURL(`${config.API_URL}/${msg.file_uri}`)}
       onPress={() => downloadFile(`${config.API_URL}/${msg.file_uri}`, msg.file_name)}
       onLongPress={() => downloadAndShareFile(`${config.API_URL}/${msg.file_uri}`, msg.file_name)}
       >
@@ -515,11 +499,6 @@ const saveAndroidFile = async (fileUri, fileName) => {
       }
       
         </View>
-{/* {console.log("Message User ID:", msg.userid)}{
-console.log("Current User ID:", userid)} */}
-{console.log("msg id:", msg.id)}
-
-<Text >{msg.id}</Text>
 
         {/* date */}
         <Text style={{ color: "grey", 

@@ -21,7 +21,7 @@ const Support = () => {
         style={styles.emailButton}
         onPress={handleContactSupport}
       >
-        <Text style={styles.email}>support@example.com</Text>
+        <Text style={styles.email}>latshong@outlook.com</Text>
       </TouchableHighlight>
     </View>
   );
