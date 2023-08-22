@@ -82,7 +82,7 @@ function BottomTab() {
   };
 
   useEffect(() => {
-    if (token) {
+    if (token && role != 'admin') {
       getUnreadCount();
      const interval = setInterval(() => {
       getUnreadCount();

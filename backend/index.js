@@ -204,7 +204,7 @@ app.post("/api/otp", async (req, res) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "LaTshong One-Time Password",
+    subject: "LaConnect One-Time Password",
     html: `<p>Use this OTP <strong>${otp}</strong> before 15 min.</p>`,
   };
 
@@ -725,7 +725,7 @@ app.get("/api/location", async (req, res) => {//token not required
   }
 });
 
-app.get("/api/search/post-jobs", async (req, res) => {
+app.get("/api/search/jobs", async (req, res) => {
   try {
     const { query } = req.query; // Get the search query from the request
     // Define the search query

@@ -18,12 +18,13 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
 
   const getJobPost = async () => {
     try {//post id
+      const id = post.id
       if(post.posttype === 'job_post') {
-        const res = await axios.get(`${config.API_URL}/api/get_job_post/${post.id}`);//no need to add token
+        const res = await axios.get(`${config.API_URL}/api/post-jobs/${id}`);//no need to add token
         console.log(res.data);
         setData(res.data);
       }else if (post.posttype === 'feed_post') {
-        const res = await axios.get(`${config.API_URL}/api/post-feeds/:id${post.id}`);//no need to add token
+        const res = await axios.get(`${config.API_URL}/api/post-feeds/${id}`);//no need to add token
         console.log(res.data);
         setData(res.data);
       }
@@ -85,7 +86,7 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
         }else if (post.posttype === 'job_post') {
           try {
             const id = postid;
-            const res = await axios.delete(`${config.API_URL}/api/job-posts/${id}`, {
+            const res = await axios.delete(`${config.API_URL}/api/post-jobs/${id}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               }
@@ -123,8 +124,6 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
               backgroundColor: "#fff",
               padding: 15,
               paddingTop:0,
-              // borderTopLeftRadius: 20,
-              // borderTopRightRadius: 20,
               position: "absolute", // Position the modal at the bottom
               bottom: 0, // Align the modal to the bottom of the screen
               left: 0,
@@ -151,11 +150,13 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
 
             <View style={{ paddingVertical:10}}>
               <View style={{display:"flex", flexDirection:'row', paddingTop:10, paddingHorizontal:15}}>
-                {data[0].imageurl !== null ? //profile image
-                <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40,  borderRadius: 25, borderColor:"lightgrey", borderWidth:1}} />
+              {data[0].imageurl.length > 0 ? 
+                <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25, borderColor:"lightgrey", borderWidth:1,}} />
                 :
-                <Image source={require("../../assets/images/default.png")} style={{ width: 40, height: 40, borderRadius: 25 }} />
-                }
+                <Image source={require("../../assets/images/default.png")} 
+                style={{width:40, height:40, borderRadius:20,  borderColor:"lightgrey", borderWidth:1, marginLeft:5}}
+                />
+              }
                 <View style={{flex:1}}>
 
                 <View style={{ display:'flex', flexDirection:'row', justifyContent:'space-between', flex:1}}>
@@ -228,14 +229,21 @@ export default PostInfo = ({isModalVisible, setIsModalVisible, post, setPost, fe
       {/* user dp and name */}
       <View style={{display:"flex", flexDirection:"row",}}>
 
-        {data[0].imageurl !== null ? 
-        <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25}} />
+      {data[0].imageurl.length > 0 ? 
+        <Image source={{ uri: `${config.API_URL}/${data[0].imageurl}` }} style={{width:40, height:40, borderRadius:25, borderColor:"lightgrey", borderWidth:1,}} />
         :
-        <View style={{width:40, height:40, backgroundColor:"#000", borderRadius:20}}/>
-        }
+        <Image source={require("../../assets/images/default.png")} 
+        style={{width:40, height:40, borderRadius:20,  borderColor:"lightgrey", borderWidth:1, marginLeft:5}}
+        />
+      }
 
         <View>
-        <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
+        <View style={{flexDirection:'row'}}>
+          <Text style={{marginLeft:10, fontWeight:"bold", fontSize:14}}>{capitalizeWords(data[0].name)}</Text>
+        {data[0].verification_status == 'verified' &&
+              <Text style={{marginLeft:5, color:"grey", fontSize:12, textAlignVertical:'center'}}>
+            <MaterialIcons name="verified" color='blue' size={16}/></Text>}
+          </View>
         <Text style={{marginLeft:10, color:"grey", fontSize:12}}>{data[0].email}</Text>
         </View>
 

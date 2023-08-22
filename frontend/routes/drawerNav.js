@@ -53,7 +53,7 @@ export default function DrawerNav({ navigation }) {
           
           {token !== null && token && username &&
             <TouchableOpacity style={{display:'flex', flexDirection:'row'}} activeOpacity={1}
-              onPress={() => navigation.navigate('Profile')}>
+              onPress={() => (role !='admin' && navigation.navigate('Profile'))}>
               {/* <Image source={{ uri: `${config.API_URL}/${imageurl}` }} style={{width:50, height:50, borderRadius:25}} /> */}
                 <View style={{marginLeft:20}}>
                   <Text style={{fontWeight:'500',}}>{capitalizeWords(username)}</Text>

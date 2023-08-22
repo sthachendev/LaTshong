@@ -239,20 +239,16 @@ const handleMessage = (touserid, tousername, imageurl) => {
     })
     .then(res=>{
       console.log(res.data);
-      // ToastAndroid.show("Selected", ToastAndroid.SHORT);
       //getJobPost();//instead of fetching the data, remove the add from applicants and add to accept array
-
-      // Instead of using `applicants` and `acceptedApplicants` directly,
-
       // Instead of using `applicants` and `acceptedApplicants` directly,
       // modify the state directly to trigger a re-render
       if (selectedOption === 'p') {
         setUserData((prevApplicants) => {
-          const indexToRemove = prevApplicants.findIndex((applicant) => applicant.id === userId);
+          const indexToRemove = prevApplicants.findIndex((applicant) => applicant.id === userid);
           if (indexToRemove !== -1) {
             const removedItem = prevApplicants[indexToRemove];
             setAcceptedApplicants((prevAcceptedApplicants) => [...prevAcceptedApplicants, removedItem]);
-            setApplicants((prev) => prev.filter((applicant) => applicant.id !== userId));
+            setApplicants((prev) => prev.filter((applicant) => applicant.id !== userid));
             ToastAndroid.show("Selected", ToastAndroid.SHORT);
             return prevApplicants.filter((_, index) => index !== indexToRemove);
           }
@@ -260,11 +256,11 @@ const handleMessage = (touserid, tousername, imageurl) => {
         });
       } else if (selectedOption === 'a') {
         setUserData((prevAcceptedApplicants) => {
-          const indexToRemove = prevAcceptedApplicants.findIndex((applicant) => applicant.id === userId);
+          const indexToRemove = prevAcceptedApplicants.findIndex((applicant) => applicant.id === userid);
           if (indexToRemove !== -1) {
             const removedItem = prevAcceptedApplicants[indexToRemove];
             setApplicants((prevApplicants) => [...prevApplicants, removedItem]);
-            setAcceptedApplicants((prev) => prev.filter((applicant) => applicant.id !== userId));
+            setAcceptedApplicants((prev) => prev.filter((applicant) => applicant.id !== userid));
             ToastAndroid.show("Un-selected", ToastAndroid.SHORT);
             return prevAcceptedApplicants.filter((_, index) => index !== indexToRemove);
           }
@@ -459,7 +455,6 @@ const handleMessage = (touserid, tousername, imageurl) => {
             onPress={()=>handleMessage(data[0].postby, data[0].name, data[0].imageurl)}
             >
               <Text style={{ paddingVertical:10,  textAlign:"center", color:'rgba(30,49,157,0.7)' }}>
-                {/* <MaterialIcons name="mail" size={20} color="lightgrey" /> */}
                 Message
               </Text>
             </TouchableHighlight>
