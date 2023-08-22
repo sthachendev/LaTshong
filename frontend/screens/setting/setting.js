@@ -21,7 +21,7 @@ export default function Setting({ navigation, route }) {
 
       <Text style={{color:'#404040'}}>Account Setting</Text>
 
-      <TouchableOpacity onPress={()=>navigation.navigate('ChangePassword', userid)} style={{marginTop:20}} activeOpacity={0.6}>
+      <TouchableOpacity onPress={()=>navigation.navigate('ChangeName', userid)} style={{marginTop:20}} activeOpacity={0.6}>
         <Text style={{fontSize:16}}>Change Name</Text>
       </TouchableOpacity>
       

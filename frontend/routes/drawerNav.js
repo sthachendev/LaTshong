@@ -98,11 +98,11 @@ export default function DrawerNav({ navigation }) {
               )}
             />
             <DrawerItem
-              label="Explore"
+              label={role != 'em' ? "Explore" : "Search"}
               onPress={() => navigation.navigate('Explore')}
               icon={({ color, size }) => (
                 <Icon
-                  name="explore"
+                  name={role != 'em' ? "explore" : "search"}
                   color={color}
                   size={size}/>
               )}
