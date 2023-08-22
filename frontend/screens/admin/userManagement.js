@@ -39,10 +39,13 @@ const UserManagement = () => {
     // Filter the user data when the filter or searchText changes
     const filteredData = userData.filter(
       (user) =>
-        (filter === "all" || user.role === filter) &&
-        (user?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-          user?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
-          user?.cid?.toLowerCase().includes(searchText.toLowerCase()))
+        (filter === "all" || user.role === filter) ||
+        (filter === "pending" && user.verification_status === 'pending') // Check for pending verification status
+    ).filter(
+      (user) =>
+        user?.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+        user?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+        user?.cid?.toLowerCase().includes(searchText.toLowerCase())
     );
     setFilteredUsers(filteredData);
   }, [userData, filter, searchText]);
@@ -78,6 +81,10 @@ const UserManagement = () => {
   const handleFilterAll = () => {
     setFilter("all");
   };
+  
+  const handleShowVerificationRequest = () => {
+    setFilter("pending");
+  };
 
   const [isModalVisible, setIsModalVisible] = useState(false);
 
@@ -107,6 +114,9 @@ const UserManagement = () => {
         </TouchableHighlight>
         <TouchableHighlight style={styles.filterButton} onPress={handleFilterEmployer} underlayColor="grey">
           <Text style={styles.filterButtonText}>Employer</Text>
+        </TouchableHighlight>
+        <TouchableHighlight style={styles.filterButton} onPress={handleShowVerificationRequest} underlayColor="grey">
+          <Text style={styles.filterButtonText}>Verification Request</Text>
         </TouchableHighlight>
       </View>
 

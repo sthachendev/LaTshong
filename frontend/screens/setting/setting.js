@@ -33,7 +33,17 @@ export default function Setting({ navigation, route }) {
         <Text style={{fontSize:16}}>Request Account Verification</Text>
       </TouchableOpacity>
 
-      <Text style={{color:'#404040', marginTop:25}}>Legal</Text>
+      <View style={{borderTopWidth:0.5, borderTopColor:'lightgrey', marginTop:25}}/>
+
+      <Text style={{color:'#404040', marginTop:15}}>Help & Support</Text>
+
+      <TouchableOpacity onPress={()=>navigation.navigate('Support')} style={{marginTop:25}} activeOpacity={0.6}>
+        <Text style={{fontSize:16}}>Contact Us</Text>
+      </TouchableOpacity>
+
+      <View style={{borderTopWidth:0.5, borderTopColor:'lightgrey', marginTop:25}}/>
+
+      <Text style={{color:'#404040', marginTop:15}}>Legal</Text>
 
       <TouchableOpacity onPress={()=>navigation.navigate('Policy')} style={{marginTop:25}} activeOpacity={0.6}>
         <Text style={{fontSize:16}}>Terms of Use & Privacy Policy</Text>

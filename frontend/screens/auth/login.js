@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Image, TouchableOpacity, View, StyleSheet } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 import { TextInput ,Text } from "react-native-paper";
 import { useDispatch } from 'react-redux';
 import { setToken, setRole } from '../../reducers'; 
@@ -47,9 +46,6 @@ export default function Login({navigation}) {
       console.log(jwtDecode(response.data.token).role)
       dispatch(setToken(response.data.token));
       dispatch(setRole(jwtDecode(response.data.token).role))
-
-      await AsyncStorage.setItem("token", response.data.token);
-      await AsyncStorage.setItem("role", jwtDecode(response.data.token).role);
 
       navigation.navigate('Home');
       

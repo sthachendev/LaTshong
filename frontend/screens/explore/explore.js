@@ -95,7 +95,6 @@ export default function Explore({ navigation }) {
           alignItems: "center",
           padding: 10,
           backgroundColor: "#fff",
-          // marginTop:20
         }}
       >
 
@@ -125,7 +124,13 @@ export default function Explore({ navigation }) {
           navigation.navigate('Search');
           Keyboard.dismiss();
         }}
-
+      />
+       <Icon
+       onPress={()=>getJobPost()}
+        name="refresh"
+        size={18}
+        color="grey"
+        style={{ marginHorizontal: 10 }}
       />
     </View>
  
@@ -140,21 +145,6 @@ export default function Explore({ navigation }) {
             mapType="standard"
             initialRegion={userLocation}
           >
-            {/* {userLocation && (
-              <Marker
-                title="Current Location"
-                coordinate={{
-                  latitude: userLocation.latitude,
-                  longitude: userLocation.longitude,
-                }}
-              >
-                 <Callout>
-                  <View style={styles.calloutContainer}>
-                    <Text style={styles.calloutText}>Current Location</Text>
-                  </View>
-                </Callout>
-              </Marker>
-            )} */}
             
           {data.map((data) => (
             <Marker
@@ -170,13 +160,7 @@ export default function Explore({ navigation }) {
               <Callout>
               <Ionicons name="eye" size={20} color='#1E319D'/>
               </Callout>
-              {/* <Callout >
-              <View style={{ width: Dimensions.get('window').width, backgroundColor:"transparent"}} tooltip>
-                <View style={{ alignSelf: 'center'}}>
-                  <Text style={{ alignSelf: 'center' }} >{data.job_title}</Text>
-                </View>
-              </View>
-              </Callout> */}
+            
             </Marker>
           ))}
           </MapView>

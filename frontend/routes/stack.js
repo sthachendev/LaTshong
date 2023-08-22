@@ -18,6 +18,7 @@ import SavedPosts from "../screens/post/savedPosts";
 import Search from "../screens/explore/search";
 import Policy from "../screens/support/policy";
 import ChangeName from "../screens/setting/changeName";
+import Tutorial from "../screens/support/tutorial";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -188,6 +189,15 @@ function Stack() {
       <Stack.Screen
         name="ChangeName"
         component={ChangeName}
+        options={{
+          headerTitle:'',
+          headerShadowVisible:false
+        }}
+      />
+
+      <Stack.Screen
+        name="Tutorial"
+        component={Tutorial}
         options={{
           headerTitle:'',
           headerShadowVisible:false

@@ -142,7 +142,7 @@ export default function DrawerNav({ navigation }) {
           }
           {/* for employer job posts */}
 
-          {token !== null && token && role !=='admin' && (
+          {token !== null && token && (
             <>
             <View style={{alignContent: 'center', marginVertical: 20, borderBottomWidth:.25, borderColor:"rgba(49, 105, 210, 0.5)"}}/>
 
@@ -159,21 +159,7 @@ export default function DrawerNav({ navigation }) {
                   size={size}
                 />
               )}
-            />
-            <DrawerItem
-              label="Help & Support"
-              onPress={() => {
-                navigation.navigate('Support');
-                navigation.dispatch(DrawerActions.closeDrawer());
-              }}
-              icon={({ color, size }) => (
-                <Icon
-                  name="help"
-                  color={color}
-                  size={size}
-                />
-              )}
-            />
+            />           
             </>
           )}
 

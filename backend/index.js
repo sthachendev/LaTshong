@@ -62,10 +62,8 @@ const tableSchema = fs.readFileSync('./tableSchema.sql', 'utf8');
 pool.query(tableSchema, (error) => {
   if (error) {
     console.error('Error creating table:', error);
-    // Handle the error appropriately
   } else {
     console.log('Table created successfully!');
-    // Continue with your application logic
   }
 });
 
@@ -85,7 +83,7 @@ app.post("/api/login", async (req, res) => {
   if (!user) {
     return res.status(401).json({ message: "User doesn't exists" });
   }
-  // Check if the provided password matches the hashed password stored in the database
+
   const passwordMatches = await bcrypt.compare(password, user.password);
 
   if (!passwordMatches) {
@@ -158,7 +156,6 @@ function authenticateTokenSocketIO(socket, next) {
       return next(new Error('Invalid token'));
     }
 
-    // Attach the decoded token data to the socket object
     socket.decoded_token = decoded;
 
     next();
@@ -204,12 +201,11 @@ app.post("/api/otp", async (req, res) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "LaConnect One-Time Password",
+    subject: "LaConnect One Time Password",
     html: `<p>Use this OTP <strong>${otp}</strong> before 15 min.</p>`,
   };
 
   try {
-    // send email message
     await transporter.sendMail(mailOptions);
     console.log("Email sent");
 
@@ -414,37 +410,6 @@ app.get("/api/users/:userid", authenticateTokenAPI, async (req, res) => {
     console.log(error);
   }
 })
-
-// post
-// app.post("/api/employer_post", (req, res) => {//token required
-//   upload(req, res, async (err) => {
-//     if (err) {
-//       // An error occurred when uploading
-//       console.log(err);
-//       return res.status(400).json({ message: "Error uploading file." });
-//     }
-
-//     console.log(req.file);
-//     try {
-//       const { description, postby } = req.body;
-//       const postdate = new Date();
-
-//       const filepaths = req.files["images"].map((file) => file.path);
-
-//       // insert the post data into the database
-//       const { rows } = await pool.query(
-//         `INSERT INTO posts 
-//         (description, postby, postdate, images) VALUES ($1, $2, $3, $4) RETURNING *`,
-//         [description, postby, postdate, filepaths]
-//       );
-
-//       res.status(201).json(rows);
-//     } catch (err) {
-//       console.error(err);
-//       res.status(500).json({ message: "Server Error" });
-//     }
-//   });
-// });
 
 // Configure Socket.IO middleware for JWT authentication
 io.use(authenticateTokenSocketIO);
@@ -728,16 +693,14 @@ app.get("/api/location", async (req, res) => {//token not required
 app.get("/api/search/jobs", async (req, res) => {
   try {
     const { query } = req.query; // Get the search query from the request
-    // Define the search query
+
     const searchQuery = `
       SELECT id, job_title, job_description FROM job_posts WHERE job_title ILIKE $1 OR job_description ILIKE $1 OR job_requirements ILIKE $1
       OR nature ILIKE $1 OR location_ ILIKE $1 OR job_salary ILIKE $1
       LIMIT 800`; // Add a LIMIT clause to limit the results to 800
 
-    // Execute the search query
     const result = await pool.query(searchQuery, [`%${query}%`]);
 
-    // Send the search results as the API response
     res.json(result.rows);
   } catch (err) {
     console.error("Error occurred:", err);
@@ -751,12 +714,9 @@ app.patch('/api/chats/upload-attachement', upload, async (req, res) => {
     const { roomId, userid } = req.body;
     console.log(req.body);
 
-    // const files = req.files.image;
     const file = req.files.image[0]; // Assuming there's only one attachment uploaded at a time
-
     console.log(file)
 
-    // const filepaths = files.map(file => file.path);
     const filepath = file.path;
 
     let message_type;
@@ -809,11 +769,9 @@ app.patch('/api/chats/upload-attachement', upload, async (req, res) => {
   }
 });
 
-//api to delte posts // profile posts
-
 //feed_post  //token required
 app.patch('/api/post-feeds', upload, async (req, res) => {
-  try {//| _desc | media_uri | media_type | postby | postdate
+  try {
     const { _desc, postby, media_type  } = req.body;
 
     const postdate = new Date();
@@ -844,10 +802,8 @@ app.get('/api/post-feeds', async (req, res) => {
     const pageNumber = parseInt(page, 5) || 1;
     const itemsPerPage = parseInt(pageSize, 5) || 5;
 
-    // Calculate the offset based on the requested page and page size
     const offset = (pageNumber - 1) * itemsPerPage;
 
-    // Fetch feed posts from the database, joined with user information, ordered by postdate in descending order (latest first)
     const { rows } = await pool.query(`
       SELECT feed_posts.*, users.name, users.imageurl, users.verification_status
       FROM feed_posts
@@ -909,7 +865,6 @@ app.get('/api/:userid/post-feeds', async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 });
-
 
 // API endpoint to add data to the user_saved_posts table //token
 app.post('/api/post-jobs/save', authenticateTokenAPI, async (req, res) => {
@@ -1000,7 +955,6 @@ app.patch('/api/users/:userid/bio', async (req, res) => {
     const { bio } = req.body;
     const { userid } = req.params;
 
-    // Update the user's bio in the database
     const { rowCount } = await pool.query(
       'UPDATE users SET bio = $1 WHERE id = $2',
       [bio, userid]
@@ -1027,7 +981,6 @@ app.put("/api/post-feeds/:postid/report/:userid", authenticateTokenAPI, async (r
     const result = await pool.query(updateQuery, [userid, postid]);
 
     if (result.rowCount === 0) {
-      // If no rows were updated, it means the userid already exists in the array
       return res.status(200).json({ message: "User is already in the reportedby array." });
     }
 
@@ -1153,7 +1106,6 @@ function getMediaSizeSync(folderPath) {
 app.get("/api/users", authenticateTokenAPI, async (req, res) => {
   try {
     const { rows } = await pool.query("SELECT * FROM users WHERE role = $1 OR role = $2", ['js', 'em']);
-
     res.json(rows);
   } catch (error) {
     console.log(error);
@@ -1178,26 +1130,6 @@ app.delete("/api/users/:id", authenticateTokenAPI, async (req, res) => {
   }
 });
 
-//api to update cid of the users table 
-//api to update name of the users table 
-// API to update cid of the users table
-// app.put("/api/update_cid/:id", authenticateTokenAPI, async (req, res) => {
-//   const userId = req.params.id;
-//   const { cid } = req.body;
-
-//   try {
-//     const result = await pool.query("UPDATE users SET cid = $1 WHERE id = $2", [cid, userId]);
-//     if (result.rowCount === 0) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     res.json({ message: "User's cid updated successfully" });
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
 // API to update name of the users table
 app.put("/api/users/:id/name", authenticateTokenAPI, async (req, res) => {
   const userId = req.params.id;
@@ -1215,9 +1147,6 @@ app.put("/api/users/:id/name", authenticateTokenAPI, async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-//api to get reported feeds posts
-// API endpoint to fetch all posts with reportby //feed posts
 
 // Get reported feed posts and job posts from the database, joined with user information
 app.get('/api/posts/report', async (req, res) => {
@@ -1381,10 +1310,6 @@ app.patch('/api/users/:userid/verify', authenticateTokenAPI, async (req, res) =>
   }
 });
 
-// app.listen(3000, () => {
-//     console.log("Server listening on port 3000");
-//   });
-  
 // Start the server
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSelector, useDispatch } from 'react-redux';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { setToken, setRole, setUnreadCount } from '../reducers'; 
+import { setUnreadCount } from '../reducers'; 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Home from '../screens/home/home';
 import Explore from "../screens/explore/explore";
@@ -22,24 +21,6 @@ const Tab = createBottomTabNavigator();
 
 function BottomTab() {
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    const getToken = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token");
-        const role = await AsyncStorage.getItem("role");
-        if (token) {
-          dispatch(setToken(token));
-          dispatch(setRole(role));
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-  
-    getToken();
-
-  }, [dispatch]);
   
   const token = useSelector((state) => state.token);
   const role = useSelector((state) => state.role);

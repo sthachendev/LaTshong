@@ -143,7 +143,7 @@ export default function ForgotPassword({navigation}) {
         mode="outlined"
         label="Email"
         value={email}
-        onChangeText={(t)=>setEmail(t.trim())}
+        onChangeText={(t)=>setEmail(t)}
         onFocus={()=>setMessage("")}
         style={{fontSize:14}}
         theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}

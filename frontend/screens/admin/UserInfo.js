@@ -4,7 +4,7 @@ import axios from "axios";
 import config from "../config";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import { capitalizeWords, getTimeDifference2 } from "../fn";
+import { getTimeDifference2 } from "../fn";
 import { TextInput } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
@@ -210,17 +210,6 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
               multiline={true}
               blurOnSubmit={true}
               />
-            {/* <TextInput
-              mode="outlined"
-              label="CID No."
-              value={cid}
-              onChangeText={setCid}
-              style={{fontSize:14, marginTop:20}}
-              theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
-              multiline={true}
-              blurOnSubmit={true}
-              /> */}
-            {/* <Text style={{padding:10}}>CID No: {user.cid}</Text> */}
             <TextInput
               mode="outlined"
               label="Email"
@@ -232,7 +221,6 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
               pointerEvents="none" // Set pointerEvents to "none" for disabled TextInput
               disabled
               />
-            {/* <Text style={{padding:10}}>{user.email}</Text> */}
             <TextInput
               mode="outlined"
               label="Role"
