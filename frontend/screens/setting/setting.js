@@ -20,6 +20,10 @@ export default function Setting({ navigation, route }) {
     <View style={{flex:1, backgroundColor:"#fff", padding:10, paddingLeft:25}}>
 
       <Text style={{color:'#404040'}}>Account Setting</Text>
+
+      <TouchableOpacity onPress={()=>navigation.navigate('ChangePassword', userid)} style={{marginTop:20}} activeOpacity={0.6}>
+        <Text style={{fontSize:16}}>Change Name</Text>
+      </TouchableOpacity>
       
       <TouchableOpacity onPress={()=>navigation.navigate('ChangePassword', userid)} style={{marginTop:20}} activeOpacity={0.6}>
         <Text style={{fontSize:16}}>Change Password</Text>
@@ -31,8 +35,8 @@ export default function Setting({ navigation, route }) {
 
       <Text style={{color:'#404040', marginTop:25}}>Legal</Text>
 
-      <TouchableOpacity onPress={()=>handleRequest()} style={{marginTop:25}} activeOpacity={0.6}>
-        <Text style={{fontSize:16}}>Privacy Policy</Text>
+      <TouchableOpacity onPress={()=>navigation.navigate('Policy')} style={{marginTop:25}} activeOpacity={0.6}>
+        <Text style={{fontSize:16}}>Terms of Use & Privacy Policy</Text>
       </TouchableOpacity>
 
     </View>

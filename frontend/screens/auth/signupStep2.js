@@ -56,7 +56,7 @@ export default function SignupStep2({navigation, route}) {
             <MaterialIcons name="arrow-back" size={24} color="#152370" />
             </TouchableHighlight>
 
-    {/* LaTshong */}
+    {/* LaConnect */}
         <Text style={{
             textAlign: 'center',
             fontWeight: 'bold',
@@ -64,7 +64,7 @@ export default function SignupStep2({navigation, route}) {
             letterSpacing: 4,
             fontSize: 25,
             paddingBottom:10,
-        }}>LaTshong</Text>
+        }}>LaConnect</Text>
 
     {/* main components */}
     <View style={styles.container}>

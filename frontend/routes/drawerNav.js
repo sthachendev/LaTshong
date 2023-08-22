@@ -35,7 +35,7 @@ export default function DrawerNav({ navigation }) {
     return (
       <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, marginHorizontal:10 }}>
         <View style={{ flex: 1 }}>
-          {/* LaTshong */}
+          {/* LaConnect */}
           <View style={{ alignItems: 'center', marginTop: 20}}>
             <Text
               style={{
@@ -45,7 +45,7 @@ export default function DrawerNav({ navigation }) {
                 fontSize: 25,
               }}
             >
-              LaTshong
+              LaConnect
             </Text>
           </View>
 

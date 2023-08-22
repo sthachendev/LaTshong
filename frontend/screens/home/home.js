@@ -239,7 +239,7 @@ export default Home = () => {
         
       <TouchableOpacity style={[styles.topTabBtn, {borderBottomColor: jobTabSelected ? '#1E319D' : '#F1F2F6',}]} 
       onPress={()=>setJobTabSelected(true)} activeOpacity={1}>
-          <Icon name="work-outline" size={24} color={jobTabSelected ? '#1E319D' : 'grey'} />
+          <Icon name="work" size={24} color={jobTabSelected ? '#1E319D' : 'grey'} />
         </TouchableOpacity> 
 
         <TouchableOpacity style={[styles.topTabBtn, {borderBottomColor: !jobTabSelected ? '#1E319D' : '#F1F2F6',}]}

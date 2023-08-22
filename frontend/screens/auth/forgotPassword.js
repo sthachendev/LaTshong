@@ -110,7 +110,7 @@ export default function ForgotPassword({navigation}) {
         letterSpacing: 4,
         fontSize: 25,
         marginTop:20
-      }}>LaTshong</Text>
+      }}>LaConnect</Text>
 
     <Image style={{ width: 300, height: 200, alignSelf:"center" }} source={require("../../assets/images/forgotpassword.png")} />
       
@@ -123,7 +123,7 @@ export default function ForgotPassword({navigation}) {
 
     <View style={{marginTop:30, marginBottom:20}}>
       <Text style={{color:'grey'}}>
-        { !validOtp && 'Enter an email associated with your LaTshong account'}
+        { !validOtp && 'Enter an email associated with your LaConnect account'}
         { validOtp && validOtp !== otp && `Enter the OTP sent to ${email}`}
         { validOtp.trim() !== '' && validOtp === otp && 'Enter a new password for your account'}
         </Text>

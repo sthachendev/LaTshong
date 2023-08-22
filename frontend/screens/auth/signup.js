@@ -130,7 +130,7 @@ export default function Signup({navigation}) {
         letterSpacing: 4,
         fontSize: 25,
         paddingBottom:10,
-      }}>LaTshong</Text>
+      }}>LaConnect</Text>
 
  {/* login components */}
   <View style={styles.container}>
@@ -225,12 +225,16 @@ export default function Signup({navigation}) {
           outline:"lightgrey"}}}
         />
 
-        <View style={{display:"flex", flexDirection:'row', marginTop:20, paddingRight:20}}>
+        <View style={{flexDirection:'row', marginTop:20, paddingRight:20}}>
         <Checkbox 
           status={checked?'checked':'unchecked'}
           color="#4942E4"
           onPress={()=>setChecked(!checked)}/>
-          <Text>Yes, I understand and to the LaTshong Terms & policy.</Text>
+          <Text>I have read and hereby accept the LaConnect 
+            <TouchableOpacity activeOpacity={0.6} onPress={()=>navigation.navigate('Policy')}>
+              <Text style={{color:'#1E319D'}}>Terms of Use & Privacy Policy.</Text>
+            </TouchableOpacity>
+          </Text>
           <Text></Text>
         </View>
 

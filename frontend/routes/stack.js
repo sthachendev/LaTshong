@@ -16,6 +16,7 @@ import ForgotPassword from "../screens/auth/forgotPassword";
 import ChangePassword from "../screens/setting/changePassword";
 import SavedPosts from "../screens/post/savedPosts";
 import Search from "../screens/explore/search";
+import Policy from "../screens/support/policy";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -170,6 +171,15 @@ function Stack() {
         component={Search}
         options={{
           headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Policy"
+        component={Policy}
+        options={{
+          headerTitle:'Terms of Use & Privacy Policy',
+          headerTitleAlign:'center',
+          headerShadowVisible:false
         }}
       />
 

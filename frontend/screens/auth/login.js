@@ -123,7 +123,7 @@ export default function Login({navigation}) {
         fontSize: 25,
         // paddingVertical:10,
         marginTop:20
-      }}>LaTshong</Text>
+      }}>LaConnect</Text>
 
 
     <View style={{marginTop:30, marginBottom:20}}>
