@@ -10,8 +10,6 @@ import { useState } from 'react';
 import FeedPostsOption from './feedPostsOption';
 import ImageViewer from '../custom/ImageViewer';
 import Ionicons from "react-native-vector-icons/Ionicons";
-// import LazyImage from '../custom/LazyImage';
-// import VideoPlayer from '../custom/VideoPlayer';
 import { MaterialIcons } from "@expo/vector-icons";
 
 const FeedPosts = (({item, role, navigation, getFeedPost}) => {
@@ -20,8 +18,6 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
   const [modalVisible, setModalVisible] = useState(false);//image viewer
 
-  console.log('feed post');
-  
   return(
   <View style={styles.itemContainer} >
 
@@ -32,7 +28,7 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 
   <View style={{ paddingTop:10}}>
     <View style={{display:"flex", flexDirection:'row', paddingHorizontal:15}}>
-      {item.imageurl.length > 0 ?//profile image
+      {item.imageurl.length > 0 ?
       <Image source={{ uri: `${config.API_URL}/${item.imageurl}` }} style={{width:40, height:40,  borderRadius: 25, borderColor:"lightgrey", borderWidth:1}} />
       :
       <Image source={require("../../assets/images/default.png")} style={{width:40, height:40, borderRadius:25, borderColor:"lightgrey", borderWidth:1}} />
@@ -78,7 +74,7 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
       <Image
         source={{ uri: `${config.API_URL}/${item.media_uri}` }}
         style={{ width: '100%', height: 250 }}
-        resizeMode="cover" // This ensures the image fills the container without distorting its aspect ratio
+        resizeMode="cover"
       />    
        <Ionicons
           name="expand-outline"
@@ -91,7 +87,6 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
     
     {item.media_type === 'v' && // v --video
     <>
-        {/* <VideoPlayer  videoUri={`${config.API_URL}/${item.media_uri}`} /> */}
         <Video
             source={{ uri: `${config.API_URL}/${item.media_uri}` }}
             style={{ width: "100%", height: 200, backgroundColor:'#000' }}
@@ -108,13 +103,7 @@ const FeedPosts = (({item, role, navigation, getFeedPost}) => {
 const styles = StyleSheet.create({
     itemContainer: {
       backgroundColor: '#fff',
-      // borderColor:"lightgrey", borderWidth:1,
       paddingBottom:10,
-      // borderRadius: 5,
-      // marginBottom:5,
-      // borderColor:'rgba(49, 105, 210, 0.5)',
-      // borderBottomWidth:0.5,
-      // elevation: 2, // Add elevation for shadow effect (Android)
     },
   });
 
