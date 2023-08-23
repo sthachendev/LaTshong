@@ -1,27 +1,15 @@
 -- users table
 CREATE TABLE IF NOT EXISTS users (
     id BIGSERIAL PRIMARY KEY,
-    -- cid VARCHAR(11) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    role VARCHAR(255) NOT NULL,
-    --role em for employee and js for job seeker
-    --admin
+    role VARCHAR(255) NOT NULL CHECK (role IN ('em', 'js', 'admin')),
     imageurl TEXT[] DEFAULT '{}',
     bio TEXT,
     created_on TIMESTAMP NOT NULL,
-    verification_status VARCHAR(20) NOT NULL DEFAULT 'not verified'
-    ---verified, not verified and pending
+    verification_status VARCHAR(20) NOT NULL CHECK (verification_status IN ('verified', 'not verified', 'pending')) DEFAULT 'not verified'
 );
-
---accountverification request table
--- CREATE TABLE IF NOT EXISTS account_verification_requests (
---         id INTEGER PRIMARY KEY,
---         user_id BIGSERIAL,
---         account_verified_on DATETIME,
---         status TEXT ---false, true, pending
---     )
 
 -- job_posts table with ON DELETE CASCADE
 CREATE TABLE IF NOT EXISTS job_posts (
@@ -38,7 +26,7 @@ CREATE TABLE IF NOT EXISTS job_posts (
     postdate TIMESTAMP,
     closedate TIMESTAMP,
     location JSON, 
-    status CHAR(1),---o open, c close
+    status CHAR(1)  CHECK (status IN ('o', 'c')),---o open, c close
     applicants INTEGER[] DEFAULT '{}',
     accepted_applicants INTEGER[] DEFAULT '{}',
     reportedby INTEGER[] DEFAULT '{}'
@@ -58,7 +46,8 @@ CREATE TABLE IF NOT EXISTS messages (
     room_id UUID NOT NULL,
     userid INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     message TEXT NOT NULL,
-    message_type CHAR(1) DEFAULT 't',--- t text, a attachment applications, mp3, mp4, (video/ audio)
+    message_type CHAR(1) DEFAULT 't' CHECK (message_type IN ('t', 'a', 'i')),
+    --- t text, a attachment applications, mp3, mp4, (video/ audio)
     --t for text
     --a for attachement
     --i for image
