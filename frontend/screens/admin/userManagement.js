@@ -122,7 +122,7 @@ const UserManagement = () => {
         />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      {/* <ScrollView horizontal showsHorizontalScrollIndicator={false}> */}
         <View style={{ flexDirection: "row", marginBottom: 10 }}>
           <TouchableHighlight
             style={[
@@ -175,98 +175,100 @@ const UserManagement = () => {
             <Text >Verified Users</Text>
           </TouchableHighlight>
         </View>
-      </ScrollView>
-
-      <View style={{ paddingHorizontal: 5, marginTop: 10 }}>
-        <View
-          style={[
-            styles.table_body_single_row,
-            {
-              backgroundColor: "grey",
-              borderTopStartRadius: 5,
-              borderTopEndRadius: 5,
-            },
-          ]}
-        >
-          <View style={{ flex: 0.8, paddingVertical: 3 }}>
-            <Text style={styles.table_head}>Sl No</Text>
-          </View>
-
-          <View style={{ flex: 1, paddingVertical: 3 }}>
-            <Text style={styles.table_head}>Profile</Text>
-          </View>
-
-          <View style={{ flex: 3, paddingVertical: 3 }}>
-            <Text style={styles.table_head}>User name & email</Text>
-          </View>
-        </View>
-      </View>
+      {/* </ScrollView> */}
 
       <FlatList
-        data={filteredUsers}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => {
-          return (
-            <View style={{ paddingHorizontal: 10 }}>
-              <TouchableOpacity
-                style={styles.table_body_single_row}
-                activeOpacity={1}
-                onPress={() => {
-                  setIsModalVisible(true), setUser(item);
-                }}
-              >
-                <View style={{ flex: 0.8 }}>
-                  <Text
-                    style={[
-                      styles.table_data,
-                      { textAlignVertical: "center", flex: 1 },
-                    ]}
-                  >
-                    {index + 1}
-                  </Text>
+              data={filteredUsers}
+              keyExtractor={(item) => item.id}
+              ListHeaderComponent={()=>(
+                <View style={{ paddingHorizontal: 5, marginTop: 10 }}>
+                <View
+                  style={[
+                    styles.table_body_single_row,
+                    {
+                      backgroundColor: "grey",
+                      borderTopStartRadius: 5,
+                      borderTopEndRadius: 5,
+                    },
+                  ]}
+                >
+                  <View style={{ flex: 0.8, paddingVertical: 3 }}>
+                    <Text style={styles.table_head}>Sl No</Text>
+                  </View>
+        
+                  <View style={{ flex: 1, paddingVertical: 3 }}>
+                    <Text style={styles.table_head}>Profile</Text>
+                  </View>
+        
+                  <View style={{ flex: 3, paddingVertical: 3 }}>
+                    <Text style={styles.table_head}>User name & email</Text>
+                  </View>
                 </View>
-                <View style={{ flex: 1, justifyContent: "center" }}>
-                  {item.imageurl && item.imageurl.length > 0 ? (
-                    <Image
-                      source={{ uri: `${config.API_URL}/${item.imageurl}` }}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 60,
-                        borderColor: "lightgrey",
-                        borderWidth: 1,
+              </View>
+              )}
+              renderItem={({ item, index }) => {
+                return (
+                  <View style={{ paddingHorizontal: 10, flex:1}}>
+                    <TouchableOpacity
+                      style={styles.table_body_single_row}
+                      activeOpacity={1}
+                      onPress={() => {
+                        setIsModalVisible(true), setUser(item);
                       }}
-                    />
-                  ) : (
-                    <Image
-                      source={require("../../assets/images/default.png")}
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 60,
-                        borderColor: "lightgrey",
-                        borderWidth: 1,
-                      }}
-                    />
-                  )}
-                </View>
-                <View style={{ flex: 3 }}>
-                  <Text style={[styles.table_data, { fontWeight: "bold" }]}>
-                    {capitalizeWords(item.name)}
-                  </Text>
-                  <Text style={styles.table_data}>{item.email}</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          );
-        }}
-      />
+                    >
+                      <View style={{ flex: 0.8 }}>
+                        <Text
+                          style={[
+                            styles.table_data,
+                            { textAlignVertical: "center", flex: 1 },
+                          ]}
+                        >
+                          {index + 1}
+                        </Text>
+                      </View>
+                      <View style={{ flex: 1, justifyContent: "center" }}>
+                        {item.imageurl && item.imageurl.length > 0 ? (
+                          <Image
+                            source={{ uri: `${config.API_URL}/${item.imageurl}` }}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 60,
+                              borderColor: "lightgrey",
+                              borderWidth: 1,
+                            }}
+                          />
+                        ) : (
+                          <Image
+                            source={require("../../assets/images/default.png")}
+                            style={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 60,
+                              borderColor: "lightgrey",
+                              borderWidth: 1,
+                            }}
+                          />
+                        )}
+                      </View>
+                      <View style={{ flex: 3 }}>
+                        <Text style={[styles.table_data, { fontWeight: "bold" }]}>
+                          {capitalizeWords(item.name)}
+                        </Text>
+                        <Text style={styles.table_data}>{item.email}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                );
+              }}
+            />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    // flex:1,
     paddingTop: 10,
     backgroundColor: "#f0f0f0",
   },
@@ -293,6 +295,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "lightgrey",
+    // flex:1
   },
   row: {
     flexDirection: "row",

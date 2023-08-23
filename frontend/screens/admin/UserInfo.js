@@ -26,7 +26,6 @@ export default UserInfo = ({
   setUser,
   fetchUserData,
 }) => {
-
   const token = useSelector((state) => state.token);
 
   const handleDelete = (userid) => {
@@ -150,9 +149,6 @@ export default UserInfo = ({
     if (name !== user.name) {
       updateUserField(userid, "name", name, token);
     }
-    // else if (cid !== user.cid) {
-    //   updateUserField(userid, "cid", cid, token);
-    // }
   };
 
   const handleRevertVerification = (userid) => {
@@ -254,7 +250,6 @@ export default UserInfo = ({
                     <TouchableOpacity
                       activeOpacity={1}
                       onPress={() => {
-                        setCid(user.cid);
                         setName(user.name);
                       }}
                     >
@@ -410,11 +405,8 @@ export default UserInfo = ({
                     pointerEvents="none"
                     disabled
                   />
-                </ScrollView>
 
-                <View></View>
-
-                <TouchableHighlight
+<TouchableHighlight
                   style={{
                     backgroundColor: "#fff",
                     borderColor: "rgba(30, 49, 157, 0.7)",
@@ -467,6 +459,9 @@ export default UserInfo = ({
                     Delete Account
                   </Text>
                 </TouchableHighlight>
+                
+                </ScrollView>
+
               </View>
             </TouchableWithoutFeedback>
           </View>
