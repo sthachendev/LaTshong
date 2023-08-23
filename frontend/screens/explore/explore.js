@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, TextInput, Dimensions, FlatList } from "react-native";
+import { StyleSheet, View, TextInput } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -8,14 +8,16 @@ import config from "../config";
 import { Ionicons } from "@expo/vector-icons";
 import CustomModal from "../custom/CustomModal";
 import { Keyboard } from "react-native";
+import Spinner from "../custom/Spinner";
 
 export default function Explore({ navigation }) {
-
   const [userLocation, setUserLocation] = useState(null);
-  const [data, setData] = useState([]);//set loaction marker for each job posts
+  const [data, setData] = useState([]);
 
-  const [selectedMarkerData, setSelectedMarkerData] = useState('');
+  const [selectedMarkerData, setSelectedMarkerData] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const requestLocationPermission = async () => {
@@ -40,32 +42,31 @@ export default function Explore({ navigation }) {
     requestLocationPermission();
   }, []);
 
-  useEffect(()=>{
-      getJobPost();
+  useEffect(() => {
+    getJobPost();
 
     return () => {
-     setData([]);
+      setData([]);
     };
-    
-  },[])
+  }, []);
 
   const getJobPost = async () => {
     try {
-      const res = await axios.get(`${config.API_URL}/api/location`);//no token required
-      console.log('explore', res.data);
+      setLoading(true);
+      const res = await axios.get(`${config.API_URL}/api/location`); //no token required
       setData(res.data);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Function to handle marker click and open modal
   const handleMarkerClick = (markerData) => {
     setSelectedMarkerData(markerData);
     setIsModalVisible(true);
   };
 
-  // Function to close the modal
   const closeModal = () => {
     setIsModalVisible(false);
   };
@@ -74,18 +75,20 @@ export default function Explore({ navigation }) {
     const unsubscribe = navigation.addListener("blur", () => {
       setIsModalVisible(false);
     });
-  
+
     return unsubscribe;
   }, [navigation]);
-  
+
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
       setIsModalVisible(true);
-      Keyboard.dismiss();//keep keyboard dismiss
+      Keyboard.dismiss();
     });
 
     return unsubscribe;
   }, [navigation]);
+
+  if (loading) return <Spinner />;
 
   return (
     <>
@@ -97,43 +100,41 @@ export default function Explore({ navigation }) {
           backgroundColor: "#fff",
         }}
       >
-
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 5,
-        marginHorizontal: 5,
-        backgroundColor: '#F1F2F6',
-        borderRadius: 10,
-      }}
-    >
-      <Icon
-        name="search"
-        size={18}
-        color="grey"
-        style={{ marginHorizontal: 10 }}
-      />
-      <TextInput
-        style={{
-          flex: 1,
-          fontSize: 14,
-        }}
-        placeholder="Search Job"
-        onFocus={()=>{
-          navigation.navigate('Search');
-          Keyboard.dismiss();
-        }}
-      />
-       <Icon
-       onPress={()=>getJobPost()}
-        name="refresh"
-        size={18}
-        color="grey"
-        style={{ marginHorizontal: 10 }}
-      />
-    </View>
- 
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            padding: 5,
+            marginHorizontal: 5,
+            backgroundColor: "#F1F2F6",
+            borderRadius: 10,
+          }}
+        >
+          <Icon
+            name="search"
+            size={18}
+            color="grey"
+            style={{ marginHorizontal: 10 }}
+          />
+          <TextInput
+            style={{
+              flex: 1,
+              fontSize: 14,
+            }}
+            placeholder="Search Job"
+            onFocus={() => {
+              navigation.navigate("Search");
+              Keyboard.dismiss();
+            }}
+          />
+          <Icon
+            onPress={() => getJobPost()}
+            name="refresh"
+            size={18}
+            color="grey"
+            style={{ marginHorizontal: 10 }}
+          />
+        </View>
       </View>
 
       <View style={styles.container}>
@@ -145,32 +146,30 @@ export default function Explore({ navigation }) {
             mapType="standard"
             initialRegion={userLocation}
           >
-            
-          {data.map((data) => (
-            <Marker
-              key={data.id}
-              coordinate={{
-                latitude: data.location.latitude,
-                longitude: data.location.longitude,
-              }}
-              onPress={() => handleMarkerClick(data)} // Call handleMarkerClick on marker press
-            >
-              <Ionicons name="pin" size={40} color='#1E319D'/>
-
-              <Callout>
-              <Ionicons name="eye" size={20} color='#1E319D'/>
-              </Callout>
-            
-            </Marker>
-          ))}
+            {data.map((data) => (
+              <Marker
+                key={data.id}
+                coordinate={{
+                  latitude: data.location.latitude,
+                  longitude: data.location.longitude,
+                }}
+                onPress={() => handleMarkerClick(data)}
+              >
+                <Ionicons name="pin" size={40} color="#1E319D" />
+                <Callout>
+                  <Ionicons name="eye" size={20} color="#1E319D" />
+                </Callout>
+              </Marker>
+            ))}
           </MapView>
           <View>
-          
-          {/* modal to display the details */}
-          <CustomModal isModalVisible={isModalVisible} navigation={navigation} 
-          closeModal={closeModal} selectedMarkerData={selectedMarkerData} />
-      
-      </View>
+            <CustomModal
+              isModalVisible={isModalVisible}
+              navigation={navigation}
+              closeModal={closeModal}
+              selectedMarkerData={selectedMarkerData}
+            />
+          </View>
         </View>
       </View>
     </>
