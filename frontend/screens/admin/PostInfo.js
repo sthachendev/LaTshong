@@ -563,6 +563,31 @@ export default PostInfo = ({
                 <TouchableHighlight
                   style={{
                     backgroundColor: "#fff",
+                    borderColor: "rgba(30, 49, 157, 0.7)",
+                    borderWidth: 0.25,
+                    marginVertical: 10,
+                    width: "100%",
+                    borderRadius: 25,
+                  }}
+                  underlayColor="rgba(30, 49, 157, 0.1)"
+                  // onPress={() => {
+                    
+                  // }}
+                >
+                  <Text
+                    style={{
+                      paddingVertical: 10,
+                      textAlign: "center",
+                      color: "rgba(30, 49, 157, 0.7)",
+                    }}
+                  >
+                   Nulify Report
+                  </Text>
+                </TouchableHighlight>
+
+                <TouchableHighlight
+                  style={{
+                    backgroundColor: "#fff",
                     borderColor: "rgba(255,0,0,.7)",
                     width: "100%",
                     borderWidth: 0.25,

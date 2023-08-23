@@ -16,6 +16,7 @@ import PostInfo from "./PostInfo";
 import { TouchableOpacity } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import Spinner from "../custom/Spinner";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const UserManagement = () => {
   const token = useSelector((state) => state.token);
@@ -132,6 +133,8 @@ const UserManagement = () => {
         >
           <Text>Feed Posts</Text>
         </TouchableHighlight>
+
+        <MaterialIcons name="refresh" size={24} style={{textAlignVertical:'center', marginLeft:10}} onPress={()=>fetchData()}/>
       </View>
 
       <View style={{ paddingHorizontal: 5, marginTop: 10 }}>

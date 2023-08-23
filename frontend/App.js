@@ -37,7 +37,7 @@ export default function App() {
       }
 
       token = (await Notifications.getExpoPushTokenAsync()).data;
-      console.log(token); // This is the token you need to send notifications to this device.
+      console.log(token); 
     } else {
       alert('Must use physical device for Push Notifications');
     }
@@ -50,10 +50,6 @@ export default function App() {
         lightColor: '#FF231F7C',
       });
     }
-
-    // Save the token to your database for later use
-    // For now, just console.log it so you can see it in the Expo DevTools.
-    console.log(token);
   };
 
   return (

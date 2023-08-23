@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { useSelector, useDispatch } from 'react-redux';
-import { setUnreadCount } from '../reducers'; 
-import Icon from 'react-native-vector-icons/MaterialIcons';
-import Home from '../screens/home/home';
+import { useSelector, useDispatch } from "react-redux";
+import { setUnreadCount } from "../reducers";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import Home from "../screens/home/home";
 import Explore from "../screens/explore/explore";
 import Chat from "../screens/chat/chat";
 import Profile from "../screens/profile/profile";
@@ -15,45 +15,40 @@ import userManagement from "../screens/admin/userManagement";
 import jwtDecode from "jwt-decode";
 import config from "../screens/config";
 import axios from "axios";
-import * as Notifications from 'expo-notifications';
+import * as Notifications from "expo-notifications";
 
 const Tab = createBottomTabNavigator();
 
 function BottomTab() {
   const dispatch = useDispatch();
-  
+
   const token = useSelector((state) => state.token);
   const role = useSelector((state) => state.role);
   const userid = token ? jwtDecode(token).userid : null;
 
-  const unread_count = useSelector((state) => state.unread_count)
+  const unread_count = useSelector((state) => state.unread_count);
 
   const getUnreadCount = () => {
     console.log(userid);
     axios
       .get(`${config.API_URL}/api/unread_count/${userid}`)
       .then((res) => {
-        console.log('count', res.data);
-  
         const hasUnreadMessages = res.data.unreadCount > 0;
-  
-        // Cancel existing notification by updating the notification ID
-        const notificationId = 'id123W'; // Set your unique notification ID
+        const notificationId = "id123W";
         Notifications.cancelScheduledNotificationAsync(notificationId);
-  
+
         if (hasUnreadMessages) {
           dispatch(setUnreadCount(true));
-  
-          // Display a notification when there are unread messages
+
           const notificationContent = {
-            title: 'New Message',
-            body: 'You have new unread messages.',
+            title: "New Message",
+            body: "You have new unread messages.",
           };
-  
+
           Notifications.scheduleNotificationAsync({
             content: notificationContent,
-            trigger: null, // Display immediately
-            identifier: notificationId, // Use the same notification ID
+            trigger: null,
+            identifier: notificationId,
           });
         } else {
           dispatch(setUnreadCount(null));
@@ -63,16 +58,14 @@ function BottomTab() {
   };
 
   useEffect(() => {
-    if (token && role != 'admin') {
+    if (token && role != "admin") {
       getUnreadCount();
-     const interval = setInterval(() => {
-      getUnreadCount();
-      console.log('fetching count')
-    },  60 * 1000);
+      const interval = setInterval(() => {
+        getUnreadCount();
+      }, 60 * 1000);
 
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
     }
-
   }, [userid]);
 
   return (
@@ -83,101 +76,99 @@ function BottomTab() {
           let iconName;
 
           if (route.name === "Home") {
-            iconName='dashboard'
+            iconName = "dashboard";
           } else if (route.name === "Explore") {
-            if (role === 'em'){
-              iconName = 'search';
-            }else{
-              iconName = 'explore';
+            if (role === "em") {
+              iconName = "search";
+            } else {
+              iconName = "explore";
             }
           } else if (route.name === "Chat") {
-            iconName = 'chat';
+            iconName = "chat";
           } else if (route.name === "Profile") {
-            iconName = 'person';
+            iconName = "person";
           } else if (route.name === "UserManagement") {
-            iconName = 'people';
-          }else if (route.name === "ContentManagement") {
-            iconName = 'folder';
+            iconName = "people";
+          } else if (route.name === "ContentManagement") {
+            iconName = "folder";
           }
 
-          return (
-            <Icon
-              name={iconName}
-              size={size}
-              color={color}
-            />
-          );
+          return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: "#1E319D",
         tabBarInactiveTintColor: "#A0A0A0",
         headerLeft: () => <DrawerToggleButton />,
       })}
     >
-    {role === 'admin' &&//admin home
-       <>
+      {role === "admin" && ( //admin home
+        <>
+          <Tab.Screen
+            name="Home"
+            component={adminHome}
+            options={{
+              title: "Admin Dashboard",
+              headerTitleAlign: "center",
+            }}
+          />
+          <Tab.Screen
+            name="UserManagement"
+            component={userManagement}
+            options={{
+              title: "User Management",
+              headerTitleAlign: "center",
+            }}
+          />
+          <Tab.Screen
+            name="ContentManagement"
+            component={contentManagement}
+            options={{
+              title: "Content Management",
+              headerTitleAlign: "center",
+            }}
+          />
+        </>
+      )}
+
+      {role !== "admin" && ( //home
         <Tab.Screen
           name="Home"
-          component={adminHome}
+          component={Home}
           options={{
-            title: "Admin Dashboard",
-            headerTitleAlign:'center',
+            title: "Dashboard",
+            headerTitleAlign: "center",
           }}
         />
-        <Tab.Screen
-          name="UserManagement"
-          component={userManagement}
-          options={{
-            title: "User Management",
-            headerTitleAlign:'center',
-          }}
-        />
-       <Tab.Screen
-          name="ContentManagement"
-          component={contentManagement}
-          options={{
-            title: "Content Management",
-            headerTitleAlign:'center',
-          }}
-        />
-       </>
-    }
-     
-     {role !== 'admin' && //home
-       <Tab.Screen
-       name="Home"
-       component={Home}
-       options={{
-         title: "Dashboard",
-         headerTitleAlign:'center',
-       }}
-     />
-     }
+      )}
 
-      {//em explore
-        role === 'em' && 
-        <Tab.Screen
-        name="Explore"
-        component={EmployerSearch}
-        options={{
-          headerShown: false,
-          tabBarLabel:'Search'
-        }}
-      />
+      {
+        //em explore
+        role === "em" && (
+          <Tab.Screen
+            name="Explore"
+            component={EmployerSearch}
+            options={{
+              headerShown: false,
+              tabBarLabel: "Search",
+            }}
+          />
+        )
       }
 
-      {//js explore
-        role !== 'admin' && role !== 'em' && 
-      <Tab.Screen
-        name="Explore"
-        component={Explore}
-        options={{
-          headerShown: false,
-        }}
-      />
+      {
+        //js explore
+        role !== "admin" && role !== "em" && (
+          <Tab.Screen
+            name="Explore"
+            component={Explore}
+            options={{
+              headerShown: false,
+            }}
+          />
+        )
       }
-      
+
       {/* message and profile tab */}
-      {token && role !== 'admin' && (
+      {token && role !== "admin" && (
         <>
           <Tab.Screen
             name="Chat"
@@ -185,7 +176,7 @@ function BottomTab() {
             options={{
               tabBarLabel: "Message",
               headerTitle: "Message",
-              headerTitleAlign:'center',
+              headerTitleAlign: "center",
               tabBarBadge: unread_count,
               tabBarBadgeStyle: {
                 minWidth: 12,
@@ -194,8 +185,8 @@ function BottomTab() {
                 fontSize: 10,
                 lineHeight: 13,
                 alignSelf: undefined,
-                borderColor:'#fff',
-                borderWidth:2
+                borderColor: "#fff",
+                borderWidth: 2,
               },
             }}
           />
@@ -205,7 +196,7 @@ function BottomTab() {
             options={{
               tabBarLabel: "Profile",
               headerShown: true,
-              headerTitleAlign:'center',
+              headerTitleAlign: "center",
             }}
           />
         </>

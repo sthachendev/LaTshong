@@ -1,5 +1,4 @@
 //custom fn
-
 export function capitalizeWords(str) {
   return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 }
@@ -198,17 +197,6 @@ export const getFileSize = (file) => {
     return `${fileSizeInBytes} bytes`;
   }
 };
-
-//fn to make the downable link from the messages of type a attachemnent
-export function removeBrackets(str) {
-  // Remove curly brackets and double quotes from the string
-  str = str.replace(/[{"}]/g, '').replace(/"/g, '');
-
-  // Replace double backslashes with forward slashes
-  str = str.replace(/\\\\/g, '/');
-
-  return str;
-}
 
 //show first name // chat header
 export function showFirstWord(str) {

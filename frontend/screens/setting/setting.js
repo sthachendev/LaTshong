@@ -9,7 +9,7 @@ import {
 import config from "../config";
 
 export default function Setting({ navigation, route }) {
-  const { userid } = route.params;
+  const { userid, role } = route.params;
 
   const handleRequest = () => {
     axios
@@ -29,7 +29,7 @@ export default function Setting({ navigation, route }) {
       <Text style={{ color: "#404040" }}>Account Setting</Text>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate("ChangeName", userid)}
+        onPress={() => navigation.navigate("ChangeName", { userid })}
         style={{ marginTop: 20 }}
         activeOpacity={0.6}
       >
@@ -37,56 +37,61 @@ export default function Setting({ navigation, route }) {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate("ChangePassword", userid)}
+        onPress={() => navigation.navigate("ChangePassword", { userid })}
         style={{ marginTop: 20 }}
         activeOpacity={0.6}
       >
         <Text style={{ fontSize: 16 }}>Change Password</Text>
       </TouchableOpacity>
+      {role != "admin" && (
+        <>
+          <TouchableOpacity
+            onPress={() => handleRequest()}
+            style={{ marginTop: 25 }}
+            activeOpacity={0.6}
+          >
+            <Text style={{ fontSize: 16 }}>Request Account Verification</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => handleRequest()}
-        style={{ marginTop: 25 }}
-        activeOpacity={0.6}
-      >
-        <Text style={{ fontSize: 16 }}>Request Account Verification</Text>
-      </TouchableOpacity>
+          <View
+            style={{
+              borderTopWidth: 0.5,
+              borderTopColor: "lightgrey",
+              marginTop: 25,
+            }}
+          />
 
-      <View
-        style={{
-          borderTopWidth: 0.5,
-          borderTopColor: "lightgrey",
-          marginTop: 25,
-        }}
-      />
+          <Text style={{ color: "#404040", marginTop: 15 }}>
+            Help & Support
+          </Text>
 
-      <Text style={{ color: "#404040", marginTop: 15 }}>Help & Support</Text>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Support")}
+            style={{ marginTop: 25 }}
+            activeOpacity={0.6}
+          >
+            <Text style={{ fontSize: 16 }}>Contact Us</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Support")}
-        style={{ marginTop: 25 }}
-        activeOpacity={0.6}
-      >
-        <Text style={{ fontSize: 16 }}>Contact Us</Text>
-      </TouchableOpacity>
+          <View
+            style={{
+              borderTopWidth: 0.5,
+              borderTopColor: "lightgrey",
+              marginTop: 25,
+            }}
+          />
 
-      <View
-        style={{
-          borderTopWidth: 0.5,
-          borderTopColor: "lightgrey",
-          marginTop: 25,
-        }}
-      />
+          <Text style={{ color: "#404040", marginTop: 15 }}>Legal</Text>
 
-      <Text style={{ color: "#404040", marginTop: 15 }}>Legal</Text>
-
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Policy")}
-        style={{ marginTop: 25 }}
-        activeOpacity={0.6}
-      >
-        <Text style={{ fontSize: 16 }}>Terms of Use & Privacy Policy</Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Policy")}
+            style={{ marginTop: 25 }}
+            activeOpacity={0.6}
+          >
+            <Text style={{ fontSize: 16 }}>Terms of Use & Privacy Policy</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </View>
   );
 }

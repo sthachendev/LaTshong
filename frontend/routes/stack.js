@@ -3,7 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Setting from "../screens/setting/setting";
 import Post from "../screens/post/post";
-import PostDetails from "../screens/post/postDetails";  
+import PostDetails from "../screens/post/postDetails";
 import chatRoom from "../screens/chat/chatRoom";
 import ViewProfile from "../screens/profile/viewProfile";
 import ProfilePost from "../screens/post/profilePost";
@@ -18,7 +18,6 @@ import SavedPosts from "../screens/post/savedPosts";
 import Search from "../screens/explore/search";
 import Policy from "../screens/support/policy";
 import ChangeName from "../screens/setting/changeName";
-import Tutorial from "../screens/support/tutorial";
 
 function Stack() {
   const Stack = createStackNavigator();
@@ -60,31 +59,30 @@ function Stack() {
             headerShown: true,
             headerTitle: "Job Details",
             headerTitleAlign: "center",
-            headerShadowVisible:false
+            headerShadowVisible: false,
           }}
         />
-       <Stack.Screen
+        <Stack.Screen
           name="ViewProfile"
           component={ViewProfile}
           options={{
             headerShown: true,
-            headerTitle:"Profile",
-            headerTitleAlign:"center",
-            headerShadowVisible:false
+            headerTitle: "Profile",
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
           }}
         />
 
-      <Stack.Screen
-        name="ChatRoom"
-        component={chatRoom}
-        options={({ route }) => ({ 
-          headerTitle: route.params.title,
-        headerTitleAlign:"left",
-        })}
+        <Stack.Screen
+          name="ChatRoom"
+          component={chatRoom}
+          options={({ route }) => ({
+            headerTitle: route.params.title,
+            headerTitleAlign: "left",
+          })}
+        />
 
-      />
-
-      <Stack.Screen
+        <Stack.Screen
           name="ProfilePost"
           component={ProfilePost}
           options={{
@@ -92,118 +90,108 @@ function Stack() {
           }}
         />
 
-      <Stack.Screen
-        name="Login"
-        component={Login}
-        options={{
-          headerShown: false,
-        }}
-      />
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{
+            headerShown: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="Signup"
-        component={Signup}
-        options={{
-          headerShown: false,
-        }}
-      />
+        <Stack.Screen
+          name="Signup"
+          component={Signup}
+          options={{
+            headerShown: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="SignupStep2"
-        component={SignupStep2}
-        options={{
-          headerShown: false,
-        }}
-      />
+        <Stack.Screen
+          name="SignupStep2"
+          component={SignupStep2}
+          options={{
+            headerShown: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="Setting"
-        component={Setting}
-        options={{
-          headerShown: true,
-          headerTitle:'Settings',
-          headerTitleAlign:"center",
-          headerShadowVisible:false
-        }}
-      />
+        <Stack.Screen
+          name="Setting"
+          component={Setting}
+          options={{
+            headerShown: true,
+            headerTitle: "Settings",
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="Support"
-        component={Support}
-        options={{
-          headerShown: true,
-          headerTitle:"Help & Support",
-          headerTitleAlign:"center",
-          headerShadowVisible:false
-        }}
-      />
+        <Stack.Screen
+          name="Support"
+          component={Support}
+          options={{
+            headerShown: true,
+            headerTitle: "Help & Support",
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="ForgotPassword"
-        component={ForgotPassword}
-        options={{
-          headerShown: false,
-        }}
-      />
+        <Stack.Screen
+          name="ForgotPassword"
+          component={ForgotPassword}
+          options={{
+            headerShown: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="ChangePassword"
-        component={ChangePassword}
-        options={{
-          headerShown: true,
-          headerTitle:'',
-          headerTitleAlign:'center',
-          headerShadowVisible:false
-        }}
-      />
+        <Stack.Screen
+          name="ChangePassword"
+          component={ChangePassword}
+          options={{
+            headerShown: true,
+            headerTitle: "",
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="SavedPosts"
-        component={SavedPosts}
-        options={{
-          headerShown: true,
-          headerTitle:'Saved Job Post',
-          headerTitleAlign:'center',
-          headerShadowVisible:false
-        }}
-      />
+        <Stack.Screen
+          name="SavedPosts"
+          component={SavedPosts}
+          options={{
+            headerShown: true,
+            headerTitle: "Saved Job Post",
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="Search"
-        component={Search}
-        options={{
-          headerShown: false,
-        }}
-      />
-      
-      <Stack.Screen
-        name="Policy"
-        component={Policy}
-        options={{
-          headerTitle:'Terms of Use & Privacy Policy',
-          headerTitleAlign:'center',
-          headerShadowVisible:false
-        }}
-      />
+        <Stack.Screen
+          name="Search"
+          component={Search}
+          options={{
+            headerShown: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="ChangeName"
-        component={ChangeName}
-        options={{
-          headerTitle:'',
-          headerShadowVisible:false
-        }}
-      />
+        <Stack.Screen
+          name="Policy"
+          component={Policy}
+          options={{
+            headerTitle: "Terms of Use & Privacy Policy",
+            headerTitleAlign: "center",
+            headerShadowVisible: false,
+          }}
+        />
 
-      <Stack.Screen
-        name="Tutorial"
-        component={Tutorial}
-        options={{
-          headerTitle:'',
-          headerShadowVisible:false
-        }}
-      />
-
+        <Stack.Screen
+          name="ChangeName"
+          component={ChangeName}
+          options={{
+            headerTitle: "",
+            headerShadowVisible: false,
+          }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

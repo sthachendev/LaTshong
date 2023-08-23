@@ -514,7 +514,7 @@ app.put("/api/users/:userid/password", async (req, res) => {
       userid,
     ]);
 
-    res.json({ msg: "Password updated!" });
+    res.json({ msg: "Password updated." });
   } catch (error) {
     console.error(error.message);
     res.status(500).json({ msg: "Server error" });
@@ -935,7 +935,7 @@ app.get("/api/search/users", async (req, res) => {
     const { query } = req.query; // Get the search query from the request
     // Define the search query
     const searchQuery = `
-    SELECT id, name, email, bio, verification_status FROM users WHERE (name ILIKE $1 OR email ILIKE $1 OR bio ILIKE $1) AND role = 'js'`;
+    SELECT id, name, email, bio, verification_status FROM users WHERE (name ILIKE $1 OR email ILIKE $1 OR bio ILIKE $1) AND role = 'js' LIMIT 300`;
 
     // Execute the search query
     const result = await pool.query(searchQuery, [`%${query}%`]);
