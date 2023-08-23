@@ -180,15 +180,10 @@ export default UserInfo = ({userid, role, navigation, image, setImage, handleUpl
 
         {userid === current_userid && 
         <TouchableHighlight style={{
-          // borderColor:'rgba(30,49,157,0.7)', borderWidth:2, 
-        // backgroundColor:'#fff',
         display:'flex',
-        // marginLeft:5,
         alignSelf:'center',
         padding:5,
         borderRadius:20
-        // justifyContent:'flex-end'
-        // position:"absolute", bottom:0, right:0, borderRadius:10, padding:5
       }}  
         onPress={()=>{setIsModalVisible2(true); userInfo[0].bio && setDesc(userInfo[0].bio)}} 
           underlayColor='#F1F2F6'
@@ -250,6 +245,5 @@ const styles = StyleSheet.create({
     borderRadius:15,
     flex:.6,
     margin:10,
-    // elevation:1
   }
 })

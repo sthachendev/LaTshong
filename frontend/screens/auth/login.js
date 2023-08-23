@@ -11,6 +11,7 @@ import { TouchableHighlight } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import { ScrollView } from "react-native";
 import { ActivityIndicator } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 
 export default function Login({navigation}) {
   const [email, setEmail] = useState("");
@@ -47,6 +48,9 @@ export default function Login({navigation}) {
       dispatch(setToken(response.data.token));
       dispatch(setRole(jwtDecode(response.data.token).role))
 
+      await AsyncStorage.setItem("token", response.data.token);
+      await AsyncStorage.setItem("role", jwtDecode(response.data.token).role);
+      
       navigation.navigate('Home');
       
     }catch (error) {

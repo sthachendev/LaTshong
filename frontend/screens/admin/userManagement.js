@@ -17,6 +17,7 @@ import UserInfo from "./UserInfo";
 import { TouchableOpacity } from "react-native";
 import { useIsFocused } from "@react-navigation/native";
 import Spinner from "../custom/Spinner";
+import { ScrollView } from "react-native-gesture-handler";
 
 const UserManagement = () => {
   const token = useSelector((state) => state.token);
@@ -105,20 +106,22 @@ const UserManagement = () => {
         />
       </View>
 
-      <View style={{ display: "flex", flexDirection: "row", marginBottom: 10 }}>
-        <TouchableHighlight style={styles.filterButton} onPress={handleFilterAll} underlayColor="grey">
-          <Text style={styles.filterButtonText}>All</Text>
-        </TouchableHighlight>
-        <TouchableHighlight style={styles.filterButton} onPress={handleFilterJobSeeker} underlayColor="grey">
-          <Text style={styles.filterButtonText}>Job Seeker</Text>
-        </TouchableHighlight>
-        <TouchableHighlight style={styles.filterButton} onPress={handleFilterEmployer} underlayColor="grey">
-          <Text style={styles.filterButtonText}>Employer</Text>
-        </TouchableHighlight>
-        <TouchableHighlight style={styles.filterButton} onPress={handleShowVerificationRequest} underlayColor="grey">
-          <Text style={styles.filterButtonText}>Verification Request</Text>
-        </TouchableHighlight>
-      </View>
+      <ScrollView horizontal>
+        <View style={{ flexDirection: "row", marginBottom: 10 }}>
+            <TouchableHighlight style={styles.filterButton} onPress={handleFilterAll} underlayColor="grey">
+              <Text style={styles.filterButtonText}>All</Text>
+            </TouchableHighlight>
+            <TouchableHighlight style={styles.filterButton} onPress={handleFilterJobSeeker} underlayColor="grey">
+              <Text style={styles.filterButtonText}>Job Seeker</Text>
+            </TouchableHighlight>
+            <TouchableHighlight style={styles.filterButton} onPress={handleFilterEmployer} underlayColor="grey">
+              <Text style={styles.filterButtonText}>Employer</Text>
+            </TouchableHighlight>
+            <TouchableHighlight style={styles.filterButton} onPress={handleShowVerificationRequest} underlayColor="grey">
+              <Text style={styles.filterButtonText}>Verification Request</Text>
+            </TouchableHighlight>
+        </View>
+      </ScrollView>
 
       <View style={{ paddingHorizontal: 5, marginTop: 10 }}>
         <View

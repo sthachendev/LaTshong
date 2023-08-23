@@ -1131,7 +1131,7 @@ app.delete("/api/users/:id", authenticateTokenAPI, async (req, res) => {
 });
 
 // API to update name of the users table
-app.put("/api/users/:id/name", authenticateTokenAPI, async (req, res) => {
+app.put("/api/users/name/:id", authenticateTokenAPI, async (req, res) => {
   const userId = req.params.id;
   const { name } = req.body;
 
@@ -1237,7 +1237,7 @@ app.get('/api/unread_count/:userid', async (req, res) => {
 });
 
 //set the account status to pending from false
-app.patch('/api/user/:userid/apply/verify', async (req, res) => {
+app.patch('/api/user/:userid/request-verification', async (req, res) => {
   try {
     const { userid } = req.params;
 
@@ -1277,7 +1277,7 @@ app.patch('/api/user/:userid/apply/verify', async (req, res) => {
 });
 
 //set the account verification to verified
-app.patch('/api/users/:userid/verify', authenticateTokenAPI, async (req, res) => {
+app.patch('/api/users/:userid/request-verification', authenticateTokenAPI, async (req, res) => {
   try {
     const { userid } = req.params;
 
@@ -1294,7 +1294,7 @@ app.patch('/api/users/:userid/verify', authenticateTokenAPI, async (req, res) =>
     const verificationStatus = rows[0].verification_status;
 
     // Update the user's 'verification_status' to 'true' if not 'verified'
-    if (verificationStatus !== 'true') {
+    if (verificationStatus != 'verified') {
       await pool.query(
         'UPDATE users SET verification_status = $1 WHERE id = $2',
         ['verified', userid]
@@ -1303,6 +1303,70 @@ app.patch('/api/users/:userid/verify', authenticateTokenAPI, async (req, res) =>
       return res.status(200).json({ message: 'User account successfully verified', status: 'verified' });
     } else {
       return res.status(200).json({ message: 'User account is already verified', status: 'verified' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// Set account verification to verified
+app.patch('/api/users/:userid/verify-account', authenticateTokenAPI, async (req, res) => {
+  try {
+    const { userid } = req.params;
+
+    // Check if the user exists
+    const { rowCount } = await pool.query(
+      'SELECT * FROM users WHERE id = $1',
+      [userid]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Update the user's 'verification_status' to 'verified'
+    await pool.query(
+      'UPDATE users SET verification_status = $1 WHERE id = $2',
+      ['verified', userid]
+    );
+
+    return res.status(200).json({ message: 'User account set as verified', status: 'verified' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// Revert account verification
+app.patch('/api/users/:userid/revert-verification', authenticateTokenAPI, async (req, res) => {
+  try {
+    const { userid } = req.params;
+
+    // Check if the user exists and get their current verification status
+    const { rowCount, rows } = await pool.query(
+      'SELECT verification_status FROM users WHERE id = $1',
+      [userid]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const verificationStatus = rows[0].verification_status;
+
+    // Update the user's 'verification_status' to 'not verified' if it's 'verified'
+    if (verificationStatus == 'verified') {
+      await pool.query(
+        'UPDATE users SET verification_status = $1 WHERE id = $2',
+        ['not verified', userid]
+      );
+
+      return res.status(200).json({ message: 'User account verification reverted', status: 'not verified' });
+    } else if (verificationStatus === 'not verified') {
+      return res.status(200).json({ message: 'User account verification is not verified', status: 'pending' });
+    } else {
+      return res.status(200).json({ message: 'User account is not verified', status: 'not verified' });
     }
   } catch (err) {
     console.error(err);

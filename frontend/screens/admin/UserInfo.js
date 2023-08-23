@@ -4,7 +4,7 @@ import axios from "axios";
 import config from "../config";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-import { getTimeDifference2 } from "../fn";
+import { getTimeDifference } from "../fn";
 import { TextInput } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
@@ -36,7 +36,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
     const handleVerification = (userid) => {
       Alert.alert(
         "Do you want to set user as verified user?",
-        "User will be a verified user.",
+        "Account will be a verified account.",
         [
             {
                 text: 'Verify',
@@ -55,7 +55,8 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
 
     const verifyUser = async (userid) => {
       try {
-      const res = await axios.patch(`${config.API_URL}/api//api/users/${userid}/verify`, {
+      const res = await axios.patch(`${config.API_URL}/api/users/${userid}/verify-account`, {},
+      {
       headers: {
           Authorization: `Bearer ${token}`,
           }
@@ -63,9 +64,10 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
      
       console.log(res.status)
       if (res.status == 200){
-          fetchUserData();
-          setIsModalVisible(false)
-          ToastAndroid.show("User Deleted", ToastAndroid.SHORT);
+          // fetchUserData();
+          // setIsModalVisible(false)
+          ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
+          setStatus(res.data.status)
       }
       } catch (error) {
       console.log(error);
@@ -92,25 +94,26 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
   };
 
     const [name, setName] = useState(user.name);
-    const [cid, setCid] = useState(user.cid);
+    // const [cid, setCid] = useState(user.cid);
+    const [status, setStatus] = useState(user.verification_status);
     const [isChanged, setIsChanged] = useState(false);
 
     useEffect(() => {
-      if (name !== user.name || cid !== user.cid) {
+      if (name !== user.name) {
         setIsChanged(true);
       } else {
         setIsChanged(false);
       }
-    }, [name, cid, user.name, user.cid]); 
+    }, [name, user.name]); 
 
     useEffect(() => {
       setName(user.name);
-      setCid(user.cid);
-    }, [user.name, user.cid]); 
+      setStatus(user.verification_status);
+    }, [user.name]); 
 
     const updateUserField = (userid, field, value, token) => {
       axios
-        .put(`${config.API_URL}/api/users/${userid}/${field}`, { [field]: value }, {
+        .put(`${config.API_URL}/api/users/${field}/${userid}`, { [field]: value }, {
           headers: {
             Authorization: `Bearer ${token}`,
           }
@@ -126,10 +129,51 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
     const handleSave = (userid) => {
       if (name !== user.name) {
         updateUserField(userid, "name", name, token);
-      } else if (cid !== user.cid) {
-        updateUserField(userid, "cid", cid, token);
-      }
+      } 
+      // else if (cid !== user.cid) {
+      //   updateUserField(userid, "cid", cid, token);
+      // }
     };
+
+    const handleRevertVerification = (userid) => {
+      Alert.alert(
+        "Do you want revert account verification?",
+        "Account will not be a verified account.",
+        [
+            {
+                text: 'Revert',
+                onPress: () => {
+                  revertVeriedUser(userid);
+                },
+              },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ],
+        { cancelable: true }
+      );
+    }
+
+    const revertVeriedUser = async (userid) => {
+     console.log('token',token)
+      try {
+      const res = await axios.patch(`${config.API_URL}/api/users/${userid}/revert-verification`, {},
+      {
+      headers: {
+          Authorization: `Bearer ${token}`
+          }
+      });
+      console.log(res.status)
+      if (res.status == 200){
+          // fetchUserData();
+          ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
+          setStatus(res.data.status)
+      }
+      } catch (error) {
+      console.log(error);
+      }
+  };
 
     return (
         <>
@@ -147,8 +191,6 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
                 backgroundColor: "#fff",
                 padding: 15,
                 paddingTop:0,
-                // borderTopLeftRadius: 20,
-                // borderTopRightRadius: 20,
                 position: "absolute", // Position the modal at the bottom
                 bottom: 0, // Align the modal to the bottom of the screen
                 left: 0,
@@ -192,7 +234,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
             <TextInput
               mode="outlined"
               label="Account Status"
-              value={user.verification_status}
+              value={status}
               style={{fontSize:14, marginTop:5}}
               theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
               multiline={true}
@@ -218,7 +260,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
               theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
               multiline={true}
               blurOnSubmit={true}
-              pointerEvents="none" // Set pointerEvents to "none" for disabled TextInput
+              pointerEvents="none"
               disabled
               />
             <TextInput
@@ -235,7 +277,7 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
               <TextInput
               mode="outlined"
               label="Joined"
-              value={getTimeDifference2(user.created_on)}
+              value={getTimeDifference(user.created_on)}
               style={{fontSize:14, marginTop:20}}
               theme={{ colors: { primary: '#4942E4', background:'#fff', outline:"lightgrey"}}}
               multiline={true}
@@ -261,27 +303,59 @@ export default UserInfo = ({isModalVisible, setIsModalVisible, user, setUser, fe
             <View>
 
             </View>
-            <TouchableHighlight style={{ backgroundColor:'#fff',borderColor:'rgba(30,49,157,0.7)', borderWidth:0.25, marginVertical:10,
-            width:'100%', borderRadius:25}} 
-              underlayColor='rgba(30,49,157,0.1))'  
-              onPress={()=>handleVerification(user.id)}
-              >
-                <Text style={{ paddingVertical:10,  textAlign:"center", 
-                color:'rgba(30,49,157,0.7)' }}>
-                Verify Account
-                </Text>
-              </TouchableHighlight>
 
-              <TouchableHighlight style={{ backgroundColor:'#fff', borderColor:'rgba(255,0,0,.7)', marginVertical:10,
-            width:'100%', borderWidth:0.25, borderRadius:25}} 
-              underlayColor='rgba(255,0,0,.1)'  
-              onPress={()=>handleDelete(user.id)}
-              >
-                <Text style={{ paddingVertical:10,  textAlign:"center", 
-                color:'rgba(255,0,0,.7)' }}>
-                Delete Account
-                </Text>
-              </TouchableHighlight>
+          <TouchableHighlight
+            style={{
+              backgroundColor: '#fff',
+              borderColor: 'rgba(30, 49, 157, 0.7)',
+              borderWidth: 0.25,
+              marginVertical: 10,
+              width: '100%',
+              borderRadius: 25
+            }}
+            underlayColor='rgba(30, 49, 157, 0.1)'
+            onPress={() => {
+              if (status !== 'verified') {
+                handleVerification(user.id);
+              } else {
+                handleRevertVerification(user.id);
+              }
+            }}
+          >
+            <Text
+              style={{
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'rgba(30, 49, 157, 0.7)'
+              }}
+            >
+              {status !== 'verified' ? 'Verify Account' : 'Revert Account Verification'}
+            </Text>
+          </TouchableHighlight>
+
+          <TouchableHighlight
+            style={{
+              backgroundColor: '#fff',
+              borderColor: 'rgba(255, 0, 0, 0.7)',
+              marginVertical: 10,
+              width: '100%',
+              borderWidth: 0.25,
+              borderRadius: 25
+            }}
+            underlayColor='rgba(255, 0, 0, 0.1)'
+            onPress={() => handleDelete(user.id)}
+          >
+            <Text
+              style={{
+                paddingVertical: 10,
+                textAlign: 'center',
+                color: 'rgba(255, 0, 0, 0.7)'
+              }}
+            >
+              Delete Account
+            </Text>
+          </TouchableHighlight>
+
 
         </View>
 
@@ -347,7 +421,6 @@ const styles = StyleSheet.create({
       color: "black",
       textAlignVertical: "top",
       marginTop:30
-      // elevation:2
     },
     mediaBtn:{
       backgroundColor:"#fff",

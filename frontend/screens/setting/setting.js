@@ -7,7 +7,7 @@ export default function Setting({ navigation, route }) {
   const { userid } = route.params;
 
   const handleRequest = () => {
-    axios.patch(`${config.API_URL}/api/user/${userid}/apply/verify`)
+    axios.patch(`${config.API_URL}/api/user/${userid}/request-verification`)
     .then( (res) => {
     ToastAndroid.show(`${res.data.message}`, ToastAndroid.SHORT);
     })

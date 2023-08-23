@@ -1,6 +1,6 @@
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { useSelector, useDispatch } from 'react-redux';
-import { clearToken, clearRole } from '../reducers';
+import { setToken, setRole, clearToken, clearRole } from '../reducers';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Text, View, ToastAndroid, Image, TouchableOpacity } from 'react-native';
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -10,11 +10,30 @@ import jwtDecode from 'jwt-decode';
 import { capitalizeWords } from '../screens/fn';
 import { TouchableHighlight } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useEffect } from 'react';
 
 const Drawer = createDrawerNavigator();
 
 export default function DrawerNav({ navigation }) {
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        const role = await AsyncStorage.getItem("role");
+        if (token) {
+          dispatch(setToken(token));
+          dispatch(setRole(role));
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    getToken();
+
+  }, [dispatch]);
 
   const token = useSelector((state)=> state.token);
   const userid = token ? jwtDecode(token).userid : null;
