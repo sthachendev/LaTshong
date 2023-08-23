@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View } from 'react-native';
 
-const CountdownTimer = ({ minutes }) => {
+const CountdownTimer = ({ minutes, navigation, setNewValidOtp }) => {
   const [remainingSeconds, setRemainingSeconds] = useState(minutes * 60);
 
   useEffect(() => {
-    // Start the countdown
     const interval = setInterval(() => {
       setRemainingSeconds((prevSeconds) => {
         if (prevSeconds === 0) {
           clearInterval(interval);
-          // Perform any action when the countdown reaches zero
-          // For example, show a message or trigger an event
+          setNewValidOtp(null);
+          navigation.goBack();
           return 0;
         } else {
           return prevSeconds - 1;
@@ -19,11 +18,9 @@ const CountdownTimer = ({ minutes }) => {
       });
     }, 1000);
 
-    // Clean up the interval on component unmount
     return () => clearInterval(interval);
   }, [minutes]);
 
-  // Format the remaining seconds as minutes and seconds
   const formattedMinutes = Math.floor(remainingSeconds / 60);
   const formattedSeconds = remainingSeconds % 60;
 
@@ -37,4 +34,3 @@ const CountdownTimer = ({ minutes }) => {
 };
 
 export default CountdownTimer;
-//used in otp
