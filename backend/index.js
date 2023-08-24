@@ -800,7 +800,7 @@ app.get('/api/post-feeds', async (req, res) => {
   try {
     const { page, pageSize } = req.query;
     const pageNumber = parseInt(page, 5) || 1;
-    const itemsPerPage = parseInt(pageSize, 5) || 5;
+    const itemsPerPage = parseInt(pageSize, 10) || 10;
 
     const offset = (pageNumber - 1) * itemsPerPage;
 
@@ -1371,6 +1371,46 @@ app.patch('/api/users/:userid/revert-verification', authenticateTokenAPI, async 
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+//nulitfy the reportedby
+// API endpoint to remove all user IDs from reportedby array
+app.put("/api/nullify-report/post-jobs/:postid", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { postid } = req.params;
+
+    // Update the reportedby array to an empty array for the specified postid
+    const updateQuery = "UPDATE job_posts SET reportedby = '{}' WHERE id = $1";
+    const result = await pool.query(updateQuery, [postid]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Job post not found." });
+    }
+
+    res.status(200).json({ message: "Post report nullified." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while updating the reportedby array." });
+  }
+});
+
+app.put("/api/nullify-report/post-feeds/:postid", authenticateTokenAPI, async (req, res) => {
+  try {
+    const { postid } = req.params;
+
+    // Update the reportedby array to an empty array for the specified postid
+    const updateQuery = "UPDATE feed_posts SET reportedby = '{}' WHERE id = $1";
+    const result = await pool.query(updateQuery, [postid]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Post feed not found." });
+    }
+
+    res.status(200).json({ message: "Post report nullified." });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "An error occurred while updating the reportedby array." });
   }
 });
 

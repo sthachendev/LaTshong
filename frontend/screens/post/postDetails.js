@@ -683,7 +683,7 @@ export default PostDetails = ({ route, navigation }) => {
 
               {
                 //role em buttons close and delete btn
-                role === "em" && (
+                role === "em" && data[0]?.postby == userid && (
                   <>
                     <TouchableHighlight
                       style={{
@@ -737,7 +737,7 @@ export default PostDetails = ({ route, navigation }) => {
         )}
 
         {/* menu bar */}
-        {role !== "js" && role === "em" && (
+        {role !== "js" && role === "em" && data[0]?.postby == userid && (
           <>
             <View
               style={{

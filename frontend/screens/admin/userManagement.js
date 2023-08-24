@@ -115,153 +115,162 @@ const UserManagement = () => {
           value={searchText}
           onChangeText={handleSearch}
         />
+      
+      </View>
+
+      {/* <ScrollView horizontal showsHorizontalScrollIndicator={false}> */}
+      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+        <TouchableHighlight
+          style={[
+            styles.filterButton,
+            { backgroundColor: filter === "all" ? "grey" : "lightgrey" },
+          ]}
+          onPress={handleFilterAll}
+          underlayColor="grey"
+        >
+          <Text>All</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={[
+            styles.filterButton,
+            { backgroundColor: filter === "js" ? "grey" : "lightgrey" },
+          ]}
+          onPress={handleFilterJobSeeker}
+          underlayColor="grey"
+        >
+          <Text>Job Seeker</Text>
+        </TouchableHighlight>
+        <TouchableHighlight
+          style={[
+            styles.filterButton,
+            { backgroundColor: filter === "em" ? "grey" : "lightgrey" },
+          ]}
+          onPress={handleFilterEmployer}
+          underlayColor="grey"
+        >
+          <Text>Employer</Text>
+        </TouchableHighlight>
+
+        <TouchableHighlight
+          style={[
+            styles.filterButton,
+            { backgroundColor: filter === "verified" ? "grey" : "lightgrey" },
+          ]}
+          onPress={handleShowVerificatedAccounts}
+          underlayColor="grey"
+        >
+          <Text>Verified Users</Text>
+        </TouchableHighlight>
+
+      </View>
+
+      <View style={{ flexDirection: "row", marginBottom: 10 }}>
+        <TouchableHighlight
+          style={[
+            styles.filterButton,
+            { backgroundColor: filter === "pending" ? "grey" : "lightgrey" },
+          ]}
+          onPress={handleShowVerificationRequest}
+          underlayColor="grey"
+        >
+          <Text>Verification Request</Text>
+        </TouchableHighlight>
+
         <MaterialIcons
           name="refresh"
           size={24}
           onPress={() => fetchUserData()}
+          style={{textAlignVertical:'center', marginLeft:10}}
         />
       </View>
 
-      {/* <ScrollView horizontal showsHorizontalScrollIndicator={false}> */}
-        <View style={{ flexDirection: "row", marginBottom: 10 }}>
-          <TouchableHighlight
-            style={[
-              styles.filterButton,
-              { backgroundColor: filter === "all" ? "grey" : "lightgrey" },
-            ]}
-            onPress={handleFilterAll}
-            underlayColor="grey"
-          >
-            <Text >All</Text>
-          </TouchableHighlight>
-          <TouchableHighlight
-            style={[
-              styles.filterButton,
-              { backgroundColor: filter === "js" ? "grey" : "lightgrey" },
-            ]}
-            onPress={handleFilterJobSeeker}
-            underlayColor="grey"
-          >
-            <Text >Job Seeker</Text>
-          </TouchableHighlight>
-          <TouchableHighlight
-            style={[
-              styles.filterButton,
-              { backgroundColor: filter === "em" ? "grey" : "lightgrey" },
-            ]}
-            onPress={handleFilterEmployer}
-            underlayColor="grey"
-          >
-            <Text >Employer</Text>
-          </TouchableHighlight>
-          <TouchableHighlight
-            style={[
-              styles.filterButton,
-              { backgroundColor: filter === "pending" ? "grey" : "lightgrey" },
-            ]}
-            onPress={handleShowVerificationRequest}
-            underlayColor="grey"
-          >
-            <Text >Verification Request</Text>
-          </TouchableHighlight>
-          <TouchableHighlight
-            style={[
-              styles.filterButton,
-              { backgroundColor: filter === "verified" ? "grey" : "lightgrey" },
-            ]}
-            onPress={handleShowVerificatedAccounts}
-            underlayColor="grey"
-          >
-            <Text >Verified Users</Text>
-          </TouchableHighlight>
-        </View>
       {/* </ScrollView> */}
 
+      <View style={{ paddingHorizontal: 5, marginTop: 10 }}>
+        <View
+          style={[
+            styles.table_body_single_row,
+            {
+              backgroundColor: "grey",
+              borderTopStartRadius: 5,
+              borderTopEndRadius: 5,
+            },
+          ]}
+        >
+          <View style={{ flex: 0.8, paddingVertical: 3 }}>
+            <Text style={styles.table_head}>Sl No</Text>
+          </View>
+
+          <View style={{ flex: 1, paddingVertical: 3 }}>
+            <Text style={styles.table_head}>Profile</Text>
+          </View>
+
+          <View style={{ flex: 3, paddingVertical: 3 }}>
+            <Text style={styles.table_head}>User name & email</Text>
+          </View>
+        </View>
+      </View>
+
       <FlatList
-              data={filteredUsers}
-              keyExtractor={(item) => item.id}
-              ListHeaderComponent={()=>(
-                <View style={{ paddingHorizontal: 5, marginTop: 10 }}>
-                <View
-                  style={[
-                    styles.table_body_single_row,
-                    {
-                      backgroundColor: "grey",
-                      borderTopStartRadius: 5,
-                      borderTopEndRadius: 5,
-                    },
-                  ]}
-                >
-                  <View style={{ flex: 0.8, paddingVertical: 3 }}>
-                    <Text style={styles.table_head}>Sl No</Text>
-                  </View>
-        
-                  <View style={{ flex: 1, paddingVertical: 3 }}>
-                    <Text style={styles.table_head}>Profile</Text>
-                  </View>
-        
-                  <View style={{ flex: 3, paddingVertical: 3 }}>
-                    <Text style={styles.table_head}>User name & email</Text>
-                  </View>
+        data={filteredUsers}
+        keyExtractor={(item) => item.id}
+        ListFooterComponent={() => <View style={{ margin: 100 }} />}
+        renderItem={({ item, index }) => {
+          return (
+            <View style={{ paddingHorizontal: 10, flex: 1 }}>
+              <TouchableOpacity
+                style={styles.table_body_single_row}
+                activeOpacity={1}
+                onPress={() => {
+                  setIsModalVisible(true), setUser(item);
+                }}
+              >
+                <View style={{ flex: 0.8 }}>
+                  <Text
+                    style={[
+                      styles.table_data,
+                      { textAlignVertical: "center", flex: 1 },
+                    ]}
+                  >
+                    {index + 1}
+                  </Text>
                 </View>
-              </View>
-              )}
-              renderItem={({ item, index }) => {
-                return (
-                  <View style={{ paddingHorizontal: 10, flex:1}}>
-                    <TouchableOpacity
-                      style={styles.table_body_single_row}
-                      activeOpacity={1}
-                      onPress={() => {
-                        setIsModalVisible(true), setUser(item);
+                <View style={{ flex: 1, justifyContent: "center" }}>
+                  {item.imageurl && item.imageurl.length > 0 ? (
+                    <Image
+                      source={{ uri: `${config.API_URL}/${item.imageurl}` }}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 60,
+                        borderColor: "lightgrey",
+                        borderWidth: 1,
                       }}
-                    >
-                      <View style={{ flex: 0.8 }}>
-                        <Text
-                          style={[
-                            styles.table_data,
-                            { textAlignVertical: "center", flex: 1 },
-                          ]}
-                        >
-                          {index + 1}
-                        </Text>
-                      </View>
-                      <View style={{ flex: 1, justifyContent: "center" }}>
-                        {item.imageurl && item.imageurl.length > 0 ? (
-                          <Image
-                            source={{ uri: `${config.API_URL}/${item.imageurl}` }}
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 60,
-                              borderColor: "lightgrey",
-                              borderWidth: 1,
-                            }}
-                          />
-                        ) : (
-                          <Image
-                            source={require("../../assets/images/default.png")}
-                            style={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: 60,
-                              borderColor: "lightgrey",
-                              borderWidth: 1,
-                            }}
-                          />
-                        )}
-                      </View>
-                      <View style={{ flex: 3 }}>
-                        <Text style={[styles.table_data, { fontWeight: "bold" }]}>
-                          {capitalizeWords(item.name)}
-                        </Text>
-                        <Text style={styles.table_data}>{item.email}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                );
-              }}
-            />
+                    />
+                  ) : (
+                    <Image
+                      source={require("../../assets/images/default.png")}
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 60,
+                        borderColor: "lightgrey",
+                        borderWidth: 1,
+                      }}
+                    />
+                  )}
+                </View>
+                <View style={{ flex: 3 }}>
+                  <Text style={[styles.table_data, { fontWeight: "bold" }]}>
+                    {capitalizeWords(item.name)}
+                  </Text>
+                  <Text style={styles.table_data}>{item.email}</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          );
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -286,7 +295,6 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: "lightgrey",
-    marginRight: 10,
   },
   filterButton: {
     marginLeft: 10,

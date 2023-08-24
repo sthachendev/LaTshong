@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 import ImageViewer from "../custom/ImageViewer";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import { Video } from 'expo-av';
 
 export default PostInfo = ({
   isModalVisible,
@@ -129,6 +130,33 @@ export default PostInfo = ({
       }
     }
   };
+
+  const handleNullifyPost = () => {
+    console.log(post.posttype)
+    if (post.posttype == 'feed_post'){
+      axios.put(`${config.API_URL}/api/nullify-report/post-feeds/${post.id}`, {},  {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+          ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
+          console.log(res.data.message)
+      })
+      .catch((e) => console.log(e))
+    } else if (post.posttype == 'job_post') {
+      axios.put(`${config.API_URL}/api/nullify-report/post-jobs/${post.id}`, {} ,  {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((res) => {
+          ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
+          console.log(res.data.message)
+      })
+      .catch((e) => console.log(e))
+    }
+  }
 
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -570,9 +598,9 @@ export default PostInfo = ({
                     borderRadius: 25,
                   }}
                   underlayColor="rgba(30, 49, 157, 0.1)"
-                  // onPress={() => {
-                    
-                  // }}
+                  onPress={() => {
+                    handleNullifyPost()
+                  }}
                 >
                   <Text
                     style={{

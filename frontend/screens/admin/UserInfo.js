@@ -406,62 +406,60 @@ export default UserInfo = ({
                     disabled
                   />
 
-<TouchableHighlight
-                  style={{
-                    backgroundColor: "#fff",
-                    borderColor: "rgba(30, 49, 157, 0.7)",
-                    borderWidth: 0.25,
-                    marginVertical: 10,
-                    width: "100%",
-                    borderRadius: 25,
-                  }}
-                  underlayColor="rgba(30, 49, 157, 0.1)"
-                  onPress={() => {
-                    if (status !== "verified") {
-                      handleVerification(user.id);
-                    } else {
-                      handleRevertVerification(user.id);
-                    }
-                  }}
-                >
-                  <Text
+                  <TouchableHighlight
                     style={{
-                      paddingVertical: 10,
-                      textAlign: "center",
-                      color: "rgba(30, 49, 157, 0.7)",
+                      backgroundColor: "#fff",
+                      borderColor: "rgba(30, 49, 157, 0.7)",
+                      borderWidth: 0.25,
+                      marginVertical: 10,
+                      width: "100%",
+                      borderRadius: 25,
+                    }}
+                    underlayColor="rgba(30, 49, 157, 0.1)"
+                    onPress={() => {
+                      if (status !== "verified") {
+                        handleVerification(user.id);
+                      } else {
+                        handleRevertVerification(user.id);
+                      }
                     }}
                   >
-                    {status !== "verified"
-                      ? "Verify Account"
-                      : "Revert Account Verification"}
-                  </Text>
-                </TouchableHighlight>
+                    <Text
+                      style={{
+                        paddingVertical: 10,
+                        textAlign: "center",
+                        color: "rgba(30, 49, 157, 0.7)",
+                      }}
+                    >
+                      {status !== "verified"
+                        ? "Verify Account"
+                        : "Revert Account Verification"}
+                    </Text>
+                  </TouchableHighlight>
 
-                <TouchableHighlight
-                  style={{
-                    backgroundColor: "#fff",
-                    borderColor: "rgba(255, 0, 0, 0.7)",
-                    marginVertical: 10,
-                    width: "100%",
-                    borderWidth: 0.25,
-                    borderRadius: 25,
-                  }}
-                  underlayColor="rgba(255, 0, 0, 0.1)"
-                  onPress={() => handleDelete(user.id)}
-                >
-                  <Text
+                  <TouchableHighlight
                     style={{
-                      paddingVertical: 10,
-                      textAlign: "center",
-                      color: "rgba(255, 0, 0, 0.7)",
+                      backgroundColor: "#fff",
+                      borderColor: "rgba(255, 0, 0, 0.7)",
+                      marginVertical: 10,
+                      width: "100%",
+                      borderWidth: 0.25,
+                      borderRadius: 25,
                     }}
+                    underlayColor="rgba(255, 0, 0, 0.1)"
+                    onPress={() => handleDelete(user.id)}
                   >
-                    Delete Account
-                  </Text>
-                </TouchableHighlight>
-                
+                    <Text
+                      style={{
+                        paddingVertical: 10,
+                        textAlign: "center",
+                        color: "rgba(255, 0, 0, 0.7)",
+                      }}
+                    >
+                      Delete Account
+                    </Text>
+                  </TouchableHighlight>
                 </ScrollView>
-
               </View>
             </TouchableWithoutFeedback>
           </View>

@@ -61,8 +61,8 @@ export default function Signup({ navigation }) {
       email.trim() !== "" &&
       validateInput(name) &&
       password.length >= 6 &&
-      password.trim() !== "" &&
-      confirmPassword.trim() &&
+      password.trim() !== "" && confirmPassword === password &&
+      confirmPassword.trim() !== "" &&
       checked === true
     ) {
 

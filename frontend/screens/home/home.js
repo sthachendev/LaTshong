@@ -37,8 +37,10 @@ export default Home = () => {
 
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingfeeds, setLoadingfeeds] = useState(false);
 
   const [JobPostPage, setJobPostPage] = useState(1);
+  console.log("hello");
 
   useEffect(() => {
     getJobPost();
@@ -47,7 +49,7 @@ export default Home = () => {
     return () => {
       setJobPosts("");
     };
-  }, []);
+  }, [role]);
 
   const getJobPost = async () => {
     try {
@@ -103,44 +105,47 @@ export default Home = () => {
 
   const getFeedPost = async () => {
     try {
-      setLoading(true);
+      setLoadingfeeds(true);
       const res = await axios.get(
         `${config.API_URL}/api/post-feeds/?page=1&pageSize=5`
       );
+      // console.log("res.data.length", res.data.length);
       if (res.data.length > 0) {
         setFeedsData(res.data);
         setPage(2);
       } else {
-        setFeedsData([]);
+        // setFeedsData([]);
         setHasMoreDataFeeds(false);
       }
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoadingfeeds(false);
     }
   };
 
   const loadMorePosts = async () => {
     //feed
-    if (loading || !hasMoreDataFeeds) {
+    if (loadingfeeds || !hasMoreDataFeeds) {
       return;
     }
-    setLoading(true);
+    setLoadingfeeds(true);
     try {
       const res = await axios.get(
-        `${config.API_URL}/api/post-feeds/?page=${page}&pageSize=5`
+        `${config.API_URL}/api/post-feeds/?page=${page}&pageSize=10`
       );
       if (res.data.length > 0) {
         setFeedsData((prevData) => [...prevData, ...res.data]);
+        console.log("treuu");
         setPage(page + 1);
       } else {
+        console.log("false2");
         setHasMoreDataFeeds(false);
       }
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      setLoadingfeeds(false);
     }
   };
 
@@ -149,6 +154,7 @@ export default Home = () => {
     try {
       setHasMoreDataJobPosts(true);
       setHasMoreDataFeeds(true);
+      setFeedsData("");
 
       await getJobPost();
       await getFeedPost();
@@ -362,17 +368,19 @@ export default Home = () => {
               );
             }}
             onEndReached={() => {
-              if (!loading && hasMoreDataFeeds) {
+              if (!loadingfeeds && hasMoreDataFeeds) {
                 loadMorePosts();
               }
             }}
-            onEndReachedThreshold={0.1}
+            // onEndReachedThreshold={0.1}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
             ListFooterComponent={
               <>
-                {loading && <ActivityIndicator size="small" color="#1E319D" />}
+                {loadingfeeds && (
+                  <ActivityIndicator size="small" color="#1E319D" />
+                )}
               </>
             }
           />
