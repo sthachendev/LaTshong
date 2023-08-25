@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS job_posts (
     postby INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     postdate TIMESTAMP,
     closedate TIMESTAMP,
-    location JSON, 
+    location JSON NOT NULL, 
     status CHAR(1)  CHECK (status IN ('o', 'c')),---o open, c close
     applicants INTEGER[] DEFAULT '{}',
     accepted_applicants INTEGER[] DEFAULT '{}',

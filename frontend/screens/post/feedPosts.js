@@ -1,9 +1,8 @@
 import { View, Text, StyleSheet, Image } from "react-native";
 import { capitalizeFirstLetterOfParagraphs, getTimeDifference2 } from "../fn";
-import { memo } from "react";
+import { memo, useRef, useEffect } from "react";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import config from "../config";
-// import { Video } from "expo-av";
 import { capitalizeWords } from "../fn";
 import { TouchableOpacity } from "react-native";
 import { useState } from "react";
@@ -11,28 +10,13 @@ import FeedPostsOption from "./feedPostsOption";
 import ImageViewer from "../custom/ImageViewer";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { MaterialIcons } from "@expo/vector-icons";
-// import VideoPlayer from "../custom/VideoPlayer";
-import { ResizeMode } from 'expo-av'
-import VideoPlayer from 'expo-video-player'
-import { useIsFocused } from "@react-navigation/native";
+import { Video } from 'expo-av'
 
 const FeedPosts = ({ item, role, navigation, getFeedPost }) => {
   const [isModalVisible2, setIsModalVisible2] = useState(false); //bio set modal
 
   const [modalVisible, setModalVisible] = useState(false); //image viewer
 
-  const [inFullscreen, setInFullscreen] = useState(false);
-
-  const handleFullscreenUpdate = (event) => {
-    setInFullscreen(event.fullscreenUpdate === VideoPlayer.FULLSCREEN_UPDATE_PLAYER_WILL_PRESENT);
-  };
-
-  const handleEnterFullscreen = () => {
-    setInFullscreen(true);
-  };
-
-  const isFocused = useIsFocused();
-  
   return (
     <View style={styles.itemContainer}>
       <ImageViewer
@@ -188,28 +172,13 @@ const FeedPosts = ({ item, role, navigation, getFeedPost }) => {
 
         {item.media_type === "v" && ( // v --video
           <>
-          <VideoPlayer
-            videoProps={{
-              shouldPlay: isFocused,
-              resizeMode: VideoPlayer.RESIZE_MODE_CONTAIN,
-              resizeMode: ResizeMode.CONTAIN,
-              source: {
-                uri: `${config.API_URL}/${item.media_uri}`,
-              },
-            }}
-              // style={{ width: "100%", height: 200 }}
-              // onFullscreenUpdate={handleFullscreenUpdate}
-              // fullscreen={inFullscreen}
-              onFullscreenUpdate={handleFullscreenUpdate}
-              fullscreen={true}
-        // fullscreen={{
-        //   enterFullscreen: handleEnterFullscreen,
-        //   exitFullscreen: () => setInFullscreen(false),
-        //   orientation: 'landscape',
-        // }}
-        style={{ height: 300 }}
-
-/>
+        <Video
+         source={{ uri: `${config.API_URL}/${item.media_uri}` }}
+         style={{ width: "100%", height: 200, backgroundColor:'#000' }}
+         useNativeControls
+         resizeMode="contain"
+         shouldPlay={false}
+        />
           </>
         )}
       </View>

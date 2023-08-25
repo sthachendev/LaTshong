@@ -18,7 +18,7 @@ import axios from "axios";
 import { Picker } from "@react-native-picker/picker";
 
 const Post = ({ navigation }) => {
-  const [isToggled, setToggle] = useState(false);
+  const [isToggled, setToggle] = useState(true);
 
   const [userLocation, setUserLocation] = useState(null);
   const [customLocation, setCustomLocation] = useState(null);
@@ -31,6 +31,8 @@ const Post = ({ navigation }) => {
   const [vacancy_no, setVacancyNo] = useState("");
   const [remark, setRemark] = useState("");
   const [location, setLocation] = useState("");
+
+  const [message, setMessage] = useState("");
 
   const handleCancel = () => {
     navigation.goBack();
@@ -81,24 +83,42 @@ const Post = ({ navigation }) => {
     };
 
     try {
-      const response = await axios.post(
-        `${config.API_URL}/api/post-jobs`,
-        jobData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+      if (jobData.job_title.trim() !== "" && jobData.job_description.trim() !== "" && jobData.vacancy_no.trim() !== "" 
+      && jobData.job_requirements !== "" &&
+      jobData.job_salary !== "" && jobData.location_!== "" && jobData.location !== null){
+        const response = await axios.post(
+          `${config.API_URL}/api/post-jobs`,
+          jobData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setJobTitle("");
+        setJobDesc("");
+        setJobReq("");
+        setJobSalary("");
+        if (response.status == 201) {
+          ToastAndroid.show("Posted.", ToastAndroid.SHORT);
+          navigation.goBack();
         }
-      );
-      setJobTitle("");
-      setJobDesc("");
-      setJobReq("");
-      setJobSalary("");
-      if (response.status == 201) {
-        ToastAndroid.show("Posted", ToastAndroid.SHORT);
-        navigation.goBack();
+      }else if (jobData.job_title.trim() === "") {
+        setMessage('Job title is required.')
+      } else if (jobData.job_description.trim() === "") {
+        setMessage('Job description is required.')
+      } else if (jobData.vacancy_no.trim() === "" ) {
+        setMessage('Job vancancy is required.')
+      } else if (jobData.job_requirements === "") {
+        setMessage('Job requirements is required.')
+      } else if (jobData.job_salary === "") {
+        setMessage('Job salary is required.')
+      } else if (jobData.location_ === "") {
+        setMessage('Job location is required.')
+      } else if (jobData.location === null) {
+        setMessage('Job location is not set.')
       }
+     
     } catch (error) {
       console.error(error);
     }
@@ -127,8 +147,32 @@ const Post = ({ navigation }) => {
           <MaterialIcons name="check" size={24} color="#0079FF" />
         </TouchableOpacity>
       </View>
+
+      {message !== "" && message && (
+          <>
+            <View
+              style={{
+                backgroundColor: "rgba(255, 0, 0, 0.1)",
+                borderRadius: 2,
+                padding: 10,
+              }}
+            >
+              <Text
+                style={{
+                  color: "rgba(255, 0, 0, 0.5)",
+                  fontWeight: "300",
+                  textAlign: "center",
+                }}
+              >
+                {message}
+              </Text>
+            </View>
+          </>
+        )}
+
       <ScrollView>
         <View style={styles.container}>
+
           <TextInput
             mode="outlined"
             label="Job Title / Designation"
@@ -142,6 +186,7 @@ const Post = ({ navigation }) => {
                 outline: "lightgrey",
               },
             }}
+            onFocus={()=>setMessage("")}
           />
 
           <TextInput
@@ -159,6 +204,7 @@ const Post = ({ navigation }) => {
             }}
             multiline={true}
             blurOnSubmit={true}
+            onFocus={()=>setMessage("")}
           />
 
           <View
@@ -202,6 +248,8 @@ const Post = ({ navigation }) => {
                 outline: "lightgrey",
               },
             }}
+            keyboardType="numeric" 
+            onFocus={()=>setMessage("")}
           />
 
           <TextInput
@@ -219,6 +267,7 @@ const Post = ({ navigation }) => {
             }}
             multiline={true}
             blurOnSubmit={true}
+            onFocus={()=>setMessage("")}
           />
 
           <TextInput
@@ -234,6 +283,8 @@ const Post = ({ navigation }) => {
                 outline: "lightgrey",
               },
             }}
+            keyboardType="numeric" 
+            onFocus={()=>setMessage("")}
           />
 
           <TextInput
@@ -249,6 +300,7 @@ const Post = ({ navigation }) => {
                 outline: "lightgrey",
               },
             }}
+            onFocus={()=>setMessage("")}
           />
 
           <TextInput
@@ -266,6 +318,7 @@ const Post = ({ navigation }) => {
             }}
             multiline={true}
             blurOnSubmit={true}
+            onFocus={()=>setMessage("")}
           />
 
           <Text

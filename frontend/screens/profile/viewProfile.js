@@ -234,12 +234,11 @@ export default ViewProfile = ({ route, navigation }) => {
 
               {/* user name employee and bio */}
               <View style={{ flexDirection: "column" }}>
-                <View style={{ flexDirection: "row" }}>
+                <View style={{ flexDirection: "row", justifyContent:'center' }}>
                   <Text
                     style={{
                       textAlign: "center",
                       fontSize: 20,
-                      marginLeft: 15,
                       marginVertical: 5,
                       fontWeight: "bold",
                     }}
@@ -452,6 +451,19 @@ export default ViewProfile = ({ route, navigation }) => {
               )}
             </>
           }
+          ListEmptyComponent={() => {
+            return (
+              <Text
+                style={{
+                  textAlign: "center",
+                  marginVertical: 30,
+                  color: "grey",
+                }}
+              >
+                No posts.
+              </Text>
+            );
+          }}
         />
       )}
     </View>

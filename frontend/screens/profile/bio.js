@@ -51,7 +51,6 @@ export default Bio = ({
         setIsModalVisible(false);
       }
 
-      console.log("Updated");
     } catch (error) {
       console.log(error);
     }

@@ -31,7 +31,6 @@ const AdminHome = () => {
         },
       })
       .then((res) => {
-        console.log(res.data);
         setData(res.data);
         setLoading(false);
       })

@@ -14,7 +14,6 @@ const Chat = ({ navigation }) => {
 
   const token = useSelector((state) => state.token);
   const id = jwtDecode(token).userid;
-  console.log(id);
 
   const [loading, setLoading] = useState(false);
 
@@ -114,7 +113,6 @@ const Chat = ({ navigation }) => {
                       {item.user1 != id
                         ? capitalizeWords(item.user1_name)
                         : capitalizeWords(item.user2_name)}
-                      {console.log(id, "current users", typeof id)}
                     </Text>
 
                     <View
@@ -172,6 +170,19 @@ const Chat = ({ navigation }) => {
 
               </>
             </TouchableHighlight>
+          );
+        }}
+        ListEmptyComponent={() => {
+          return (
+            <Text
+              style={{
+                textAlign: "center",
+                marginVertical: 30,
+                color: "grey",
+              }}
+            >
+              No chats.
+            </Text>
           );
         }}
       />

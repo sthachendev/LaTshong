@@ -63,7 +63,6 @@ export default UserInfo = ({
       );
       setUserInfo(response.data);
       setLoading(false);
-      console.log(response.data, "response");
     } catch (error) {
       console.error(error);
     }
@@ -210,7 +209,6 @@ export default UserInfo = ({
                   style={{
                     textAlign: "center",
                     fontSize: 20,
-                    marginLeft: 15,
                     marginVertical: 5,
                     fontWeight: "bold",
                   }}

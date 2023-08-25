@@ -146,7 +146,7 @@ export default Profile = ({ navigation }) => {
   const handleDelete = (postid) => {
     Alert.alert(
       "Do you want to delete the post?",
-      "Once deleted, you can not undo it.",
+      "Once deleted, you cannot undo it.",
       [
         {
           text: "Delete",

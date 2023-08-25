@@ -206,7 +206,7 @@ export default PostDetails = ({ route, navigation }) => {
   const Option = () => {
     Alert.alert(
       "Do you want to delete the post?",
-      "Once deleted, you can not undo it.",
+      "Once deleted, you cannot undo it.",
       [
         {
           text: "Delete",
@@ -239,7 +239,6 @@ export default PostDetails = ({ route, navigation }) => {
 
   //update the applicants list and put the user in accept lists
   const handleUserSelect = (userid) => {
-    console.log(userid);
     axios
       .put(
         `${config.API_URL}/api/post-jobs/${id}/${userid}`,

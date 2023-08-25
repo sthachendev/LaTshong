@@ -10,7 +10,6 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, selectedMarkerData, navigation }) => {
     
     const role = useSelector(state => state.token);
-    console.log(selectedMarkerData.id,'selectedMarkerData');
     const postid = selectedMarkerData.id;
 
     const [data, setData] = useState('');
@@ -18,7 +17,6 @@ export default ShowSelectedLocationJobDetails = ({isModalVisible, closeModal, se
     const getpost = () => {
       if (postid) axios.get(`${config.API_URL}/api/post-jobs/${postid}`)
       .then(res=>{
-        console.log(res.data);
         setData(res.data);
       })
       .catch(e=>console.log(e))

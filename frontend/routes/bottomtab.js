@@ -29,7 +29,6 @@ function BottomTab() {
   const unread_count = useSelector((state) => state.unread_count);
 
   const getUnreadCount = () => {
-    console.log(userid);
     axios
       .get(`${config.API_URL}/api/unread_count/${userid}`)
       .then((res) => {

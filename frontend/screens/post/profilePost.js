@@ -34,8 +34,6 @@ export default ProfilePost = ({ navigation, route }) => {
 
     delete result.cancelled;
 
-    console.log(result);
-
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }

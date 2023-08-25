@@ -69,7 +69,7 @@ export default function ForgotPassword({ navigation }) {
   };
 
   const handleUpdatePassword = () => {
-    if (password !== "" && password === confirmPassword) {
+    if (password !== "" && password === confirmPassword && password.length >= 6) {
       axios
         .put(`${config.API_URL}/api/users/password`, { password, email })
         .then((res) => {
@@ -87,6 +87,8 @@ export default function ForgotPassword({ navigation }) {
       setMessage("Password doesn't match.");
     } else if (password.trim() === "" || password.trim() === "") {
       setMessage("Enter the required fields.");
+    } else if (password.length < 6) {
+      setMessage("Password must be 6 characters long.");
     }
   };
 
@@ -254,6 +256,7 @@ export default function ForgotPassword({ navigation }) {
                 outline: "lightgrey",
               },
             }}
+            keyboardType="numeric" 
           />
         )}
 

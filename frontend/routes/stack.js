@@ -178,7 +178,7 @@ function Stack() {
           name="Policy"
           component={Policy}
           options={{
-            headerTitle: "Terms of Use & Privacy Policy",
+            headerTitle: "",
             headerTitleAlign: "center",
             headerShadowVisible: false,
           }}

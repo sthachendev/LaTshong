@@ -142,6 +142,7 @@ export default function SignupStep2({ navigation, route }) {
               outline: "lightgrey",
             },
           }}
+          keyboardType="numeric" 
         />
 
         <View

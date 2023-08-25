@@ -51,10 +51,8 @@ export default function Signup({ navigation }) {
 
       if (middleName.trim() !== "") {
         name = firsName + " " + middleName + " " + lastName;
-        console.log(name)
       } else {
         name = firsName + " " + lastName;
-        console.log(name)
       }
 
     if (

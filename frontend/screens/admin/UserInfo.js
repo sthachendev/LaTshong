@@ -80,7 +80,6 @@ export default UserInfo = ({
         }
       );
 
-      // console.log(res.status)
       if (res.status == 200) {
         ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
         setStatus(res.data.status);
@@ -98,7 +97,6 @@ export default UserInfo = ({
         },
       });
 
-      console.log(res.status);
       if (res.status == 200) {
         fetchUserData();
         setIsModalVisible(false);
@@ -138,7 +136,6 @@ export default UserInfo = ({
         }
       )
       .then((res) => {
-        console.log(res.data);
         setUser((prevUser) => ({ ...prevUser, [field]: value }));
         ToastAndroid.show("Updated", ToastAndroid.SHORT);
       })
@@ -172,7 +169,6 @@ export default UserInfo = ({
   };
 
   const revertVeriedUser = async (userid) => {
-    console.log("token", token);
     try {
       const res = await axios.patch(
         `${config.API_URL}/api/users/${userid}/revert-verification`,
@@ -183,7 +179,6 @@ export default UserInfo = ({
           },
         }
       );
-      console.log(res.status);
       if (res.status == 200) {
         ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
         setStatus(res.data.status);

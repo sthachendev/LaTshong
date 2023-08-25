@@ -121,52 +121,40 @@ export function isSameDate(date1, date2) {
   );
 }
 
-//validate user input contains not special characters //editProfile.js //signup.js
 export function validateInput(input) {
   if (input === null || input === undefined) {
-    // input is null or undefined
     return false;
   }
 
   var pattern = /^[a-zA-Z\s]+$/;
   if (pattern.test(input)) {
-    // input is valid
-    console.log('valid');
     return true;
   } else {
-    // input contains special characters or spaces
-    console.log('invalid');
     return false;
   }
 }
 
 export function validateInputContainNumOnly(input) {
   if (input === null || input === undefined) {
-    // input is null or undefined
     return false;
   }
 
   var pattern = /^\d+$/;
   if (pattern.test(input)) {
-    // input is valid
-    console.log('valid');
     return true;
   } else {
-    // input contains non-numeric characters
-    console.log('invalid');
     return false;
   }
 }
 
 export function validateEmail(email) {
   if (!email) {
-    return false; // email is null or empty
+    return false; 
   }
   const pattern = /^[a-zA-Z0-9]+([._]?[a-zA-Z0-9]+)*@[a-zA-Z0-9]+([.-]?[a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/;
   return pattern.test(email);
 }
 
-//cut name/ strings
 export function truncateName(name, maxLength) {
   if (name.length <= maxLength) {
     return name;
@@ -177,7 +165,6 @@ export function truncateName(name, maxLength) {
 
 export function capitalizeFirstLetterOfParagraphs(text) {
   if (typeof text !== 'string') {
-    // Return an empty string if the input is not a string or is undefined.
     return '';
   }
 
@@ -198,10 +185,9 @@ export const getFileSize = (file) => {
   }
 };
 
-//show first name // chat header
 export function showFirstWord(str) {
   if (!str || typeof str !== 'string' || str.trim().length === 0) {
-    return null; // Return null if the input is not a non-empty string
+    return null;
   }
 
   const firstWord = str.trim().split(' ')[0];

@@ -26,7 +26,7 @@ export default function Setting({ navigation, route }) {
     <View
       style={{ flex: 1, backgroundColor: "#fff", padding: 10, paddingLeft: 25 }}
     >
-      <Text style={{ color: "#404040" }}>Account Setting</Text>
+      <Text style={{ color: "#404040", fontWeight:'bold' }}>Account Setting</Text>
 
       <TouchableOpacity
         onPress={() => navigation.navigate("ChangeName", { userid })}
@@ -61,7 +61,7 @@ export default function Setting({ navigation, route }) {
             }}
           />
 
-          <Text style={{ color: "#404040", marginTop: 15 }}>
+          <Text style={{ color: "#404040", marginTop: 15, fontWeight:'bold' }}>
             Help & Support
           </Text>
 
@@ -81,7 +81,7 @@ export default function Setting({ navigation, route }) {
             }}
           />
 
-          <Text style={{ color: "#404040", marginTop: 15 }}>Legal</Text>
+          <Text style={{ color: "#404040", marginTop: 15, fontWeight:'bold' }}>Legal</Text>
 
           <TouchableOpacity
             onPress={() => navigation.navigate("Policy")}

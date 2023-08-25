@@ -14,7 +14,6 @@ import { useSelector } from "react-redux";
 
 export default function ChangeName({ route }) {
   const { userid } = route.params;
-  console.log(userid)
 
   const token = useSelector((state) => state.token);
 
@@ -44,21 +43,29 @@ export default function ChangeName({ route }) {
   }
 
   const handleSaveChanges = () => {
-    axios
-      .put(
-        `${config.API_URL}/api/users/name/${userid}`,
-        { name },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-      .then((res) => {
-        ToastAndroid.show("Updated.", ToastAndroid.SHORT);
-      })
-      .catch((e) => console.log(e));
+    if (name.trim().length < 2) {
+      setMessage("Name must be at least 2 characters long.");
+    } else if (!/^[A-Za-z\s]+$/.test(name)) {
+      setMessage("Name can only contain letters and spaces.");
+    } else {
+      axios
+        .put(
+          `${config.API_URL}/api/users/name/${userid}`,
+          { name },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
+        .then((res) => {
+          ToastAndroid.show("Updated.", ToastAndroid.SHORT);
+          setMessage(""); // Clear any previous error messages
+        })
+        .catch((e) => console.log(e));
+    }
   };
+  
 
   return (
     <View style={{ flex: 1, backgroundColor: "#fff", padding: 10 }}>

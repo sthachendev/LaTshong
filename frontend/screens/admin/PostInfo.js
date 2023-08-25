@@ -42,11 +42,9 @@ export default PostInfo = ({
       const id = post.id;
       if (post.posttype === "job_post") {
         const res = await axios.get(`${config.API_URL}/api/post-jobs/${id}`); //no need to add token
-        console.log(res.data);
         setData(res.data);
       } else if (post.posttype === "feed_post") {
         const res = await axios.get(`${config.API_URL}/api/post-feeds/${id}`); //no need to add token
-        console.log(res.data);
         setData(res.data);
       }
     } catch (error) {
@@ -83,7 +81,6 @@ export default PostInfo = ({
   };
 
   const deletePost = async (postid) => {
-    console.log(post.posttype);
 
     if (post.posttype === "feed_post") {
       try {
@@ -96,7 +93,6 @@ export default PostInfo = ({
           }
         );
 
-        console.log(res.status);
         if (res.status === 200) {
           fetchData();
           setIsModalVisible(false);
@@ -118,7 +114,6 @@ export default PostInfo = ({
           }
         );
 
-        console.log(res.status);
         if (res.status === 200) {
           fetchData();
           setIsModalVisible(false);
@@ -132,7 +127,6 @@ export default PostInfo = ({
   };
 
   const handleNullifyPost = () => {
-    console.log(post.posttype)
     if (post.posttype == 'feed_post'){
       axios.put(`${config.API_URL}/api/nullify-report/post-feeds/${post.id}`, {},  {
         headers: {
@@ -141,7 +135,6 @@ export default PostInfo = ({
       })
       .then((res) => {
           ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
-          console.log(res.data.message)
       })
       .catch((e) => console.log(e))
     } else if (post.posttype == 'job_post') {
@@ -152,7 +145,6 @@ export default PostInfo = ({
       })
       .then((res) => {
           ToastAndroid.show(res.data.message, ToastAndroid.SHORT);
-          console.log(res.data.message)
       })
       .catch((e) => console.log(e))
     }

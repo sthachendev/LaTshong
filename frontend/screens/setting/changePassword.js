@@ -22,7 +22,7 @@ export default function ChangePassword({ route }) {
   const [message, setMessage] = useState("");
 
   const handleSaveChanges = () => {
-    if (newPassword !== "" && newPassword === confirmPassword) {
+    if (newPassword !== "" && newPassword === confirmPassword && newPassword.length >= 6) {
       setLoading(true);
 
       axios
@@ -43,13 +43,15 @@ export default function ChangePassword({ route }) {
         });
     } else if (newPassword !== confirmPassword) {
       setMessage("Password doesn't match.");
+    }else if (newPassword.length < 6) {
+      setMessage("Password must be 6 characters long.");
     } else if (
       newPassword.trim() === "" ||
-      newPassword.trim() === "" ||
+      confirmPassword.trim() === "" ||
       currentPassword.trim()
     ) {
       setMessage("Enter the required fields.");
-    }
+    } 
   };
 
   return (

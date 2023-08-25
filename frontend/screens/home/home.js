@@ -7,7 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
@@ -21,6 +21,7 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import FeedPost from "../post/feedPost";
 import jwtDecode from "jwt-decode";
 import FeedPosts from "../post/feedPosts";
+import { clearRole, clearToken } from "../../reducers";
 
 export default Home = () => {
   const navigation = useNavigation();
@@ -40,7 +41,6 @@ export default Home = () => {
   const [loadingfeeds, setLoadingfeeds] = useState(false);
 
   const [JobPostPage, setJobPostPage] = useState(1);
-  console.log("hello");
 
   useEffect(() => {
     getJobPost();
@@ -50,6 +50,32 @@ export default Home = () => {
       setJobPosts("");
     };
   }, [role]);
+
+  useEffect(()=>{
+    checkUserExists();
+  },[refreshing])
+  
+  const dispatch = useDispatch();
+
+  const checkUserExists = () => {
+    axios.get(
+      `${config.API_URL}/api/users/${userid}/exists`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    ).then((res) => {
+      if(res.data.exists === false){
+        dispatch(clearToken());
+        dispatch(clearRole());
+        AsyncStorage.removeItem("token");
+        AsyncStorage.removeItem("role");
+
+        navigation.navigate('Login');
+      }
+    }).catch((e) => console.log(e))
+  }
 
   const getJobPost = async () => {
     try {
@@ -109,12 +135,10 @@ export default Home = () => {
       const res = await axios.get(
         `${config.API_URL}/api/post-feeds/?page=1&pageSize=5`
       );
-      // console.log("res.data.length", res.data.length);
       if (res.data.length > 0) {
         setFeedsData(res.data);
         setPage(2);
       } else {
-        // setFeedsData([]);
         setHasMoreDataFeeds(false);
       }
     } catch (error) {
@@ -136,10 +160,8 @@ export default Home = () => {
       );
       if (res.data.length > 0) {
         setFeedsData((prevData) => [...prevData, ...res.data]);
-        console.log("treuu");
         setPage(page + 1);
       } else {
-        console.log("false2");
         setHasMoreDataFeeds(false);
       }
     } catch (error) {
@@ -343,7 +365,7 @@ export default Home = () => {
             ref={flatListRef}
             showsVerticalScrollIndicator={false}
             data={feedsData}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <FeedPosts
                 item={item}
                 role={role}
